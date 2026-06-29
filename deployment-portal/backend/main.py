@@ -10,12 +10,14 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 
 import catalog
 import db
+from auth import authenticate_user, create_access_token, get_current_user
 
 app = FastAPI(title="Deployment Portal API", version="0.2.0")
 
@@ -60,23 +62,56 @@ class ApproveTaskRequest(BaseModel):
     role: Literal["approver", "devops"]
 
 
+@app.post("/auth/token")
+async def login(form_data: OAuth2PasswordRequestForm = Depends()) -> dict[str, Any]:
+    # OAuth2 spec names the field "username"; we accept an email address here.
+    user = authenticate_user(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+        )
+    email = user["email"]
+    token = create_access_token({"sub": email})
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "email": email,
+        "display_name": user.get("display_name", email),
+        "role": user.get("role", "developer"),
+    }
+
+
+@app.post("/auth/logout")
+async def logout() -> dict[str, str]:
+    return {"message": "Logged out"}
+
+
+@app.get("/auth/me")
+async def me(current_user: dict = Depends(get_current_user)) -> dict[str, Any]:
+    return current_user
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
 @app.get("/catalog/environments")
-def get_environments() -> list[dict[str, Any]]:
+def get_environments(current_user: dict = Depends(get_current_user)) -> list[dict[str, Any]]:
     return catalog.load_environments()
 
 
 @app.get("/catalog/approvers")
-def get_approvers() -> list[dict[str, Any]]:
+def get_approvers(current_user: dict = Depends(get_current_user)) -> list[dict[str, Any]]:
     return catalog.load_approvers()
 
 
 @app.post("/tasks")
-def create_task(payload: CreateTaskRequest) -> dict[str, Any]:
+def create_task(
+    payload: CreateTaskRequest,
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, Any]:
     sections_payload = [
         {"section": s.section, "links": [l.model_dump() for l in s.links]}
         for s in payload.sections
@@ -90,7 +125,7 @@ def create_task(payload: CreateTaskRequest) -> dict[str, Any]:
             branch_from=payload.branch_from,
             branch_to=payload.branch_to,
             approver_key=payload.approver_key,
-            requested_by="demo-user",
+            requested_by=current_user["email"],
             sections_payload=sections_payload,
         )
     except db.ValidationError as e:
@@ -103,12 +138,13 @@ def create_task(payload: CreateTaskRequest) -> dict[str, Any]:
 def list_tasks(
     status: str | None = None,
     requested_by: str | None = None,
+    current_user: dict = Depends(get_current_user),
 ) -> list[dict[str, Any]]:
     return db.list_tasks(status=status, requested_by=requested_by)
 
 
 @app.get("/tasks/{task_id}")
-def get_task(task_id: str) -> dict[str, Any]:
+def get_task(task_id: str, current_user: dict = Depends(get_current_user)) -> dict[str, Any]:
     task = db.get_task(task_id)
     if not task:
         raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
@@ -119,7 +155,11 @@ def get_task(task_id: str) -> dict[str, Any]:
 
 
 @app.post("/tasks/{task_id}/approve")
-def approve_task(task_id: str, payload: ApproveTaskRequest) -> dict[str, Any]:
+def approve_task(
+    task_id: str,
+    payload: ApproveTaskRequest,
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, Any]:
     try:
         task = db.approve_task(task_id, payload.role)
     except db.ValidationError as e:
@@ -131,7 +171,7 @@ def approve_task(task_id: str, payload: ApproveTaskRequest) -> dict[str, Any]:
 
 
 @app.get("/jobs/{job_id}")
-def get_job(job_id: str) -> dict[str, Any]:
+def get_job(job_id: str, current_user: dict = Depends(get_current_user)) -> dict[str, Any]:
     job = db.get_job(job_id)
     if not job:
         raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
@@ -139,7 +179,11 @@ def get_job(job_id: str) -> dict[str, Any]:
 
 
 @app.patch("/jobs/{job_id}/status")
-def update_job_status(job_id: str, payload: UpdateJobStatusRequest) -> dict[str, Any]:
+def update_job_status(
+    job_id: str,
+    payload: UpdateJobStatusRequest,
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, Any]:
     job = db.update_job_status(job_id, payload.status, payload.log_line)
     if not job:
         raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
@@ -147,18 +191,25 @@ def update_job_status(job_id: str, payload: UpdateJobStatusRequest) -> dict[str,
 
 
 @app.get("/stats")
-def get_stats(period: Literal["daily", "weekly", "monthly"] = "weekly") -> dict[str, Any]:
+def get_stats(
+    period: Literal["daily", "weekly", "monthly"] = "weekly",
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, Any]:
     return db.get_stats(period)
 
 
 @app.get("/activity")
-def get_activity(limit: int = 6) -> list[dict[str, Any]]:
+def get_activity(
+    limit: int = 6,
+    current_user: dict = Depends(get_current_user),
+) -> list[dict[str, Any]]:
     return db.get_recent_activity(limit=limit)
 
 
 @app.post("/demo/seed")
-def seed_demo_data() -> dict[str, str]:
+def seed_demo_data(current_user: dict = Depends(get_current_user)) -> dict[str, str]:
     db.reset_db()
+    seed_user = current_user["email"]
 
     db.create_task(
         environment="INTEG",
@@ -167,7 +218,7 @@ def seed_demo_data() -> dict[str, str]:
         branch_from="develop",
         branch_to="release/2026-06",
         approver_key="a-sharma",
-        requested_by="demo-user",
+        requested_by=seed_user,
         sections_payload=[
             {
                 "section": "yaml",
@@ -198,7 +249,7 @@ def seed_demo_data() -> dict[str, str]:
         branch_from="develop",
         branch_to="main",
         approver_key="r-patel",
-        requested_by="demo-user",
+        requested_by=seed_user,
         sections_payload=[
             {
                 "section": "build",
@@ -220,7 +271,7 @@ def seed_demo_data() -> dict[str, str]:
         branch_from="release/2026-05",
         branch_to="main",
         approver_key="d-kumar",
-        requested_by="demo-user",
+        requested_by=seed_user,
         sections_payload=[
             {
                 "section": "db",
@@ -239,6 +290,6 @@ def seed_demo_data() -> dict[str, str]:
 
 
 @app.post("/demo/reset")
-def reset_demo_data() -> dict[str, str]:
+def reset_demo_data(current_user: dict = Depends(get_current_user)) -> dict[str, str]:
     db.reset_db()
     return {"status": "reset"}

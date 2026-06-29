@@ -1,16 +1,38 @@
 const BASE = '/api'
 
+function getToken() {
+  return localStorage.getItem('aap_token')
+}
+
 async function request(path, options = {}) {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  })
+  const token = getToken()
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options.headers,
+  }
+
+  const res = await fetch(`${BASE}${path}`, { ...options, headers })
+
+  if (res.status === 401) {
+    localStorage.removeItem('aap_token')
+    localStorage.removeItem('aap_user')
+    window.location.href = '/login'
+    return
+  }
+
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
     const detail = body.detail
-    const message = typeof detail === 'string' ? detail : Array.isArray(detail) ? detail.map((d) => d.msg).join(', ') : `Request failed: ${res.status}`
+    const message =
+      typeof detail === 'string'
+        ? detail
+        : Array.isArray(detail)
+          ? detail.map((d) => d.msg).join(', ')
+          : `Request failed: ${res.status}`
     throw new Error(message)
   }
+
   return res.json()
 }
 
