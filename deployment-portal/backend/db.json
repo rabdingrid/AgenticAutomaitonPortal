@@ -1,0 +1,481 @@
+{
+  "tasks": {
+    "TASK-20392": {
+      "task_id": "TASK-20392",
+      "jira_key": "TRB-16996",
+      "environment": "INTEG",
+      "priority": "High",
+      "description": "Account service update + billing config + DB migration",
+      "requested_by": "A. Sharma",
+      "status": "running",
+      "created_at": "2026-06-25T11:47:05Z",
+      "updated_at": "2026-06-25T11:47:05Z",
+      "jobs": [
+        "JOB-1",
+        "JOB-2",
+        "JOB-3"
+      ]
+    },
+    "TASK-20393": {
+      "task_id": "TASK-20393",
+      "jira_key": "TRB-17812",
+      "environment": "INTEG",
+      "priority": "Normal",
+      "description": "Admin portal refresh",
+      "requested_by": "R. Patel",
+      "status": "done",
+      "created_at": "2026-06-25T11:47:05Z",
+      "updated_at": "2026-06-25T11:47:05Z",
+      "jobs": [
+        "JOB-4"
+      ]
+    },
+    "TASK-20394": {
+      "task_id": "TASK-20394",
+      "jira_key": "TRB-18055",
+      "environment": "INTEG",
+      "priority": "Normal",
+      "description": "Apollo SQL migration \u2014 missing environment field",
+      "requested_by": "D. Kumar",
+      "status": "blocked",
+      "created_at": "2026-06-25T11:47:05Z",
+      "updated_at": "2026-06-25T11:47:05Z",
+      "jobs": [
+        "JOB-5"
+      ]
+    },
+    "TASK-20395": {
+      "task_id": "TASK-20395",
+      "jira_key": "TRB-19204",
+      "environment": "UAT",
+      "priority": "Normal",
+      "description": "Account service update + config change for new billing rule",
+      "requested_by": "A. Sharma",
+      "status": "running",
+      "created_at": "2026-06-26T11:24:27Z",
+      "updated_at": "2026-06-26T11:24:27Z",
+      "jobs": [
+        "JOB-6",
+        "JOB-7",
+        "JOB-8"
+      ]
+    }
+  },
+  "jobs": {
+    "JOB-1": {
+      "job_id": "JOB-1",
+      "task_id": "TASK-20392",
+      "job_type": "yaml",
+      "agent": "yaml_automation_agent",
+      "status": "running",
+      "order": 1,
+      "depends_on": [],
+      "fields": {
+        "config_files": "parameters.yml, billing-rules.yml"
+      },
+      "jenkins_job": "yml_automation_2.0",
+      "jenkins_params": {
+        "Environment": "INTEG",
+        "JIRA_KEY": "TRB-16996",
+        "TASK_ID": "TASK-20392",
+        "STEP_ID": "yaml:JOB-1",
+        "RELEASE_TAG": "auto-generated-pending-approval",
+        "ConfigFiles": "parameters.yml, billing-rules.yml"
+      },
+      "steps": [
+        {
+          "label": "Config file fetched",
+          "status": "running",
+          "ts": "2026-06-25T11:47:05Z"
+        },
+        {
+          "label": "YAML syntax validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins config job running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Config applied to environment",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-06-25T11:47:05Z] Job created, queued by orchestrator",
+        "[2026-06-25T11:47:05Z] Orchestrator dispatched to yaml_automation_agent"
+      ],
+      "created_at": "2026-06-25T11:47:05Z",
+      "updated_at": "2026-06-25T11:47:05Z"
+    },
+    "JOB-2": {
+      "job_id": "JOB-2",
+      "task_id": "TASK-20392",
+      "job_type": "db",
+      "agent": "liquibase_agent",
+      "status": "queued",
+      "order": 2,
+      "depends_on": [
+        "JOB-1"
+      ],
+      "fields": {
+        "script_url": "gitspace/.../changelog.sql"
+      },
+      "jenkins_job": "Liquibase",
+      "jenkins_params": {
+        "Environment": "INTEG",
+        "JIRA_KEY": "TRB-16996",
+        "TASK_ID": "TASK-20392",
+        "STEP_ID": "db:JOB-2",
+        "RELEASE_TAG": "auto-generated-pending-approval",
+        "ScriptUrl": "gitspace/.../changelog.sql",
+        "RunOrder": "Before microservice"
+      },
+      "steps": [
+        {
+          "label": "Liquibase changeset fetched",
+          "status": "running",
+          "ts": "2026-06-25T11:47:05Z"
+        },
+        {
+          "label": "SQL guardrail check (no DROP/TRUNCATE)",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Liquibase update running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Migration applied",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-06-25T11:47:05Z] Job created, queued by orchestrator"
+      ],
+      "created_at": "2026-06-25T11:47:05Z",
+      "updated_at": "2026-06-25T11:47:05Z"
+    },
+    "JOB-3": {
+      "job_id": "JOB-3",
+      "task_id": "TASK-20392",
+      "job_type": "microservice",
+      "agent": "microservice_agent",
+      "status": "queued",
+      "order": 3,
+      "depends_on": [
+        "JOB-1",
+        "JOB-2"
+      ],
+      "fields": {
+        "service": "AccountService",
+        "merge_url": "gitspace/.../!2814",
+        "branch": "feature/billing-rule"
+      },
+      "jenkins_job": "Titan-Microservices",
+      "jenkins_params": {
+        "Environment": "INTEG",
+        "JIRA_KEY": "TRB-16996",
+        "TASK_ID": "TASK-20392",
+        "STEP_ID": "microservice:JOB-3",
+        "RELEASE_TAG": "auto-generated-pending-approval",
+        "Service": "AccountService",
+        "MergeID": "gitspace/.../!2814",
+        "Branch": "feature/billing-rule"
+      },
+      "steps": [
+        {
+          "label": "Merge request validated",
+          "status": "running",
+          "ts": "2026-06-25T11:47:05Z"
+        },
+        {
+          "label": "Merged into target branch",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins build running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Image pushed & deployed",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-06-25T11:47:05Z] Job created, queued by orchestrator"
+      ],
+      "created_at": "2026-06-25T11:47:05Z",
+      "updated_at": "2026-06-25T11:47:05Z"
+    },
+    "JOB-4": {
+      "job_id": "JOB-4",
+      "task_id": "TASK-20393",
+      "job_type": "portal",
+      "agent": "portal_agent",
+      "status": "done",
+      "order": 1,
+      "depends_on": [],
+      "fields": {
+        "portal_name": "Admin Portal"
+      },
+      "jenkins_job": "Titan-Portals",
+      "jenkins_params": {
+        "Environment": "INTEG",
+        "JIRA_KEY": "TRB-17812",
+        "TASK_ID": "TASK-20393",
+        "STEP_ID": "portal:JOB-4",
+        "RELEASE_TAG": "auto-generated-pending-approval",
+        "Portal": "Admin Portal"
+      },
+      "steps": [
+        {
+          "label": "Portal build started",
+          "status": "running",
+          "ts": "2026-06-25T11:47:05Z"
+        },
+        {
+          "label": "Static assets compiled",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins deploy running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Portal live on environment",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-06-25T11:47:05Z] Job created, queued by orchestrator",
+        "[2026-06-25T11:47:05Z] Orchestrator dispatched to portal_agent",
+        "[2026-06-25T11:47:05Z] Portal deployed successfully"
+      ],
+      "created_at": "2026-06-25T11:47:05Z",
+      "updated_at": "2026-06-25T11:47:05Z"
+    },
+    "JOB-5": {
+      "job_id": "JOB-5",
+      "task_id": "TASK-20394",
+      "job_type": "db",
+      "agent": "liquibase_agent",
+      "status": "failed",
+      "order": 1,
+      "depends_on": [],
+      "fields": {
+        "script_url": "gitspace/.../apollo.sql"
+      },
+      "jenkins_job": "Liquibase",
+      "jenkins_params": {
+        "Environment": "INTEG",
+        "JIRA_KEY": "TRB-18055",
+        "TASK_ID": "TASK-20394",
+        "STEP_ID": "db:JOB-5",
+        "RELEASE_TAG": "auto-generated-pending-approval",
+        "ScriptUrl": "gitspace/.../apollo.sql",
+        "RunOrder": "Before microservice"
+      },
+      "steps": [
+        {
+          "label": "Liquibase changeset fetched",
+          "status": "running",
+          "ts": "2026-06-25T11:47:05Z"
+        },
+        {
+          "label": "SQL guardrail check (no DROP/TRUNCATE)",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Liquibase update running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Migration applied",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-06-25T11:47:05Z] Job created, queued by orchestrator",
+        "[2026-06-25T11:47:05Z] Orchestrator dispatched to liquibase_agent",
+        "[2026-06-25T11:47:05Z] Blocked: environment field required before run"
+      ],
+      "created_at": "2026-06-25T11:47:05Z",
+      "updated_at": "2026-06-25T11:47:05Z"
+    },
+    "JOB-6": {
+      "job_id": "JOB-6",
+      "task_id": "TASK-20395",
+      "job_type": "yaml",
+      "agent": "yaml_automation_agent",
+      "status": "running",
+      "order": 1,
+      "depends_on": [],
+      "fields": {
+        "config_files": "parameters.yml, billing-rules.yml"
+      },
+      "jenkins_job": "yml_automation_2.0",
+      "jenkins_params": {
+        "Environment": "UAT",
+        "JIRA_KEY": "TRB-19204",
+        "TASK_ID": "TASK-20395",
+        "STEP_ID": "yaml:JOB-6",
+        "RELEASE_TAG": "auto-generated-pending-approval",
+        "ConfigFiles": "parameters.yml, billing-rules.yml"
+      },
+      "steps": [
+        {
+          "label": "Config file fetched",
+          "status": "running",
+          "ts": "2026-06-26T11:24:27Z"
+        },
+        {
+          "label": "YAML syntax validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins config job running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Config applied to environment",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-06-26T11:24:27Z] Job created, queued by orchestrator",
+        "[2026-06-26T11:24:27Z] Orchestrator dispatched to yaml_automation_agent"
+      ],
+      "created_at": "2026-06-26T11:24:27Z",
+      "updated_at": "2026-06-26T11:24:27Z"
+    },
+    "JOB-7": {
+      "job_id": "JOB-7",
+      "task_id": "TASK-20395",
+      "job_type": "db",
+      "agent": "liquibase_agent",
+      "status": "queued",
+      "order": 2,
+      "depends_on": [
+        "JOB-6"
+      ],
+      "fields": {
+        "run_order": "Before microservice"
+      },
+      "jenkins_job": "Liquibase",
+      "jenkins_params": {
+        "Environment": "UAT",
+        "JIRA_KEY": "TRB-19204",
+        "TASK_ID": "TASK-20395",
+        "STEP_ID": "db:JOB-7",
+        "RELEASE_TAG": "auto-generated-pending-approval",
+        "ScriptUrl": "",
+        "RunOrder": "Before microservice"
+      },
+      "steps": [
+        {
+          "label": "Liquibase changeset fetched",
+          "status": "running",
+          "ts": "2026-06-26T11:24:27Z"
+        },
+        {
+          "label": "SQL guardrail check (no DROP/TRUNCATE)",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Liquibase update running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Migration applied",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-06-26T11:24:27Z] Job created, queued by orchestrator"
+      ],
+      "created_at": "2026-06-26T11:24:27Z",
+      "updated_at": "2026-06-26T11:24:27Z"
+    },
+    "JOB-8": {
+      "job_id": "JOB-8",
+      "task_id": "TASK-20395",
+      "job_type": "microservice",
+      "agent": "microservice_agent",
+      "status": "queued",
+      "order": 3,
+      "depends_on": [
+        "JOB-6",
+        "JOB-7"
+      ],
+      "fields": {
+        "service": "AccountService",
+        "merge_url": "gitspace.../!2814",
+        "branch": "feature/billing-rule"
+      },
+      "jenkins_job": "Titan-Microservices",
+      "jenkins_params": {
+        "Environment": "UAT",
+        "JIRA_KEY": "TRB-19204",
+        "TASK_ID": "TASK-20395",
+        "STEP_ID": "microservice:JOB-8",
+        "RELEASE_TAG": "auto-generated-pending-approval",
+        "Service": "AccountService",
+        "MergeID": "gitspace.../!2814",
+        "Branch": "feature/billing-rule"
+      },
+      "steps": [
+        {
+          "label": "Merge request validated",
+          "status": "running",
+          "ts": "2026-06-26T11:24:27Z"
+        },
+        {
+          "label": "Merged into target branch",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins build running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Image pushed & deployed",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-06-26T11:24:27Z] Job created, queued by orchestrator"
+      ],
+      "created_at": "2026-06-26T11:24:27Z",
+      "updated_at": "2026-06-26T11:24:27Z"
+    }
+  },
+  "counters": {
+    "task": 20395,
+    "job": 8
+  }
+}
