@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../api.js'
+import RequestDetails from '../components/RequestDetails.jsx'
 
 const STATUS_BADGE = {
+  pending_approval: { cls: 'badge-pending', label: 'Pending approval', icon: '⏳' },
   running: { cls: 'badge-running', label: 'Running', icon: '●' },
   queued: { cls: 'badge-queued', label: 'Queued', icon: '○' },
   done: { cls: 'badge-done', label: 'Done', icon: '✓' },
@@ -10,7 +12,11 @@ const STATUS_BADGE = {
   blocked: { cls: 'badge-blocked', label: 'Blocked', icon: '⚠' },
 }
 
-const JOB_ICON = { microservice: '📦', yaml: '📄', db: '🗄️', portal: '🖥️', script: '⚙️' }
+const SECTION_META = {
+  build: { icon: '🔀', label: 'Build / Gitspace merge' },
+  yaml: { icon: '📄', label: 'YAML / Config' },
+  db: { icon: '🗄️', label: 'DB / Liquibase' },
+}
 
 function Badge({ status }) {
   const s = STATUS_BADGE[status] || STATUS_BADGE.queued
@@ -23,11 +29,13 @@ export default function TaskDetail() {
   const [task, setTask] = useState(null)
   const [selectedJob, setSelectedJob] = useState(null)
   const [error, setError] = useState(null)
+  const [approving, setApproving] = useState(null)
 
   const load = useCallback(async () => {
     try {
       const t = await api.getTask(taskId)
       setTask(t)
+      setError(null)
     } catch (e) {
       setError(e.message)
     }
@@ -35,14 +43,28 @@ export default function TaskDetail() {
 
   useEffect(() => {
     load()
-    const interval = setInterval(load, 3000) // poll — stands in for websockets/SSE later
+    const interval = setInterval(load, 3000)
     return () => clearInterval(interval)
   }, [load])
 
-  if (error) return <div className="alert alert-error">{error}</div>
+  async function handleApprove(role) {
+    setApproving(role)
+    try {
+      await api.approveTask(taskId, role)
+      await load()
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setApproving(null)
+    }
+  }
+
+  if (error && !task) return <div className="alert alert-error">{error}</div>
   if (!task) return <div className="empty-state">Loading task...</div>
 
-  const stepperStates = task.jobs.map((j) => j.status)
+  const isPending = task.status === 'pending_approval'
+  const orchestratorStarted = !isPending
+  const approverName = task.approver_name || task.approver_key
 
   async function simulateAdvance(jobId) {
     await api.updateJobStatus(jobId, 'done', 'Manually marked done (demo control)')
@@ -65,73 +87,111 @@ export default function TaskDetail() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <h1 className="page-title" style={{ marginBottom: 2 }}>
-              {task.task_id} · {task.jira_key}
+              {task.task_id} · {task.jira_id}
             </h1>
-            <p className="page-sub">{task.description}</p>
+            <p className="page-sub">{task.description || 'No description'}</p>
           </div>
           <Badge status={task.status} />
-        </div>
-        <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--text-secondary)', marginTop: 10 }}>
-          <span>👤 {task.requested_by}</span>
-          <span>🕒 {new Date(task.created_at).toLocaleString()}</span>
-          <span>🌐 {task.environment}</span>
-          <span>⚡ {task.priority}</span>
         </div>
       </div>
 
       <div className="card">
-        <p className="card-title">Master orchestrator — job sequence</p>
+        <p className="card-title">Request details</p>
+        <RequestDetails task={task} approverName={approverName} />
+      </div>
 
-        <div className="stepper">
-          {task.jobs.map((j, i) => {
-            const isDone = j.status === 'done'
-            const isRunning = j.status === 'running'
-            const isFailed = j.status === 'failed'
-            const bg = isDone ? 'var(--green-light)' : isRunning ? 'var(--blue-light)' : isFailed ? 'var(--red-light)' : 'var(--slate-light)'
-            const color = isDone ? 'var(--green)' : isRunning ? 'var(--blue)' : isFailed ? 'var(--red)' : 'var(--text-tertiary)'
+      {isPending && (
+        <div className="card approval-card">
+          <p className="card-title">Approval required</p>
+          <p className="card-sub">
+            This request is pending approval. Both the designated approver and the DevOps team must approve before the orchestrator starts.
+          </p>
+          <div className="approval-buttons">
+            <button
+              type="button"
+              className="btn btn-approve-approver"
+              disabled={task.approver_approved || approving}
+              onClick={() => handleApprove('approver')}
+            >
+              {task.approver_approved ? '✓ ' : ''}
+              {approving === 'approver' ? 'Approving...' : `Approve as ${approverName}`}
+            </button>
+            <button
+              type="button"
+              className="btn btn-approve-devops"
+              disabled={task.devops_approved || approving}
+              onClick={() => handleApprove('devops')}
+            >
+              {task.devops_approved ? '✓ ' : ''}
+              {approving === 'devops' ? 'Approving...' : 'Approve as DevOps team'}
+            </button>
+          </div>
+          <div className="approval-status-row">
+            <span className={task.approver_approved ? 'approval-check done' : 'approval-check'}>
+              {task.approver_approved ? '✓' : '○'} Approver ({approverName})
+            </span>
+            <span className={task.devops_approved ? 'approval-check done' : 'approval-check'}>
+              {task.devops_approved ? '✓' : '○'} DevOps team
+            </span>
+          </div>
+        </div>
+      )}
+
+      {error && <div className="alert alert-error">{error}</div>}
+
+      {orchestratorStarted && (
+        <div className="card">
+          <p className="card-title">Orchestrator — job sequence</p>
+
+          <div className="stepper">
+            {task.jobs.map((j, i) => {
+              const isDone = j.status === 'done'
+              const isRunning = j.status === 'running'
+              const isFailed = j.status === 'failed'
+              const bg = isDone ? 'var(--green-light)' : isRunning ? 'var(--blue-light)' : isFailed ? 'var(--red-light)' : 'var(--slate-light)'
+              const color = isDone ? 'var(--green)' : isRunning ? 'var(--blue)' : isFailed ? 'var(--red)' : 'var(--text-tertiary)'
+              return (
+                <React.Fragment key={j.job_id}>
+                  <div className="step-dot" style={{ background: bg, color }}>
+                    {isDone ? '✓' : isFailed ? '✕' : i + 1}
+                  </div>
+                  {i < task.jobs.length - 1 && (
+                    <div className="step-line" style={{ background: isDone ? 'var(--green)' : 'var(--border)' }} />
+                  )}
+                </React.Fragment>
+              )
+            })}
+          </div>
+
+          {task.jobs.map((job) => {
+            const meta = SECTION_META[job.section] || { icon: '🔧', label: job.section }
             return (
-              <React.Fragment key={j.job_id}>
-                <div className="step-dot" style={{ background: bg, color }}>
-                  {isDone ? '✓' : isFailed ? '✕' : i + 1}
+              <div
+                key={job.job_id}
+                className="task-row"
+                onClick={() => setSelectedJob(selectedJob === job.job_id ? null : job.job_id)}
+              >
+                <span style={{ fontSize: 18 }}>{meta.icon}</span>
+                <div className="task-row-main">
+                  <p className="task-row-title">{job.job_id} · {meta.label}</p>
+                  <p className="task-row-meta">
+                    {job.links.length} link(s) · agent: {job.agent}
+                  </p>
                 </div>
-                {i < task.jobs.length - 1 && (
-                  <div className="step-line" style={{ background: isDone ? 'var(--green)' : 'var(--border)' }} />
-                )}
-              </React.Fragment>
+                <Badge status={job.status} />
+              </div>
             )
           })}
+
+          {selectedJob && (
+            <JobExpanded
+              job={task.jobs.find((j) => j.job_id === selectedJob)}
+              onAdvance={() => simulateAdvance(selectedJob)}
+              onFail={() => simulateFail(selectedJob)}
+            />
+          )}
         </div>
-
-        {task.jobs.map((job) => (
-          <div
-            key={job.job_id}
-            className="task-row"
-            onClick={() => setSelectedJob(selectedJob === job.job_id ? null : job.job_id)}
-          >
-            <span style={{ fontSize: 18 }}>{JOB_ICON[job.job_type] || '🔧'}</span>
-            <div className="task-row-main">
-              <p className="task-row-title">{job.job_id} · {job.fields.service || job.fields.portal_name || job.fields.utility_name || job.job_type}</p>
-              <p className="task-row-meta">{job.jenkins_job} · agent: {job.agent}</p>
-            </div>
-            <Badge status={job.status} />
-          </div>
-        ))}
-
-        {selectedJob && (
-          <JobExpanded
-            job={task.jobs.find((j) => j.job_id === selectedJob)}
-            onAdvance={() => simulateAdvance(selectedJob)}
-            onFail={() => simulateFail(selectedJob)}
-          />
-        )}
-      </div>
-
-      <div className="card" style={{ background: 'var(--slate-light)', border: 'none' }}>
-        <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0 }}>
-          ℹ️ This task counts as <strong>one entry</strong> in the queue. All {task.jobs.length} job(s) run sequentially per
-          orchestrator rules, dispatched to their specialist agents.
-        </p>
-      </div>
+      )}
     </div>
   )
 }
@@ -146,16 +206,19 @@ function JobExpanded({ job, onAdvance, onFail }) {
         <Badge status={job.status} />
       </div>
 
+      <p className="card-sub" style={{ marginBottom: 8, fontWeight: 600 }}>Links</p>
       <table className="kv-table" style={{ marginBottom: 14 }}>
         <tbody>
-          {Object.entries(job.fields).map(([k, v]) => (
-            <tr key={k}><td>{k}</td><td>{v}</td></tr>
+          {job.links.map((link, i) => (
+            <tr key={i}>
+              <td>{link.sub_type}</td>
+              <td>
+                <div style={{ fontWeight: 500 }}>{link.label || '—'}</div>
+                <div className="link-display">{link.url}</div>
+              </td>
+            </tr>
           ))}
-          <tr><td>Jenkins job</td><td>{job.jenkins_job}</td></tr>
           <tr><td>Agent</td><td>{job.agent}</td></tr>
-          {job.depends_on?.length > 0 && (
-            <tr><td>Depends on</td><td>{job.depends_on.join(', ')}</td></tr>
-          )}
         </tbody>
       </table>
 
@@ -167,11 +230,6 @@ function JobExpanded({ job, onAdvance, onFail }) {
         </div>
       ))}
 
-      <p className="card-sub" style={{ marginBottom: 8, fontWeight: 600, marginTop: 14 }}>Jenkins parameters (sent payload)</p>
-      <div className="log-box" style={{ maxHeight: 160 }}>
-        {JSON.stringify(job.jenkins_params, null, 2)}
-      </div>
-
       <p className="card-sub" style={{ marginBottom: 8, fontWeight: 600, marginTop: 14 }}>Logs</p>
       <div className="log-box">
         {job.logs.join('\n')}
@@ -179,10 +237,10 @@ function JobExpanded({ job, onAdvance, onFail }) {
 
       {job.status === 'running' && (
         <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-          <button className="btn" style={{ flex: 1, color: 'var(--green)' }} onClick={onAdvance}>
+          <button type="button" className="btn" style={{ flex: 1, color: 'var(--green)' }} onClick={onAdvance}>
             ✓ Simulate: mark done
           </button>
-          <button className="btn" style={{ flex: 1, color: 'var(--red)' }} onClick={onFail}>
+          <button type="button" className="btn" style={{ flex: 1, color: 'var(--red)' }} onClick={onFail}>
             ✕ Simulate: mark failed
           </button>
         </div>

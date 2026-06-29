@@ -2,62 +2,103 @@
   "tasks": {
     "TASK-20392": {
       "task_id": "TASK-20392",
-      "jira_key": "TRB-16996",
       "environment": "INTEG",
-      "priority": "High",
-      "description": "Account service update + billing config + DB migration",
-      "requested_by": "A. Sharma",
-      "status": "running",
-      "created_at": "2026-06-25T11:47:05Z",
-      "updated_at": "2026-06-25T11:47:05Z",
+      "jira_id": "TRB-1",
+      "description": "test",
+      "branch_from": "dev",
+      "branch_to": "main",
+      "approver_key": "a-sharma",
+      "requested_by": "user",
+      "status": "blocked",
+      "approver_approved": true,
+      "devops_approved": true,
+      "approver_approved_at": "2026-06-29T08:54:49Z",
+      "devops_approved_at": "2026-06-29T08:54:49Z",
+      "created_at": "2026-06-29T08:54:49Z",
+      "updated_at": "2026-06-29T08:57:32Z",
       "jobs": [
-        "JOB-1",
-        "JOB-2",
-        "JOB-3"
+        "JOB-1"
       ]
     },
     "TASK-20393": {
       "task_id": "TASK-20393",
-      "jira_key": "TRB-17812",
-      "environment": "INTEG",
-      "priority": "Normal",
-      "description": "Admin portal refresh",
-      "requested_by": "R. Patel",
-      "status": "done",
-      "created_at": "2026-06-25T11:47:05Z",
-      "updated_at": "2026-06-25T11:47:05Z",
+      "environment": "DEV",
+      "jira_id": "afdsfa",
+      "description": "adsfsdf",
+      "branch_from": "adsfadf",
+      "branch_to": "sdafsdf",
+      "approver_key": "a-sharma",
+      "requested_by": "demo-user",
+      "status": "running",
+      "approver_approved": true,
+      "devops_approved": true,
+      "approver_approved_at": "2026-06-29T08:58:41Z",
+      "devops_approved_at": "2026-06-29T08:58:42Z",
+      "created_at": "2026-06-29T08:58:12Z",
+      "updated_at": "2026-06-29T08:58:42Z",
       "jobs": [
-        "JOB-4"
+        "JOB-2",
+        "JOB-3"
       ]
     },
     "TASK-20394": {
       "task_id": "TASK-20394",
-      "jira_key": "TRB-18055",
       "environment": "INTEG",
-      "priority": "Normal",
-      "description": "Apollo SQL migration \u2014 missing environment field",
-      "requested_by": "D. Kumar",
-      "status": "blocked",
-      "created_at": "2026-06-25T11:47:05Z",
-      "updated_at": "2026-06-25T11:47:05Z",
+      "jira_id": "uyuy",
+      "description": "oiopi",
+      "branch_from": "oaisdfpoi",
+      "branch_to": "sdafoiodif",
+      "approver_key": "a-sharma",
+      "requested_by": "demo-user",
+      "status": "running",
+      "approver_approved": true,
+      "devops_approved": true,
+      "approver_approved_at": "2026-06-29T09:38:56Z",
+      "devops_approved_at": "2026-06-29T09:38:58Z",
+      "created_at": "2026-06-29T09:38:52Z",
+      "updated_at": "2026-06-29T09:38:58Z",
       "jobs": [
-        "JOB-5"
+        "JOB-4"
       ]
     },
     "TASK-20395": {
       "task_id": "TASK-20395",
-      "jira_key": "TRB-19204",
-      "environment": "UAT",
-      "priority": "Normal",
-      "description": "Account service update + config change for new billing rule",
-      "requested_by": "A. Sharma",
-      "status": "running",
-      "created_at": "2026-06-26T11:24:27Z",
-      "updated_at": "2026-06-26T11:24:27Z",
+      "environment": "DEV",
+      "jira_id": "fdfd",
+      "description": "",
+      "branch_from": "fdsfa",
+      "branch_to": "dff",
+      "approver_key": "a-sharma",
+      "requested_by": "demo-user",
+      "status": "pending_approval",
+      "approver_approved": false,
+      "devops_approved": false,
+      "approver_approved_at": null,
+      "devops_approved_at": null,
+      "created_at": "2026-06-29T09:40:39Z",
+      "updated_at": "2026-06-29T09:40:39Z",
       "jobs": [
-        "JOB-6",
-        "JOB-7",
-        "JOB-8"
+        "JOB-5"
+      ]
+    },
+    "TASK-20396": {
+      "task_id": "TASK-20396",
+      "environment": "DEV",
+      "jira_id": "asdf",
+      "description": "",
+      "branch_from": "sdaf",
+      "branch_to": "adsf",
+      "approver_key": "a-sharma",
+      "requested_by": "demo-user",
+      "status": "pending_approval",
+      "approver_approved": false,
+      "devops_approved": false,
+      "approver_approved_at": null,
+      "devops_approved_at": null,
+      "created_at": "2026-06-29T09:46:19Z",
+      "updated_at": "2026-06-29T09:46:19Z",
+      "jobs": [
+        "JOB-6"
       ]
     }
   },
@@ -65,237 +106,25 @@
     "JOB-1": {
       "job_id": "JOB-1",
       "task_id": "TASK-20392",
-      "job_type": "yaml",
-      "agent": "yaml_automation_agent",
-      "status": "running",
-      "order": 1,
-      "depends_on": [],
-      "fields": {
-        "config_files": "parameters.yml, billing-rules.yml"
-      },
-      "jenkins_job": "yml_automation_2.0",
-      "jenkins_params": {
-        "Environment": "INTEG",
-        "JIRA_KEY": "TRB-16996",
-        "TASK_ID": "TASK-20392",
-        "STEP_ID": "yaml:JOB-1",
-        "RELEASE_TAG": "auto-generated-pending-approval",
-        "ConfigFiles": "parameters.yml, billing-rules.yml"
-      },
-      "steps": [
-        {
-          "label": "Config file fetched",
-          "status": "running",
-          "ts": "2026-06-25T11:47:05Z"
-        },
-        {
-          "label": "YAML syntax validated",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Jenkins config job running",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Config applied to environment",
-          "status": "queued",
-          "ts": null
-        }
-      ],
-      "logs": [
-        "[2026-06-25T11:47:05Z] Job created, queued by orchestrator",
-        "[2026-06-25T11:47:05Z] Orchestrator dispatched to yaml_automation_agent"
-      ],
-      "created_at": "2026-06-25T11:47:05Z",
-      "updated_at": "2026-06-25T11:47:05Z"
-    },
-    "JOB-2": {
-      "job_id": "JOB-2",
-      "task_id": "TASK-20392",
-      "job_type": "db",
-      "agent": "liquibase_agent",
-      "status": "queued",
-      "order": 2,
-      "depends_on": [
-        "JOB-1"
-      ],
-      "fields": {
-        "script_url": "gitspace/.../changelog.sql"
-      },
-      "jenkins_job": "Liquibase",
-      "jenkins_params": {
-        "Environment": "INTEG",
-        "JIRA_KEY": "TRB-16996",
-        "TASK_ID": "TASK-20392",
-        "STEP_ID": "db:JOB-2",
-        "RELEASE_TAG": "auto-generated-pending-approval",
-        "ScriptUrl": "gitspace/.../changelog.sql",
-        "RunOrder": "Before microservice"
-      },
-      "steps": [
-        {
-          "label": "Liquibase changeset fetched",
-          "status": "running",
-          "ts": "2026-06-25T11:47:05Z"
-        },
-        {
-          "label": "SQL guardrail check (no DROP/TRUNCATE)",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Liquibase update running",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Migration applied",
-          "status": "queued",
-          "ts": null
-        }
-      ],
-      "logs": [
-        "[2026-06-25T11:47:05Z] Job created, queued by orchestrator"
-      ],
-      "created_at": "2026-06-25T11:47:05Z",
-      "updated_at": "2026-06-25T11:47:05Z"
-    },
-    "JOB-3": {
-      "job_id": "JOB-3",
-      "task_id": "TASK-20392",
-      "job_type": "microservice",
-      "agent": "microservice_agent",
-      "status": "queued",
-      "order": 3,
-      "depends_on": [
-        "JOB-1",
-        "JOB-2"
-      ],
-      "fields": {
-        "service": "AccountService",
-        "merge_url": "gitspace/.../!2814",
-        "branch": "feature/billing-rule"
-      },
-      "jenkins_job": "Titan-Microservices",
-      "jenkins_params": {
-        "Environment": "INTEG",
-        "JIRA_KEY": "TRB-16996",
-        "TASK_ID": "TASK-20392",
-        "STEP_ID": "microservice:JOB-3",
-        "RELEASE_TAG": "auto-generated-pending-approval",
-        "Service": "AccountService",
-        "MergeID": "gitspace/.../!2814",
-        "Branch": "feature/billing-rule"
-      },
-      "steps": [
-        {
-          "label": "Merge request validated",
-          "status": "running",
-          "ts": "2026-06-25T11:47:05Z"
-        },
-        {
-          "label": "Merged into target branch",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Jenkins build running",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Image pushed & deployed",
-          "status": "queued",
-          "ts": null
-        }
-      ],
-      "logs": [
-        "[2026-06-25T11:47:05Z] Job created, queued by orchestrator"
-      ],
-      "created_at": "2026-06-25T11:47:05Z",
-      "updated_at": "2026-06-25T11:47:05Z"
-    },
-    "JOB-4": {
-      "job_id": "JOB-4",
-      "task_id": "TASK-20393",
-      "job_type": "portal",
-      "agent": "portal_agent",
-      "status": "done",
-      "order": 1,
-      "depends_on": [],
-      "fields": {
-        "portal_name": "Admin Portal"
-      },
-      "jenkins_job": "Titan-Portals",
-      "jenkins_params": {
-        "Environment": "INTEG",
-        "JIRA_KEY": "TRB-17812",
-        "TASK_ID": "TASK-20393",
-        "STEP_ID": "portal:JOB-4",
-        "RELEASE_TAG": "auto-generated-pending-approval",
-        "Portal": "Admin Portal"
-      },
-      "steps": [
-        {
-          "label": "Portal build started",
-          "status": "running",
-          "ts": "2026-06-25T11:47:05Z"
-        },
-        {
-          "label": "Static assets compiled",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Jenkins deploy running",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Portal live on environment",
-          "status": "queued",
-          "ts": null
-        }
-      ],
-      "logs": [
-        "[2026-06-25T11:47:05Z] Job created, queued by orchestrator",
-        "[2026-06-25T11:47:05Z] Orchestrator dispatched to portal_agent",
-        "[2026-06-25T11:47:05Z] Portal deployed successfully"
-      ],
-      "created_at": "2026-06-25T11:47:05Z",
-      "updated_at": "2026-06-25T11:47:05Z"
-    },
-    "JOB-5": {
-      "job_id": "JOB-5",
-      "task_id": "TASK-20394",
-      "job_type": "db",
+      "section": "db",
       "agent": "liquibase_agent",
       "status": "failed",
       "order": 1,
-      "depends_on": [],
-      "fields": {
-        "script_url": "gitspace/.../apollo.sql"
-      },
-      "jenkins_job": "Liquibase",
-      "jenkins_params": {
-        "Environment": "INTEG",
-        "JIRA_KEY": "TRB-18055",
-        "TASK_ID": "TASK-20394",
-        "STEP_ID": "db:JOB-5",
-        "RELEASE_TAG": "auto-generated-pending-approval",
-        "ScriptUrl": "gitspace/.../apollo.sql",
-        "RunOrder": "Before microservice"
-      },
+      "links": [
+        {
+          "sub_type": "microservice",
+          "url": "http://x",
+          "label": "db"
+        }
+      ],
       "steps": [
         {
-          "label": "Liquibase changeset fetched",
+          "label": "Links validated",
           "status": "running",
-          "ts": "2026-06-25T11:47:05Z"
+          "ts": "2026-06-29T08:54:49Z"
         },
         {
-          "label": "SQL guardrail check (no DROP/TRUNCATE)",
+          "label": "Liquibase changeset fetched",
           "status": "queued",
           "ts": null
         },
@@ -311,41 +140,35 @@
         }
       ],
       "logs": [
-        "[2026-06-25T11:47:05Z] Job created, queued by orchestrator",
-        "[2026-06-25T11:47:05Z] Orchestrator dispatched to liquibase_agent",
-        "[2026-06-25T11:47:05Z] Blocked: environment field required before run"
+        "[2026-06-29T08:54:49Z] Job created, awaiting approval before orchestrator starts",
+        "[2026-06-29T08:54:49Z] Both approvals received \u2014 orchestrator started",
+        "[2026-06-29T08:57:32Z] Manually marked failed (demo control)"
       ],
-      "created_at": "2026-06-25T11:47:05Z",
-      "updated_at": "2026-06-25T11:47:05Z"
+      "created_at": "2026-06-29T08:54:49Z",
+      "updated_at": "2026-06-29T08:57:32Z"
     },
-    "JOB-6": {
-      "job_id": "JOB-6",
-      "task_id": "TASK-20395",
-      "job_type": "yaml",
+    "JOB-2": {
+      "job_id": "JOB-2",
+      "task_id": "TASK-20393",
+      "section": "yaml",
       "agent": "yaml_automation_agent",
       "status": "running",
       "order": 1,
-      "depends_on": [],
-      "fields": {
-        "config_files": "parameters.yml, billing-rules.yml"
-      },
-      "jenkins_job": "yml_automation_2.0",
-      "jenkins_params": {
-        "Environment": "UAT",
-        "JIRA_KEY": "TRB-19204",
-        "TASK_ID": "TASK-20395",
-        "STEP_ID": "yaml:JOB-6",
-        "RELEASE_TAG": "auto-generated-pending-approval",
-        "ConfigFiles": "parameters.yml, billing-rules.yml"
-      },
+      "links": [
+        {
+          "sub_type": "microservice",
+          "url": "https://gitspace.foreverliving.com/ForeverLiving/Customer-Service-Portal/-/merge_requests/4685",
+          "label": "sadfsdf"
+        }
+      ],
       "steps": [
         {
-          "label": "Config file fetched",
+          "label": "Links validated",
           "status": "running",
-          "ts": "2026-06-26T11:24:27Z"
+          "ts": "2026-06-29T08:58:42Z"
         },
         {
-          "label": "YAML syntax validated",
+          "label": "Config fetched",
           "status": "queued",
           "ts": null
         },
@@ -355,101 +178,47 @@
           "ts": null
         },
         {
-          "label": "Config applied to environment",
+          "label": "Applied to environment",
           "status": "queued",
           "ts": null
         }
       ],
       "logs": [
-        "[2026-06-26T11:24:27Z] Job created, queued by orchestrator",
-        "[2026-06-26T11:24:27Z] Orchestrator dispatched to yaml_automation_agent"
+        "[2026-06-29T08:58:12Z] Job created, awaiting approval before orchestrator starts",
+        "[2026-06-29T08:58:42Z] Both approvals received \u2014 orchestrator started"
       ],
-      "created_at": "2026-06-26T11:24:27Z",
-      "updated_at": "2026-06-26T11:24:27Z"
+      "created_at": "2026-06-29T08:58:12Z",
+      "updated_at": "2026-06-29T08:58:42Z"
     },
-    "JOB-7": {
-      "job_id": "JOB-7",
-      "task_id": "TASK-20395",
-      "job_type": "db",
-      "agent": "liquibase_agent",
+    "JOB-3": {
+      "job_id": "JOB-3",
+      "task_id": "TASK-20393",
+      "section": "build",
+      "agent": "build_agent",
       "status": "queued",
       "order": 2,
-      "depends_on": [
-        "JOB-6"
-      ],
-      "fields": {
-        "run_order": "Before microservice"
-      },
-      "jenkins_job": "Liquibase",
-      "jenkins_params": {
-        "Environment": "UAT",
-        "JIRA_KEY": "TRB-19204",
-        "TASK_ID": "TASK-20395",
-        "STEP_ID": "db:JOB-7",
-        "RELEASE_TAG": "auto-generated-pending-approval",
-        "ScriptUrl": "",
-        "RunOrder": "Before microservice"
-      },
-      "steps": [
+      "links": [
         {
-          "label": "Liquibase changeset fetched",
-          "status": "running",
-          "ts": "2026-06-26T11:24:27Z"
+          "sub_type": "microservice",
+          "url": "https://gitspace.foreverliving.com/ForeverLiving/Customer-Service-Portal/-/merge_requests/4685",
+          "label": "fsafasd"
         },
         {
-          "label": "SQL guardrail check (no DROP/TRUNCATE)",
-          "status": "queued",
-          "ts": null
+          "sub_type": "microservice",
+          "url": "https://gitspace.foreverliving.com/ForeverLiving/Customer-Service-Portal/-/merge_requests/4685",
+          "label": "dsafdf"
         },
         {
-          "label": "Liquibase update running",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Migration applied",
-          "status": "queued",
-          "ts": null
+          "sub_type": "portal",
+          "url": "https://gitspace.foreverliving.com/ForeverLiving/Customer-Service-Portal/-/merge_requests/4685",
+          "label": "safdsf"
         }
       ],
-      "logs": [
-        "[2026-06-26T11:24:27Z] Job created, queued by orchestrator"
-      ],
-      "created_at": "2026-06-26T11:24:27Z",
-      "updated_at": "2026-06-26T11:24:27Z"
-    },
-    "JOB-8": {
-      "job_id": "JOB-8",
-      "task_id": "TASK-20395",
-      "job_type": "microservice",
-      "agent": "microservice_agent",
-      "status": "queued",
-      "order": 3,
-      "depends_on": [
-        "JOB-6",
-        "JOB-7"
-      ],
-      "fields": {
-        "service": "AccountService",
-        "merge_url": "gitspace.../!2814",
-        "branch": "feature/billing-rule"
-      },
-      "jenkins_job": "Titan-Microservices",
-      "jenkins_params": {
-        "Environment": "UAT",
-        "JIRA_KEY": "TRB-19204",
-        "TASK_ID": "TASK-20395",
-        "STEP_ID": "microservice:JOB-8",
-        "RELEASE_TAG": "auto-generated-pending-approval",
-        "Service": "AccountService",
-        "MergeID": "gitspace.../!2814",
-        "Branch": "feature/billing-rule"
-      },
       "steps": [
         {
-          "label": "Merge request validated",
-          "status": "running",
-          "ts": "2026-06-26T11:24:27Z"
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
         },
         {
           "label": "Merged into target branch",
@@ -462,20 +231,147 @@
           "ts": null
         },
         {
-          "label": "Image pushed & deployed",
+          "label": "Deployed",
           "status": "queued",
           "ts": null
         }
       ],
       "logs": [
-        "[2026-06-26T11:24:27Z] Job created, queued by orchestrator"
+        "[2026-06-29T08:58:12Z] Job created, awaiting approval before orchestrator starts"
       ],
-      "created_at": "2026-06-26T11:24:27Z",
-      "updated_at": "2026-06-26T11:24:27Z"
+      "created_at": "2026-06-29T08:58:12Z",
+      "updated_at": "2026-06-29T08:58:12Z"
+    },
+    "JOB-4": {
+      "job_id": "JOB-4",
+      "task_id": "TASK-20394",
+      "section": "build",
+      "agent": "build_agent",
+      "status": "running",
+      "order": 1,
+      "links": [
+        {
+          "sub_type": "microservice",
+          "url": "https://gitspace.foreverliving.com/ForeverLiving/Customer-Service-Portal/-/merge_requests/4685",
+          "label": "dpsiaoi"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "running",
+          "ts": "2026-06-29T09:38:58Z"
+        },
+        {
+          "label": "Merged into target branch",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins build running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Deployed",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-06-29T09:38:52Z] Job created, awaiting approval before orchestrator starts",
+        "[2026-06-29T09:38:58Z] Both approvals received \u2014 orchestrator started"
+      ],
+      "created_at": "2026-06-29T09:38:52Z",
+      "updated_at": "2026-06-29T09:38:58Z"
+    },
+    "JOB-5": {
+      "job_id": "JOB-5",
+      "task_id": "TASK-20395",
+      "section": "build",
+      "agent": "build_agent",
+      "status": "queued",
+      "order": 1,
+      "links": [
+        {
+          "sub_type": "microservice",
+          "url": "https://gitspace.foreverliving.com/ForeverLiving/Customer-Service-Portal/-/merge_requests/4685",
+          "label": "dsa"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Merged into target branch",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins build running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Deployed",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-06-29T09:40:39Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-06-29T09:40:39Z",
+      "updated_at": "2026-06-29T09:40:39Z"
+    },
+    "JOB-6": {
+      "job_id": "JOB-6",
+      "task_id": "TASK-20396",
+      "section": "build",
+      "agent": "build_agent",
+      "status": "queued",
+      "order": 1,
+      "links": [
+        {
+          "sub_type": "microservice",
+          "url": "https://gitspace.foreverliving.com/ForeverLiving/Customer-Service-Portal/-/merge_requests/4685",
+          "label": "asdfkj"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Merged into target branch",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins build running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Deployed",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-06-29T09:46:19Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-06-29T09:46:19Z",
+      "updated_at": "2026-06-29T09:46:19Z"
     }
   },
   "counters": {
-    "task": 20395,
-    "job": 8
+    "task": 20396,
+    "job": 6
   }
 }

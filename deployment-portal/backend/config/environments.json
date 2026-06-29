@@ -1,0 +1,22 @@
+[
+  {
+    "key": "DEV",
+    "label": "Dev",
+    "order": 1
+  },
+  {
+    "key": "SUPPORT",
+    "label": "Support",
+    "order": 2
+  },
+  {
+    "key": "INTEG",
+    "label": "Integ",
+    "order": 3
+  },
+  {
+    "key": "UAT",
+    "label": "UAT",
+    "order": 4
+  }
+]

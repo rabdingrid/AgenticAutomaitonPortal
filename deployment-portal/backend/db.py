@@ -1,62 +1,17 @@
 """
-db.py — File-based "database" for the deployment portal MVP.
+db.py — File-based "database" for the deployment portal MVP (v2).
 
-Replace this module with a real database later (Postgres/SQLite).
-Every function here is written so the swap is mechanical: same function
-names, same input/output shapes, just backed by SQL instead of JSON.
-
-Storage shape (db.json):
-{
-  "tasks": {
-    "TASK-20392": {
-      "task_id": "TASK-20392",
-      "jira_key": "TRB-16996",
-      "environment": "INTEG",
-      "priority": "Normal",
-      "description": "...",
-      "requested_by": "A. Sharma",
-      "status": "running",          # queued | running | done | blocked | failed
-      "created_at": "2026-06-24T14:02:00Z",
-      "updated_at": "2026-06-24T14:04:07Z",
-      "jobs": ["JOB-1", "JOB-2", "JOB-3", "JOB-4"]
-    }
-  },
-  "jobs": {
-    "JOB-3": {
-      "job_id": "JOB-3",
-      "task_id": "TASK-20392",
-      "job_type": "microservice",      # microservice | yaml | db | portal | script
-      "agent": "microservice_agent",
-      "status": "running",             # queued | running | done | failed
-      "order": 3,
-      "depends_on": ["JOB-1"],
-      "fields": { "service": "AccountService", "merge_url": "...", "branch": "..." },
-      "jenkins_job": "Titan-Microservices",
-      "jenkins_params": { ... },
-      "steps": [
-        {"label": "Merge request validated", "status": "done", "ts": "..."},
-        {"label": "Merged into target branch", "status": "done", "ts": "..."},
-        {"label": "Jenkins build running", "status": "running", "ts": "..."},
-        {"label": "Image pushed & deployed", "status": "queued", "ts": null}
-      ],
-      "logs": ["[14:02:55] Started by upstream orchestrator", "..."],
-      "created_at": "...",
-      "updated_at": "..."
-    }
-  },
-  "counters": { "task": 20392, "job": 4 }
-}
+Jobs represent sections (build / yaml / db), each with a list of
+{sub_type, url, label} links pasted by the user.
 """
 
 from __future__ import annotations
 
 import json
 import threading
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-
-import orchestrator
 
 DB_PATH = Path(__file__).parent / "db.json"
 _LOCK = threading.Lock()
@@ -65,6 +20,26 @@ _DEFAULT_DB: dict[str, Any] = {
     "tasks": {},
     "jobs": {},
     "counters": {"task": 20391, "job": 0},
+}
+
+SECTION_ALLOWED_SUBTYPES = {
+    "build": {"microservice", "portal", "utility"},
+    "yaml": {"microservice", "portal"},
+    "db": {"microservice"},
+}
+
+SECTION_ORDER = {"yaml": 1, "db": 2, "build": 3}
+
+_AGENT_MAP = {
+    "build": "build_agent",
+    "yaml": "yaml_automation_agent",
+    "db": "liquibase_agent",
+}
+
+_STEP_TEMPLATES = {
+    "build": ["Links validated", "Merged into target branch", "Jenkins build running", "Deployed"],
+    "yaml": ["Links validated", "Config fetched", "Jenkins config job running", "Applied to environment"],
+    "db": ["Links validated", "Liquibase changeset fetched", "Liquibase update running", "Migration applied"],
 }
 
 
@@ -84,18 +59,13 @@ def _write(data: dict[str, Any]) -> None:
     tmp = DB_PATH.with_suffix(".tmp")
     with tmp.open("w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, default=str)
-    tmp.replace(DB_PATH)  # atomic on POSIX — avoids half-written db.json
+    tmp.replace(DB_PATH)
 
 
 def reset_db() -> None:
-    """Wipe everything. Useful for demos."""
     with _LOCK:
         _write(json.loads(json.dumps(_DEFAULT_DB)))
 
-
-# ──────────────────────────────────────────────────────────────────────────
-# ID generation
-# ──────────────────────────────────────────────────────────────────────────
 
 def next_task_id(db: dict[str, Any]) -> str:
     db["counters"]["task"] += 1
@@ -107,85 +77,89 @@ def next_job_id(db: dict[str, Any]) -> str:
     return f"JOB-{db['counters']['job']}"
 
 
-# ──────────────────────────────────────────────────────────────────────────
-# Task operations
-# ──────────────────────────────────────────────────────────────────────────
+class ValidationError(Exception):
+    pass
+
+
+def validate_section_links(section: str, links: list[dict[str, Any]]) -> None:
+    allowed = SECTION_ALLOWED_SUBTYPES.get(section)
+    if allowed is None:
+        raise ValidationError(f"Unknown section '{section}'")
+    if not links:
+        raise ValidationError(f"Section '{section}' needs at least one link")
+    for link in links:
+        sub_type = link.get("sub_type")
+        if sub_type not in allowed:
+            raise ValidationError(
+                f"Section '{section}' does not allow sub_type '{sub_type}'. Allowed: {sorted(allowed)}"
+            )
+        if not link.get("url", "").strip():
+            raise ValidationError(f"Every link in '{section}' needs a URL")
+
 
 def create_task(
-    jira_key: str,
     environment: str,
-    priority: str,
+    jira_id: str,
     description: str,
+    branch_from: str,
+    branch_to: str,
+    approver_key: str,
     requested_by: str,
-    jobs_payload: list[dict[str, Any]],
+    sections_payload: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    """
-    jobs_payload: list of {"job_type": "microservice", "fields": {...}}
-    Creates one Task + N Jobs atomically, in orchestrator order.
-    Returns the assembled task dict (with jobs expanded).
-    """
+    if not sections_payload:
+        raise ValidationError("At least one section (Build / YAML / DB) is required")
+
+    for sec in sections_payload:
+        validate_section_links(sec["section"], sec["links"])
+
     with _LOCK:
         db = _read()
         task_id = next_task_id(db)
         now = _now()
 
-        sorted_jobs = orchestrator.execution_order(jobs_payload)
+        sorted_sections = sorted(
+            sections_payload,
+            key=lambda s: SECTION_ORDER.get(s["section"], 99),
+        )
 
-        # Pass 1 — allocate IDs and build type → job_id map for DAG edges
         job_ids: list[str] = []
-        jobs_by_type: dict[str, str] = {}
-        for job_spec in sorted_jobs:
+        for idx, sec in enumerate(sorted_sections, start=1):
             job_id = next_job_id(db)
             job_ids.append(job_id)
-            jobs_by_type[job_spec["job_type"]] = job_id
-
-        dep_map = orchestrator.compute_dependencies(jobs_by_type)
-
-        # Pass 2 — persist job records
-        for idx, job_spec in enumerate(sorted_jobs, start=1):
-            job_id = jobs_by_type[job_spec["job_type"]]
+            section = sec["section"]
             db["jobs"][job_id] = {
                 "job_id": job_id,
                 "task_id": task_id,
-                "job_type": job_spec["job_type"],
-                "agent": _agent_for(job_spec["job_type"]),
+                "section": section,
+                "agent": _AGENT_MAP.get(section, "orchestrator"),
                 "status": "queued",
                 "order": idx,
-                "depends_on": dep_map.get(job_id, []),
-                "fields": job_spec.get("fields", {}),
-                "jenkins_job": _jenkins_job_for(job_spec["job_type"]),
-                "jenkins_params": _build_jenkins_params(
-                    task_id, job_id, job_spec["job_type"], job_spec.get("fields", {}), jira_key, environment
-                ),
-                "steps": _default_steps(job_spec["job_type"]),
-                "logs": [f"[{now}] Job created, queued by orchestrator"],
+                "links": sec["links"],
+                "steps": _default_steps(section, queued=True),
+                "logs": [f"[{now}] Job created, awaiting approval before orchestrator starts"],
                 "created_at": now,
                 "updated_at": now,
             }
 
-        task_record = {
+        db["tasks"][task_id] = {
             "task_id": task_id,
-            "jira_key": jira_key,
             "environment": environment,
-            "priority": priority,
+            "jira_id": jira_id,
             "description": description,
+            "branch_from": branch_from,
+            "branch_to": branch_to,
+            "approver_key": approver_key,
             "requested_by": requested_by,
-            "status": "running",
+            "status": "pending_approval",
+            "approver_approved": False,
+            "devops_approved": False,
+            "approver_approved_at": None,
+            "devops_approved_at": None,
             "created_at": now,
             "updated_at": now,
             "jobs": job_ids,
         }
-        db["tasks"][task_id] = task_record
-
-        # Kick off root nodes (no dependencies) — parallel when multiple qualify
-        orchestrator.dispatch_ready(
-            db["jobs"],
-            task_record,
-            now,
-            lambda msg: f"[{now}] {msg}",
-        )
-        task_record["status"] = "running"
-        task_record["updated_at"] = now
 
         _write(db)
         return _expand_task(db, task_id)
@@ -194,18 +168,17 @@ def create_task(
 def list_tasks(
     status: str | None = None,
     requested_by: str | None = None,
-    period: str | None = None,
+    limit: int | None = None,
 ) -> list[dict[str, Any]]:
     db = _read()
     tasks = list(db["tasks"].values())
-    if period:
-        cutoff = _period_cutoff(period)
-        tasks = [t for t in tasks if _parse_ts(t["created_at"]) >= cutoff]
     if status:
         tasks = [t for t in tasks if t["status"] == status]
     if requested_by:
         tasks = [t for t in tasks if t["requested_by"] == requested_by]
     tasks.sort(key=lambda t: t["created_at"], reverse=True)
+    if limit:
+        tasks = tasks[:limit]
     return [_expand_task(db, t["task_id"]) for t in tasks]
 
 
@@ -222,21 +195,16 @@ def _expand_task(db: dict[str, Any], task_id: str) -> dict[str, Any]:
     return task
 
 
-# ──────────────────────────────────────────────────────────────────────────
-# Job operations
-# ──────────────────────────────────────────────────────────────────────────
-
 def get_job(job_id: str) -> dict[str, Any] | None:
     db = _read()
     return db["jobs"].get(job_id)
 
 
-def update_job_status(job_id: str, status: str, log_line: str | None = None) -> dict[str, Any] | None:
-    """
-    Update a job's status. When a job finishes (done/failed), automatically
-    starts the next queued job in the same task (sequential orchestrator behaviour).
-    When all jobs in a task are done, marks the task done.
-    """
+def update_job_status(
+    job_id: str,
+    status: str,
+    log_line: str | None = None,
+) -> dict[str, Any] | None:
     with _LOCK:
         db = _read()
         job = db["jobs"].get(job_id)
@@ -253,168 +221,130 @@ def update_job_status(job_id: str, status: str, log_line: str | None = None) -> 
         task["updated_at"] = now
 
         if status in ("done", "failed"):
-            orchestrator.advance_task(
-                db["jobs"],
-                task,
-                now,
-                lambda msg: f"[{now}] {msg}",
-            )
+            _advance_orchestrator(db, task)
 
         _write(db)
         return job
 
 
-def append_job_step(job_id: str, step_index: int, status: str) -> dict[str, Any] | None:
+def approve_task(task_id: str, role: str) -> dict[str, Any]:
+    if role not in ("approver", "devops"):
+        raise ValidationError(f"Invalid approval role '{role}'. Use 'approver' or 'devops'.")
+
     with _LOCK:
         db = _read()
-        job = db["jobs"].get(job_id)
-        if not job or step_index >= len(job["steps"]):
-            return None
-        job["steps"][step_index]["status"] = status
-        job["steps"][step_index]["ts"] = _now()
-        job["updated_at"] = _now()
+        if task_id not in db["tasks"]:
+            raise ValidationError(f"Task {task_id} not found")
+
+        task = db["tasks"][task_id]
+        if task["status"] not in ("pending_approval", "running"):
+            raise ValidationError(f"Task {task_id} cannot be approved in status '{task['status']}'")
+
+        now = _now()
+        if role == "approver":
+            if task.get("approver_approved"):
+                raise ValidationError("Approver has already approved this request")
+            task["approver_approved"] = True
+            task["approver_approved_at"] = now
+        else:
+            if task.get("devops_approved"):
+                raise ValidationError("DevOps has already approved this request")
+            task["devops_approved"] = True
+            task["devops_approved_at"] = now
+
+        task["updated_at"] = now
+
+        if task.get("approver_approved") and task.get("devops_approved"):
+            _start_orchestrator(db, task)
+
         _write(db)
-        return job
+        return _expand_task(db, task_id)
 
 
-# ──────────────────────────────────────────────────────────────────────────
-# History / stats
-# ──────────────────────────────────────────────────────────────────────────
+def _start_orchestrator(db: dict[str, Any], task: dict[str, Any]) -> None:
+    jobs = [db["jobs"][jid] for jid in task["jobs"]]
+    jobs.sort(key=lambda j: j["order"])
+    now = _now()
 
-def _parse_ts(ts: str) -> datetime:
-    return datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    if not jobs:
+        task["status"] = "done"
+        return
 
+    first = jobs[0]
+    first["status"] = "running"
+    first["updated_at"] = now
+    first["logs"].append(f"[{now}] Both approvals received — orchestrator started")
+    if first.get("steps"):
+        first["steps"][0]["status"] = "running"
+        first["steps"][0]["ts"] = now
 
-def _period_cutoff(period: str) -> datetime:
-    now = datetime.now(timezone.utc)
-    if period == "daily":
-        return now - timedelta(days=1)
-    if period == "monthly":
-        return now - timedelta(days=30)
-    return now - timedelta(days=7)
-
-
-def get_stats(period: str = "weekly") -> dict[str, Any]:
-    db = _read()
-    cutoff = _period_cutoff(period)
-    tasks = [t for t in db["tasks"].values() if _parse_ts(t["created_at"]) >= cutoff]
-    total = len(tasks)
-    resolved = sum(1 for t in tasks if t["status"] == "done")
-    in_progress = sum(1 for t in tasks if t["status"] in ("running", "queued"))
-    blocked = sum(1 for t in tasks if t["status"] in ("blocked", "failed"))
-    return {
-        "period": period,
-        "total": total,
-        "resolved": resolved,
-        "in_progress": in_progress,
-        "blocked": blocked,
-    }
+    task["status"] = "running"
 
 
-# ──────────────────────────────────────────────────────────────────────────
-# Static config — mirrors your real jobs.yaml / agent_catalog.yaml
-# In production these come from config files, not hardcoded dicts.
-# ──────────────────────────────────────────────────────────────────────────
+def _advance_orchestrator(db: dict[str, Any], task: dict[str, Any]) -> None:
+    if task["status"] == "pending_approval":
+        return
 
-_AGENT_MAP = {
-    "microservice": "microservice_agent",
-    "yaml": "yaml_automation_agent",
-    "db": "liquibase_agent",
-    "portal": "portal_agent",
-    "script": "utilities_agent",
-}
+    jobs = [db["jobs"][jid] for jid in task["jobs"]]
+    jobs.sort(key=lambda j: j["order"])
 
-_JENKINS_JOB_MAP = {
-    "microservice": "Titan-Microservices",
-    "yaml": "yml_automation_2.0",
-    "db": "Liquibase",
-    "portal": "Titan-Portals",
-    "script": "Titan-Utilities",
-}
+    if any(j["status"] == "failed" for j in jobs):
+        task["status"] = "blocked"
+        return
 
-_STEP_TEMPLATES = {
-    "microservice": [
-        "Merge request validated",
-        "Merged into target branch",
-        "Jenkins build running",
-        "Image pushed & deployed",
-    ],
-    "yaml": [
-        "Config file fetched",
-        "YAML syntax validated",
-        "Jenkins config job running",
-        "Config applied to environment",
-    ],
-    "db": [
-        "Liquibase changeset fetched",
-        "SQL guardrail check (no DROP/TRUNCATE)",
-        "Liquibase update running",
-        "Migration applied",
-    ],
-    "portal": [
-        "Portal build started",
-        "Static assets compiled",
-        "Jenkins deploy running",
-        "Portal live on environment",
-    ],
-    "script": [
-        "Script fetched",
-        "Pre-checks passed",
-        "Script executing",
-        "Completed",
-    ],
-}
+    next_job = next((j for j in jobs if j["status"] == "queued"), None)
+    if next_job:
+        next_job["status"] = "running"
+        next_job["updated_at"] = _now()
+        next_job["logs"].append(f"[{_now()}] Orchestrator dispatched to {next_job['agent']}")
+        if next_job.get("steps"):
+            next_job["steps"][0]["status"] = "running"
+            next_job["steps"][0]["ts"] = _now()
+        task["status"] = "running"
+    else:
+        task["status"] = "done"
 
 
-def _agent_for(job_type: str) -> str:
-    return _AGENT_MAP.get(job_type, "orchestrator")
-
-
-def _jenkins_job_for(job_type: str) -> str:
-    return _JENKINS_JOB_MAP.get(job_type, "Unknown-Job")
-
-
-def _default_steps(job_type: str) -> list[dict[str, Any]]:
-    labels = _STEP_TEMPLATES.get(job_type, ["Started", "Running", "Finishing", "Done"])
+def _default_steps(section: str, queued: bool = False) -> list[dict[str, Any]]:
+    labels = _STEP_TEMPLATES.get(section, ["Started", "Running", "Finishing", "Done"])
+    first_status = "queued" if queued else "running"
     return [
-        {"label": labels[0], "status": "running", "ts": _now()},
+        {"label": labels[0], "status": first_status, "ts": None if queued else _now()},
         {"label": labels[1], "status": "queued", "ts": None},
         {"label": labels[2], "status": "queued", "ts": None},
         {"label": labels[3], "status": "queued", "ts": None},
     ]
 
 
-def _build_jenkins_params(
-    task_id: str,
-    job_id: str,
-    job_type: str,
-    fields: dict[str, Any],
-    jira_key: str,
-    environment: str,
-) -> dict[str, Any]:
-    """Mirrors deployment_platform/jenkins_params.py shape — same keys, structured input."""
-    base = {
-        "Environment": environment,
-        "JIRA_KEY": jira_key,
-        "TASK_ID": task_id,
-        "STEP_ID": f"{job_type}:{job_id}",
-        "RELEASE_TAG": "auto-generated-pending-approval",
+def get_stats(period: str = "weekly") -> dict[str, Any]:
+    db = _read()
+    tasks = list(db["tasks"].values())
+    total = len(tasks)
+    resolved = sum(1 for t in tasks if t["status"] == "done")
+    pending = sum(1 for t in tasks if t["status"] == "pending_approval")
+    in_progress = sum(1 for t in tasks if t["status"] in ("running", "queued"))
+    blocked = sum(1 for t in tasks if t["status"] in ("blocked", "failed"))
+    return {
+        "period": period,
+        "total": total,
+        "resolved": resolved,
+        "pending": pending,
+        "in_progress": in_progress,
+        "blocked": blocked,
     }
-    if job_type == "microservice":
-        base.update({
-            "Service": fields.get("service", ""),
-            "MergeID": fields.get("merge_url", ""),
-            "Branch": fields.get("branch", ""),
+
+
+def get_recent_activity(limit: int = 6) -> list[dict[str, Any]]:
+    tasks = list_tasks(limit=limit)
+    out = []
+    for t in tasks:
+        out.append({
+            "task_id": t["task_id"],
+            "jira_id": t["jira_id"],
+            "environment": t["environment"],
+            "status": t["status"],
+            "requested_by": t["requested_by"],
+            "created_at": t["created_at"],
+            "sections": [j["section"] for j in t["jobs"]],
         })
-    elif job_type == "yaml":
-        base.update({"ConfigFiles": fields.get("config_files", "")})
-    elif job_type == "db":
-        base.update({
-            "ScriptUrl": fields.get("script_url", ""),
-            "RunOrder": fields.get("run_order", "Before microservice"),
-        })
-    elif job_type == "portal":
-        base.update({"Portal": fields.get("portal_name", "")})
-    elif job_type == "script":
-        base.update({"Utility": fields.get("utility_name", "")})
-    return base
+    return out

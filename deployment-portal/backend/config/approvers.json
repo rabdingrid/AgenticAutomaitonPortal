@@ -1,0 +1,22 @@
+[
+  {
+    "key": "a-sharma",
+    "name": "A. Sharma",
+    "email": "a.sharma@company.com"
+  },
+  {
+    "key": "r-patel",
+    "name": "R. Patel",
+    "email": "r.patel@company.com"
+  },
+  {
+    "key": "d-kumar",
+    "name": "D. Kumar",
+    "email": "d.kumar@company.com"
+  },
+  {
+    "key": "m-singh",
+    "name": "M. Singh",
+    "email": "m.singh@company.com"
+  }
+]
