@@ -2,9 +2,11 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api.js'
 import RequestDetails from '../components/RequestDetails.jsx'
+import ApprovalPanel from '../components/ApprovalPanel.jsx'
 
 const STATUS_BADGE = {
   pending_approval: { cls: 'badge-pending', label: 'Pending approval' },
+  rejected: { cls: 'badge-failed', label: 'Rejected' },
   running: { cls: 'badge-running', label: 'Running' },
   queued: { cls: 'badge-queued', label: 'Queued' },
   done: { cls: 'badge-done', label: 'Resolved' },
@@ -12,7 +14,7 @@ const STATUS_BADGE = {
   blocked: { cls: 'badge-blocked', label: 'Blocked' },
 }
 
-const SECTION_ICON = { build: 'Build', yaml: 'YAML', db: 'DB' }
+const SECTION_ICON = { build: 'Build', yaml: 'YAML', db: 'DB', phrases: 'Phrases' }
 
 export default function History() {
   const navigate = useNavigate()
@@ -22,7 +24,6 @@ export default function History() {
   const [approvers, setApprovers] = useState([])
   const [expandedId, setExpandedId] = useState(null)
   const [error, setError] = useState(null)
-  const [approving, setApproving] = useState(null)
 
   const approverMap = Object.fromEntries(approvers.map((a) => [a.key, a.name]))
 
@@ -53,19 +54,6 @@ export default function History() {
     await api.resetDemo()
     setExpandedId(null)
     load()
-  }
-
-  async function handleApprove(taskId, role, e) {
-    e.stopPropagation()
-    setApproving(`${taskId}-${role}`)
-    try {
-      await api.approveTask(taskId, role)
-      await load()
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setApproving(null)
-    }
   }
 
   function toggleExpand(taskId, e) {
@@ -136,7 +124,7 @@ export default function History() {
             const badge = STATUS_BADGE[task.status] || STATUS_BADGE.queued
             const isExpanded = expandedId === task.task_id
             const approverName = approverMap[task.approver_key] || task.approver_key
-            const isPending = task.status === 'pending_approval'
+            const showApproval = task.status === 'pending_approval' || task.status === 'rejected'
 
             return (
               <div key={task.task_id} className="history-item">
@@ -180,42 +168,7 @@ export default function History() {
                 {isExpanded && (
                   <div className="history-expanded" onClick={(e) => e.stopPropagation()}>
                     <RequestDetails task={task} approverName={approverName} />
-
-                    {isPending && (
-                      <div className="approval-panel">
-                        <p className="card-sub" style={{ marginBottom: 10, fontWeight: 600 }}>
-                          Pending approval — both signatures required before orchestrator starts
-                        </p>
-                        <div className="approval-buttons">
-                          <button
-                            type="button"
-                            className="btn btn-approve-approver"
-                            disabled={task.approver_approved || approving}
-                            onClick={(e) => handleApprove(task.task_id, 'approver', e)}
-                          >
-                            {task.approver_approved ? '✓ ' : ''}
-                            {approving === `${task.task_id}-approver` ? 'Approving...' : `Approve as ${approverName}`}
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-approve-devops"
-                            disabled={task.devops_approved || approving}
-                            onClick={(e) => handleApprove(task.task_id, 'devops', e)}
-                          >
-                            {task.devops_approved ? '✓ ' : ''}
-                            {approving === `${task.task_id}-devops` ? 'Approving...' : 'Approve as DevOps team'}
-                          </button>
-                        </div>
-                        <div className="approval-status-row">
-                          <span className={task.approver_approved ? 'approval-check done' : 'approval-check'}>
-                            {task.approver_approved ? '✓' : '○'} Approver
-                          </span>
-                          <span className={task.devops_approved ? 'approval-check done' : 'approval-check'}>
-                            {task.devops_approved ? '✓' : '○'} DevOps
-                          </span>
-                        </div>
-                      </div>
-                    )}
+                    {showApproval && <ApprovalPanel task={task} onDecided={load} />}
                   </div>
                 )}
               </div>

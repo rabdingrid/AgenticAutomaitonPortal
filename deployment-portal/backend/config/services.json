@@ -1,0 +1,38 @@
+[
+  {
+    "key": "account-service",
+    "label": "AccountService",
+    "type": "microservice",
+    "gitlab_project_path": "titan/account/accountservice"
+  },
+  {
+    "key": "billing-service",
+    "label": "BillingService",
+    "type": "microservice",
+    "gitlab_project_path": "titan/billing/billingservice"
+  },
+  {
+    "key": "notification-service",
+    "label": "NotificationService",
+    "type": "microservice",
+    "gitlab_project_path": "titan/notify/notificationservice"
+  },
+  {
+    "key": "admin-portal",
+    "label": "Admin Portal",
+    "type": "portal",
+    "gitlab_project_path": "titan/admin/adminportal"
+  },
+  {
+    "key": "ecommerce-portal",
+    "label": "Titan eCommerce",
+    "type": "portal",
+    "gitlab_project_path": "titan/ecommerce/titan-ecommerce"
+  },
+  {
+    "key": "cms-portal",
+    "label": "CMS Portal",
+    "type": "portal",
+    "gitlab_project_path": "titan/cms/cmsportal"
+  }
+]

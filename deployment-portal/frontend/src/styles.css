@@ -501,6 +501,100 @@ input:disabled {
   color: #991B1B;
 }
 
+.alert-success {
+  background: var(--green-light);
+  color: #166534;
+  font-weight: 500;
+}
+
+/* ── v3: readonly field, autocomplete, approval chain, code freeze ── */
+
+.readonly-field {
+  background: var(--slate-light);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+.autocomplete-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  margin-top: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.autocomplete-item {
+  padding: 8px 12px;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.autocomplete-item:hover {
+  background: var(--blue-light);
+  color: var(--blue);
+}
+
+.approval-stepper {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 12px 0 16px;
+}
+
+.approval-stage {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.approval-stage-label {
+  font-size: 12px;
+}
+
+.btn-approve {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--white);
+  justify-content: center;
+}
+
+.btn-approve:hover:not(:disabled) { background: #15803d; }
+
+.btn-reject {
+  background: var(--white);
+  border-color: var(--red);
+  color: var(--red);
+  justify-content: center;
+}
+
+.btn-reject:hover:not(:disabled) { background: var(--red-light); }
+
+.approval-card.rejected {
+  border-color: var(--red);
+  background: var(--red-light);
+}
+
+.rejection-reason {
+  font-size: 13px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+
+.code-freeze-card {
+  border: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
 /* ── Home page hero ─────────────────────────────────────────────── */
 
 .hero {
@@ -682,6 +776,126 @@ input:disabled {
 }
 
 .toggle-switch.on .toggle-knob { left: 19px; }
+
+/* Sub-type tabs (Microservice / Portal / Utilities) on the card header */
+.subtype-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--slate-light);
+  padding: 3px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.subtype-tab {
+  border: none;
+  background: transparent;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.subtype-tab:hover { color: var(--text-secondary); }
+
+.subtype-tab.active {
+  background: var(--white);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Two-column select + selected chips layout */
+.select-chip-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 1.2fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.select-chip-left,
+.select-chip-right {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 34px;
+  padding: 6px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--slate-light);
+  align-content: flex-start;
+}
+
+.chip-empty {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  padding: 2px 4px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px 3px 8px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--white);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+.chip-type {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: var(--slate-light);
+  color: var(--text-tertiary);
+}
+
+.chip-microservice { border-color: #BFDBFE; }
+.chip-microservice .chip-type { background: var(--blue-light); color: var(--blue); }
+.chip-portal { border-color: #DDD6FE; }
+.chip-portal .chip-type { background: var(--purple-light); color: var(--purple); }
+.chip-utility { border-color: #BBF7D0; }
+.chip-utility .chip-type { background: var(--teal-light); color: var(--teal); }
+
+.chip-x {
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.chip-x:hover { background: var(--red-light); color: var(--red); }
+
+/* Branch fields inside the Build card */
+.build-branches {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
 
 .subtype-pills {
   display: flex;

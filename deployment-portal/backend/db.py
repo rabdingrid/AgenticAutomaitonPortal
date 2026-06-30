@@ -1,8 +1,15 @@
 """
-db.py — File-based "database" for the deployment portal MVP (v2).
+db.py — File-based "database" for the deployment portal (v3).
 
-Jobs represent sections (build / yaml / db), each with a list of
-{sub_type, url, label} links pasted by the user.
+Jobs represent sections (yaml / db / phrases / build). Each section has
+an optional release_branch and a list of links. Links now reference a
+catalog service via service_key (dropdown selection) instead of a pasted
+URL.
+
+Approval is a sequential, conditional chain:
+    Code Freeze OFF:  dev_lead -> devops
+    Code Freeze ON:   dev_lead -> qa -> devops
+The chain shape is captured on the task at creation time.
 """
 
 from __future__ import annotations
@@ -11,7 +18,7 @@ import json
 import threading
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 DB_PATH = Path(__file__).parent / "db.json"
 _LOCK = threading.Lock()
@@ -22,25 +29,35 @@ _DEFAULT_DB: dict[str, Any] = {
     "counters": {"task": 20391, "job": 0},
 }
 
+# Per the meeting discussion: YAML and DB both allow Portal + Microservice.
+# Phrases mirrors them. Build additionally allows Utilities.
 SECTION_ALLOWED_SUBTYPES = {
     "build": {"microservice", "portal", "utility"},
     "yaml": {"microservice", "portal"},
     "db": {"microservice"},
+    "phrases": {"portal"},
 }
 
-SECTION_ORDER = {"yaml": 1, "db": 2, "build": 3}
+SECTION_ORDER = {"yaml": 1, "db": 2, "phrases": 3, "build": 4}
+
+# Sections that require a release branch (Build does not).
+SECTIONS_NEEDING_RELEASE_BRANCH = {"yaml", "db", "phrases"}
 
 _AGENT_MAP = {
     "build": "build_agent",
     "yaml": "yaml_automation_agent",
     "db": "liquibase_agent",
+    "phrases": "phrases_agent",
 }
 
 _STEP_TEMPLATES = {
     "build": ["Links validated", "Merged into target branch", "Jenkins build running", "Deployed"],
     "yaml": ["Links validated", "Config fetched", "Jenkins config job running", "Applied to environment"],
     "db": ["Links validated", "Liquibase changeset fetched", "Liquibase update running", "Migration applied"],
+    "phrases": ["Links validated", "Phrases fetched", "Phrases job running", "Applied to environment"],
 }
+
+ApprovalRole = Literal["dev_lead", "qa", "devops"]
 
 
 def _now() -> str:
@@ -81,21 +98,104 @@ class ValidationError(Exception):
     pass
 
 
+class ApprovalError(Exception):
+    pass
+
+
 def validate_section_links(section: str, links: list[dict[str, Any]]) -> None:
     allowed = SECTION_ALLOWED_SUBTYPES.get(section)
     if allowed is None:
         raise ValidationError(f"Unknown section '{section}'")
     if not links:
-        raise ValidationError(f"Section '{section}' needs at least one link")
+        raise ValidationError(f"Section '{section}' needs at least one item")
     for link in links:
         sub_type = link.get("sub_type")
         if sub_type not in allowed:
             raise ValidationError(
                 f"Section '{section}' does not allow sub_type '{sub_type}'. Allowed: {sorted(allowed)}"
             )
-        if not link.get("url", "").strip():
-            raise ValidationError(f"Every link in '{section}' needs a URL")
+        if not (link.get("service_key") or "").strip():
+            raise ValidationError(f"Every item in '{section}' needs a selected service")
 
+
+# ──────────────────────────────────────────────────────────────────────────
+# Approval state machine
+# ──────────────────────────────────────────────────────────────────────────
+
+def get_approval_chain(code_freeze_enabled: bool) -> list[str]:
+    if code_freeze_enabled:
+        return ["dev_lead", "qa", "devops"]
+    return ["dev_lead", "devops"]
+
+
+def get_current_approval_stage(task: dict[str, Any]) -> str | None:
+    if task["status"] == "rejected":
+        return None
+    for role in task["approval_chain"]:
+        if task["approvals"].get(role) is None:
+            return role
+    return None
+
+
+def apply_approval_decision(
+    task_id: str,
+    role: str,
+    decision: str,
+    by: str,
+    comment: str | None = None,
+) -> dict[str, Any]:
+    """Single entry point for all approval actions. Validates turn order,
+    requires a comment on reject, updates status, and starts the
+    orchestrator when the chain completes."""
+    if decision not in ("approved", "rejected"):
+        raise ApprovalError(f"Invalid decision '{decision}'")
+
+    with _LOCK:
+        db = _read()
+        task = db["tasks"].get(task_id)
+        if not task:
+            raise ApprovalError(f"Task {task_id} not found")
+
+        current = get_current_approval_stage(task)
+        if current != role:
+            raise ApprovalError(f"It's not {role}'s turn to approve. Current stage: {current}")
+
+        if decision == "rejected" and not (comment and comment.strip()):
+            raise ApprovalError("A comment is required when rejecting")
+
+        now = _now()
+        task["approvals"][role] = {"decision": decision, "comment": comment, "by": by, "at": now}
+        task["updated_at"] = now
+
+        if decision == "rejected":
+            task["status"] = "rejected"
+            task["rejection_reason"] = comment
+            _write(db)
+            return _expand_task(db, task_id)
+
+        next_stage = get_current_approval_stage(task)
+        if next_stage is None:
+            task["status"] = "running"
+            jobs = [db["jobs"][jid] for jid in task["jobs"]]
+            jobs.sort(key=lambda j: j["order"])
+            if jobs:
+                first = jobs[0]
+                first["status"] = "running"
+                first["updated_at"] = now
+                first["logs"].append(f"[{now}] All approvals received — orchestrator dispatched to {first['agent']}")
+                if first.get("steps"):
+                    first["steps"][0]["status"] = "running"
+                    first["steps"][0]["ts"] = now
+        else:
+            task["status"] = "pending_approval"
+
+        _write(db)
+        return _expand_task(db, task_id)
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# Task operations
+# ──────────────────────────────────────────────────────────────────────────
 
 def create_task(
     environment: str,
@@ -106,12 +206,15 @@ def create_task(
     approver_key: str,
     requested_by: str,
     sections_payload: list[dict[str, Any]],
+    code_freeze_enabled: bool = False,
 ) -> dict[str, Any]:
     if not sections_payload:
-        raise ValidationError("At least one section (Build / YAML / DB) is required")
+        raise ValidationError("At least one section (YAML / DB / Phrases / Build) is required")
 
     for sec in sections_payload:
         validate_section_links(sec["section"], sec["links"])
+        if sec["section"] in SECTIONS_NEEDING_RELEASE_BRANCH and not (sec.get("release_branch") or "").strip():
+            raise ValidationError(f"Release branch is required for the {sec['section']} section")
 
     with _LOCK:
         db = _read()
@@ -132,6 +235,7 @@ def create_task(
                 "job_id": job_id,
                 "task_id": task_id,
                 "section": section,
+                "release_branch": sec.get("release_branch", ""),
                 "agent": _AGENT_MAP.get(section, "orchestrator"),
                 "status": "queued",
                 "order": idx,
@@ -142,6 +246,7 @@ def create_task(
                 "updated_at": now,
             }
 
+        chain = get_approval_chain(code_freeze_enabled)
         db["tasks"][task_id] = {
             "task_id": task_id,
             "environment": environment,
@@ -152,10 +257,10 @@ def create_task(
             "approver_key": approver_key,
             "requested_by": requested_by,
             "status": "pending_approval",
-            "approver_approved": False,
-            "devops_approved": False,
-            "approver_approved_at": None,
-            "devops_approved_at": None,
+            "code_freeze_enabled": code_freeze_enabled,
+            "approval_chain": chain,
+            "approvals": {role: None for role in chain},
+            "rejection_reason": None,
             "created_at": now,
             "updated_at": now,
             "jobs": job_ids,
@@ -192,6 +297,7 @@ def get_task(task_id: str) -> dict[str, Any] | None:
 def _expand_task(db: dict[str, Any], task_id: str) -> dict[str, Any]:
     task = dict(db["tasks"][task_id])
     task["jobs"] = [db["jobs"][jid] for jid in task["jobs"] if jid in db["jobs"]]
+    task["current_stage"] = get_current_approval_stage(db["tasks"][task_id])
     return task
 
 
@@ -227,62 +333,8 @@ def update_job_status(
         return job
 
 
-def approve_task(task_id: str, role: str) -> dict[str, Any]:
-    if role not in ("approver", "devops"):
-        raise ValidationError(f"Invalid approval role '{role}'. Use 'approver' or 'devops'.")
-
-    with _LOCK:
-        db = _read()
-        if task_id not in db["tasks"]:
-            raise ValidationError(f"Task {task_id} not found")
-
-        task = db["tasks"][task_id]
-        if task["status"] not in ("pending_approval", "running"):
-            raise ValidationError(f"Task {task_id} cannot be approved in status '{task['status']}'")
-
-        now = _now()
-        if role == "approver":
-            if task.get("approver_approved"):
-                raise ValidationError("Approver has already approved this request")
-            task["approver_approved"] = True
-            task["approver_approved_at"] = now
-        else:
-            if task.get("devops_approved"):
-                raise ValidationError("DevOps has already approved this request")
-            task["devops_approved"] = True
-            task["devops_approved_at"] = now
-
-        task["updated_at"] = now
-
-        if task.get("approver_approved") and task.get("devops_approved"):
-            _start_orchestrator(db, task)
-
-        _write(db)
-        return _expand_task(db, task_id)
-
-
-def _start_orchestrator(db: dict[str, Any], task: dict[str, Any]) -> None:
-    jobs = [db["jobs"][jid] for jid in task["jobs"]]
-    jobs.sort(key=lambda j: j["order"])
-    now = _now()
-
-    if not jobs:
-        task["status"] = "done"
-        return
-
-    first = jobs[0]
-    first["status"] = "running"
-    first["updated_at"] = now
-    first["logs"].append(f"[{now}] Both approvals received — orchestrator started")
-    if first.get("steps"):
-        first["steps"][0]["status"] = "running"
-        first["steps"][0]["ts"] = now
-
-    task["status"] = "running"
-
-
 def _advance_orchestrator(db: dict[str, Any], task: dict[str, Any]) -> None:
-    if task["status"] == "pending_approval":
+    if task["status"] in ("pending_approval", "rejected"):
         return
 
     jobs = [db["jobs"][jid] for jid in task["jobs"]]
@@ -324,6 +376,7 @@ def get_stats(period: str = "weekly") -> dict[str, Any]:
     pending = sum(1 for t in tasks if t["status"] == "pending_approval")
     in_progress = sum(1 for t in tasks if t["status"] in ("running", "queued"))
     blocked = sum(1 for t in tasks if t["status"] in ("blocked", "failed"))
+    rejected = sum(1 for t in tasks if t["status"] == "rejected")
     return {
         "period": period,
         "total": total,
@@ -331,6 +384,7 @@ def get_stats(period: str = "weekly") -> dict[str, Any]:
         "pending": pending,
         "in_progress": in_progress,
         "blocked": blocked,
+        "rejected": rejected,
     }
 
 

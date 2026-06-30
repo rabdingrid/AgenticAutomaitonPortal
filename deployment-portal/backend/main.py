@@ -1,5 +1,5 @@
 """
-main.py — Deployment Portal API (v2)
+main.py — Deployment Portal API (v3)
 
 Run:
     pip install -r requirements.txt
@@ -16,8 +16,10 @@ from pydantic import BaseModel
 
 import catalog
 import db
+import mock_gitlab
+import notifications
 
-app = FastAPI(title="Deployment Portal API", version="0.2.0")
+app = FastAPI(title="Deployment Portal API", version="0.3.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -26,18 +28,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-SectionKey = Literal["build", "yaml", "db"]
+SectionKey = Literal["build", "yaml", "db", "phrases"]
 SubType = Literal["microservice", "portal", "utility"]
 
 
 class LinkInput(BaseModel):
     sub_type: SubType
-    url: str
+    service_key: str
     label: str = ""
 
 
 class SectionInput(BaseModel):
     section: SectionKey
+    release_branch: str = ""
     links: list[LinkInput]
 
 
@@ -51,19 +54,32 @@ class CreateTaskRequest(BaseModel):
     sections: list[SectionInput]
 
 
+class ValidateRequest(BaseModel):
+    environment: str
+    jira_id: str
+    sections: list[SectionInput]
+
+
 class UpdateJobStatusRequest(BaseModel):
     status: Literal["queued", "running", "done", "failed"]
     log_line: str | None = None
 
 
-class ApproveTaskRequest(BaseModel):
-    role: Literal["approver", "devops"]
+class ApprovalRequest(BaseModel):
+    role: Literal["dev_lead", "qa", "devops"]
+    decision: Literal["approved", "rejected"]
+    by: str = "demo-approver"
+    comment: str | None = None
 
 
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
 
+
+# ──────────────────────────────────────────────────────────────────────────
+# Catalog
+# ──────────────────────────────────────────────────────────────────────────
 
 @app.get("/catalog/environments")
 def get_environments() -> list[dict[str, Any]]:
@@ -75,12 +91,64 @@ def get_approvers() -> list[dict[str, Any]]:
     return catalog.load_approvers()
 
 
+@app.get("/catalog/services")
+def get_services(
+    section: str | None = None,
+    type: Literal["microservice", "portal", "utility"] | None = None,
+) -> list[dict[str, Any]]:
+    return catalog.load_services(section=section, type=type)
+
+
+@app.get("/catalog/branches")
+def get_branches(service_key: str, query: str = "") -> list[str]:
+    svc = catalog.get_service(service_key)
+    if not svc:
+        raise HTTPException(status_code=404, detail="Unknown service")
+    return mock_gitlab.list_branches(svc["gitlab_project_path"], query)
+
+
+@app.get("/catalog/code-freeze")
+def get_code_freeze() -> dict[str, Any]:
+    return catalog.load_code_freeze()
+
+
+@app.put("/catalog/code-freeze")
+def set_code_freeze(enabled: bool, updated_by: str = "demo-devops") -> dict[str, Any]:
+    # TODO when real auth lands: require DevOps role before allowing this.
+    return catalog.save_code_freeze(enabled, updated_by)
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# Tasks
+# ──────────────────────────────────────────────────────────────────────────
+
+@app.post("/tasks/validate")
+def validate_request(payload: ValidateRequest) -> dict[str, Any]:
+    """Validate-before-submit. Never raises — returns an error checklist."""
+    errors: list[str] = []
+
+    if not payload.environment:
+        errors.append("Environment to promote is required")
+    if not payload.jira_id.strip():
+        errors.append("Jira ID is required")
+    if not payload.sections:
+        errors.append("At least one section (YAML / DB / Phrases / Build) must be filled")
+
+    for sec in payload.sections:
+        try:
+            db.validate_section_links(sec.section, [l.model_dump() for l in sec.links])
+        except db.ValidationError as e:
+            errors.append(str(e))
+        if sec.section in db.SECTIONS_NEEDING_RELEASE_BRANCH and not sec.release_branch.strip():
+            errors.append(f"Release branch is required for the {sec.section} section")
+
+    return {"valid": len(errors) == 0, "errors": errors}
+
+
 @app.post("/tasks")
 def create_task(payload: CreateTaskRequest) -> dict[str, Any]:
-    sections_payload = [
-        {"section": s.section, "links": [l.model_dump() for l in s.links]}
-        for s in payload.sections
-    ]
+    sections_payload = [s.model_dump() for s in payload.sections]
+    code_freeze = catalog.load_code_freeze()["enabled"]
 
     try:
         task = db.create_task(
@@ -92,11 +160,13 @@ def create_task(payload: CreateTaskRequest) -> dict[str, Any]:
             approver_key=payload.approver_key,
             requested_by="demo-user",
             sections_payload=sections_payload,
+            code_freeze_enabled=code_freeze,
         )
     except db.ValidationError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    return task
+    notifications.notify_submitted(task)
+    return _decorate(task)
 
 
 @app.get("/tasks")
@@ -104,7 +174,7 @@ def list_tasks(
     status: str | None = None,
     requested_by: str | None = None,
 ) -> list[dict[str, Any]]:
-    return db.list_tasks(status=status, requested_by=requested_by)
+    return [_decorate(t) for t in db.list_tasks(status=status, requested_by=requested_by)]
 
 
 @app.get("/tasks/{task_id}")
@@ -112,22 +182,26 @@ def get_task(task_id: str) -> dict[str, Any]:
     task = db.get_task(task_id)
     if not task:
         raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
-    approver = catalog.get_approver(task.get("approver_key", ""))
-    if approver:
-        task["approver_name"] = approver["name"]
-    return task
+    return _decorate(task)
 
 
 @app.post("/tasks/{task_id}/approve")
-def approve_task(task_id: str, payload: ApproveTaskRequest) -> dict[str, Any]:
+def approve_task(task_id: str, payload: ApprovalRequest) -> dict[str, Any]:
     try:
-        task = db.approve_task(task_id, payload.role)
-    except db.ValidationError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    approver = catalog.get_approver(task.get("approver_key", ""))
-    if approver:
-        task["approver_name"] = approver["name"]
-    return task
+        task = db.apply_approval_decision(
+            task_id, payload.role, payload.decision, payload.by, payload.comment
+        )
+    except db.ApprovalError as e:
+        msg = str(e)
+        status_code = 422 if "comment is required" in msg else 409
+        raise HTTPException(status_code=status_code, detail=msg)
+
+    if payload.decision == "rejected":
+        notifications.notify_rejected(task, payload.role, payload.comment or "")
+    else:
+        notifications.notify_approved_stage(task, payload.role, task.get("current_stage"))
+
+    return _decorate(task)
 
 
 @app.get("/jobs/{job_id}")
@@ -156,6 +230,27 @@ def get_activity(limit: int = 6) -> list[dict[str, Any]]:
     return db.get_recent_activity(limit=limit)
 
 
+# ──────────────────────────────────────────────────────────────────────────
+# Helpers
+# ──────────────────────────────────────────────────────────────────────────
+
+def _decorate(task: dict[str, Any]) -> dict[str, Any]:
+    """Attach human-friendly names resolved from the catalog."""
+    approver = catalog.get_approver(task.get("approver_key", ""))
+    if approver:
+        task["approver_name"] = approver["name"]
+    services = {s["key"]: s["label"] for s in catalog.load_services()}
+    for job in task.get("jobs", []):
+        for link in job.get("links", []):
+            if not link.get("label"):
+                link["label"] = services.get(link.get("service_key", ""), link.get("service_key", ""))
+    return task
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# Demo helpers
+# ──────────────────────────────────────────────────────────────────────────
+
 @app.post("/demo/seed")
 def seed_demo_data() -> dict[str, str]:
     db.reset_db()
@@ -168,24 +263,28 @@ def seed_demo_data() -> dict[str, str]:
         branch_to="release/2026-06",
         approver_key="a-sharma",
         requested_by="demo-user",
+        code_freeze_enabled=False,
         sections_payload=[
             {
                 "section": "yaml",
+                "release_branch": "release/2026-07",
                 "links": [
-                    {"sub_type": "microservice", "url": "https://gitspace/.../!2816", "label": "parameters.yml"},
+                    {"sub_type": "microservice", "service_key": "yaml:microservice:account", "label": "Account"},
                 ],
             },
             {
                 "section": "db",
+                "release_branch": "release/2026-07",
                 "links": [
-                    {"sub_type": "microservice", "url": "https://gitspace/.../changelog.sql", "label": "billing migration"},
+                    {"sub_type": "microservice", "service_key": "db:microservice:payment", "label": "Payment"},
                 ],
             },
             {
                 "section": "build",
+                "release_branch": "",
                 "links": [
-                    {"sub_type": "microservice", "url": "https://gitspace/.../!2814", "label": "AccountService"},
-                    {"sub_type": "portal", "url": "https://gitspace/.../!2815", "label": "Admin Portal"},
+                    {"sub_type": "microservice", "service_key": "build:microservice:account", "label": "Account"},
+                    {"sub_type": "portal", "service_key": "build:portal:admin", "label": "Admin"},
                 ],
             },
         ],
@@ -199,41 +298,45 @@ def seed_demo_data() -> dict[str, str]:
         branch_to="main",
         approver_key="r-patel",
         requested_by="demo-user",
+        code_freeze_enabled=False,
         sections_payload=[
             {
                 "section": "build",
+                "release_branch": "",
                 "links": [
-                    {"sub_type": "portal", "url": "https://gitspace/.../!2820", "label": "Admin Portal"},
+                    {"sub_type": "portal", "service_key": "build:portal:ecommerce", "label": "Ecommerce"},
                 ],
             },
         ],
     )
-    db.approve_task(t2["task_id"], "approver")
-    db.approve_task(t2["task_id"], "devops")
+    db.apply_approval_decision(t2["task_id"], "dev_lead", "approved", "Dev Lead")
+    db.apply_approval_decision(t2["task_id"], "devops", "approved", "DevOps")
     t2 = db.get_task(t2["task_id"])
     db.update_job_status(t2["jobs"][0]["job_id"], "done", "Portal deployed successfully")
 
     t3 = db.create_task(
         environment="UAT",
         jira_id="TRB-18055",
-        description="Apollo SQL migration — missing environment field",
+        description="Apollo SQL migration — rejected for missing environment field",
         branch_from="release/2026-05",
         branch_to="main",
         approver_key="d-kumar",
         requested_by="demo-user",
+        code_freeze_enabled=False,
         sections_payload=[
             {
                 "section": "db",
+                "release_branch": "release/2026-06",
                 "links": [
-                    {"sub_type": "microservice", "url": "https://gitspace/.../apollo.sql", "label": "apollo migration"},
+                    {"sub_type": "microservice", "service_key": "db:microservice:order", "label": "Order"},
                 ],
             },
         ],
     )
-    db.approve_task(t3["task_id"], "approver")
-    db.approve_task(t3["task_id"], "devops")
-    t3 = db.get_task(t3["task_id"])
-    db.update_job_status(t3["jobs"][0]["job_id"], "failed", "Blocked: environment field required before run")
+    db.apply_approval_decision(
+        t3["task_id"], "dev_lead", "rejected", "Dev Lead",
+        comment="Environment field is required before this can run.",
+    )
 
     return {"status": "seeded"}
 

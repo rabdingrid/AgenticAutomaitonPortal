@@ -1,4 +1,16 @@
-# Deployment Portal — v2
+# Deployment Portal — v3
+
+> v3 adds: dropdown-based Portal/Microservice selection, branch autocomplete
+> (mocked GitSpace), a Phrases section, Release Branch per section, a
+> Validate-before-submit gate, a sequential multi-stage approval chain
+> (Dev Lead → [QA if code freeze] → DevOps) with rejection + comments, and a
+> DevOps-only Code Freeze toggle on the Home page.
+
+See `IMPLEMENTATION_V3.md` for the full v3 detail.
+
+---
+
+# Deployment Portal — v2 (history)
 
 A full-stack deployment automation portal with a **home dashboard**, structured
 request form (paste Gitspace links), and task/job orchestration tracking.

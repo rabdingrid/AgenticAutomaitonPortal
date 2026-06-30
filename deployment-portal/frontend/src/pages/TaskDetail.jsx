@@ -2,9 +2,11 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../api.js'
 import RequestDetails from '../components/RequestDetails.jsx'
+import ApprovalPanel from '../components/ApprovalPanel.jsx'
 
 const STATUS_BADGE = {
   pending_approval: { cls: 'badge-pending', label: 'Pending approval', icon: '⏳' },
+  rejected: { cls: 'badge-failed', label: 'Rejected', icon: '✕' },
   running: { cls: 'badge-running', label: 'Running', icon: '●' },
   queued: { cls: 'badge-queued', label: 'Queued', icon: '○' },
   done: { cls: 'badge-done', label: 'Done', icon: '✓' },
@@ -16,6 +18,7 @@ const SECTION_META = {
   build: { icon: '🔀', label: 'Build / Gitspace merge' },
   yaml: { icon: '📄', label: 'YAML / Config' },
   db: { icon: '🗄️', label: 'DB / Liquibase' },
+  phrases: { icon: '💬', label: 'Phrases' },
 }
 
 function Badge({ status }) {
@@ -29,7 +32,6 @@ export default function TaskDetail() {
   const [task, setTask] = useState(null)
   const [selectedJob, setSelectedJob] = useState(null)
   const [error, setError] = useState(null)
-  const [approving, setApproving] = useState(null)
 
   const load = useCallback(async () => {
     try {
@@ -47,23 +49,12 @@ export default function TaskDetail() {
     return () => clearInterval(interval)
   }, [load])
 
-  async function handleApprove(role) {
-    setApproving(role)
-    try {
-      await api.approveTask(taskId, role)
-      await load()
-    } catch (e) {
-      setError(e.message)
-    } finally {
-      setApproving(null)
-    }
-  }
-
   if (error && !task) return <div className="alert alert-error">{error}</div>
   if (!task) return <div className="empty-state">Loading task...</div>
 
   const isPending = task.status === 'pending_approval'
-  const orchestratorStarted = !isPending
+  const isRejected = task.status === 'rejected'
+  const orchestratorStarted = !isPending && !isRejected
   const approverName = task.approver_name || task.approver_key
 
   async function simulateAdvance(jobId) {
@@ -100,42 +91,7 @@ export default function TaskDetail() {
         <RequestDetails task={task} approverName={approverName} />
       </div>
 
-      {isPending && (
-        <div className="card approval-card">
-          <p className="card-title">Approval required</p>
-          <p className="card-sub">
-            This request is pending approval. Both the designated approver and the DevOps team must approve before the orchestrator starts.
-          </p>
-          <div className="approval-buttons">
-            <button
-              type="button"
-              className="btn btn-approve-approver"
-              disabled={task.approver_approved || approving}
-              onClick={() => handleApprove('approver')}
-            >
-              {task.approver_approved ? '✓ ' : ''}
-              {approving === 'approver' ? 'Approving...' : `Approve as ${approverName}`}
-            </button>
-            <button
-              type="button"
-              className="btn btn-approve-devops"
-              disabled={task.devops_approved || approving}
-              onClick={() => handleApprove('devops')}
-            >
-              {task.devops_approved ? '✓ ' : ''}
-              {approving === 'devops' ? 'Approving...' : 'Approve as DevOps team'}
-            </button>
-          </div>
-          <div className="approval-status-row">
-            <span className={task.approver_approved ? 'approval-check done' : 'approval-check'}>
-              {task.approver_approved ? '✓' : '○'} Approver ({approverName})
-            </span>
-            <span className={task.devops_approved ? 'approval-check done' : 'approval-check'}>
-              {task.devops_approved ? '✓' : '○'} DevOps team
-            </span>
-          </div>
-        </div>
-      )}
+      {(isPending || isRejected) && <ApprovalPanel task={task} onDecided={load} />}
 
       {error && <div className="alert alert-error">{error}</div>}
 
@@ -206,18 +162,18 @@ function JobExpanded({ job, onAdvance, onFail }) {
         <Badge status={job.status} />
       </div>
 
-      <p className="card-sub" style={{ marginBottom: 8, fontWeight: 600 }}>Links</p>
+      <p className="card-sub" style={{ marginBottom: 8, fontWeight: 600 }}>Selected services</p>
       <table className="kv-table" style={{ marginBottom: 14 }}>
         <tbody>
           {job.links.map((link, i) => (
             <tr key={i}>
               <td>{link.sub_type}</td>
               <td>
-                <div style={{ fontWeight: 500 }}>{link.label || '—'}</div>
-                <div className="link-display">{link.url}</div>
+                <div style={{ fontWeight: 500 }}>{link.label || link.service_key || '—'}</div>
               </td>
             </tr>
           ))}
+          {job.release_branch && <tr><td>Release branch</td><td>{job.release_branch}</td></tr>}
           <tr><td>Agent</td><td>{job.agent}</td></tr>
         </tbody>
       </table>

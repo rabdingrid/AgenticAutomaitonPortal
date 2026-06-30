@@ -19,6 +19,21 @@ export const api = {
 
   getEnvironments: () => request('/catalog/environments'),
   getApprovers: () => request('/catalog/approvers'),
+  getServices: (section, type) => {
+    const params = new URLSearchParams()
+    if (section) params.set('section', section)
+    if (type) params.set('type', type)
+    const qs = params.toString()
+    return request(`/catalog/services${qs ? `?${qs}` : ''}`)
+  },
+  getBranches: (serviceKey, query = '') =>
+    request(`/catalog/branches?service_key=${encodeURIComponent(serviceKey)}&query=${encodeURIComponent(query)}`),
+  getCodeFreeze: () => request('/catalog/code-freeze'),
+  setCodeFreeze: (enabled, updatedBy = 'demo-devops') =>
+    request(`/catalog/code-freeze?enabled=${enabled}&updated_by=${encodeURIComponent(updatedBy)}`, { method: 'PUT' }),
+
+  validateRequest: (payload) =>
+    request('/tasks/validate', { method: 'POST', body: JSON.stringify(payload) }),
 
   createTask: (payload) =>
     request('/tasks', { method: 'POST', body: JSON.stringify(payload) }),
@@ -30,11 +45,8 @@ export const api = {
 
   getTask: (taskId) => request(`/tasks/${taskId}`),
 
-  approveTask: (taskId, role) =>
-    request(`/tasks/${taskId}/approve`, {
-      method: 'POST',
-      body: JSON.stringify({ role }),
-    }),
+  approveTask: (taskId, payload) =>
+    request(`/tasks/${taskId}/approve`, { method: 'POST', body: JSON.stringify(payload) }),
 
   getJob: (jobId) => request(`/jobs/${jobId}`),
 

@@ -11,23 +11,30 @@ const STATUS_BADGE = {
   blocked: { cls: 'badge-blocked', label: 'Blocked' },
 }
 
-const SECTION_LABEL = { build: 'Build', yaml: 'YAML', db: 'DB' }
+const SECTION_LABEL = { build: 'Build', yaml: 'YAML', db: 'DB', phrases: 'Phrases' }
+
+// TODO: replace with real role check once auth lands.
+const IS_DEVOPS_ROLE = true
 
 export default function Home() {
   const navigate = useNavigate()
   const [stats, setStats] = useState(null)
   const [activity, setActivity] = useState([])
   const [period, setPeriod] = useState('weekly')
+  const [codeFreeze, setCodeFreeze] = useState(null)
+  const [freezeBusy, setFreezeBusy] = useState(false)
   const [error, setError] = useState(null)
 
   const load = useCallback(async () => {
     try {
-      const [s, a] = await Promise.all([
+      const [s, a, cf] = await Promise.all([
         api.getStats(period),
         api.getActivity(6),
+        api.getCodeFreeze(),
       ])
       setStats(s)
       setActivity(a)
+      setCodeFreeze(cf)
       setError(null)
     } catch (e) {
       setError(e.message)
@@ -39,6 +46,18 @@ export default function Home() {
   async function handleSeed() {
     await api.seedDemo()
     load()
+  }
+
+  async function toggleCodeFreeze() {
+    setFreezeBusy(true)
+    try {
+      const updated = await api.setCodeFreeze(!codeFreeze.enabled)
+      setCodeFreeze(updated)
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setFreezeBusy(false)
+    }
   }
 
   return (
@@ -54,6 +73,33 @@ export default function Home() {
           ➕ New deployment request
         </Link>
       </div>
+
+      {IS_DEVOPS_ROLE && codeFreeze && (
+        <div className="card code-freeze-card" style={{ background: codeFreeze.enabled ? 'var(--red-light)' : 'var(--white)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
+            <div>
+              <p className="card-title" style={{ marginBottom: 2 }}>
+                {codeFreeze.enabled ? '🔒 Code Freeze: ENABLED' : '🔓 Code Freeze: Disabled'}
+              </p>
+              <p className="card-sub" style={{ marginBottom: 0 }}>
+                {codeFreeze.enabled
+                  ? 'New requests require Dev Lead → QA → DevOps approval'
+                  : 'New requests require Dev Lead → DevOps approval'}
+                <span style={{ color: 'var(--text-tertiary)' }}> · DevOps only</span>
+              </p>
+            </div>
+            <button
+              type="button"
+              className={`toggle-switch ${codeFreeze.enabled ? 'on' : ''}`}
+              onClick={toggleCodeFreeze}
+              disabled={freezeBusy}
+              aria-label="Toggle code freeze"
+            >
+              <span className="toggle-knob" />
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="period-toggle">
         {['daily', 'weekly', 'monthly'].map((p) => (
