@@ -105,3 +105,99 @@ Environment: INTEG
 Description: 
 Please review and approve/reject.
 ------------------------------------------------------------
+[2026-06-30T13:14:03+00:00] TO: dev-lead@company.com
+SUBJECT: Approval needed: PROJ-9 (TASK-20400)
+Environment: INTEG
+Description: multi branch
+Please review and approve/reject.
+------------------------------------------------------------
+[2026-06-30T13:22:41+00:00] TO: dev-lead@company.com
+SUBJECT: Approval needed: PROJ-77 (TASK-20395)
+Environment: INTEG
+Description: two build cards
+Please review and approve/reject.
+------------------------------------------------------------
+[2026-06-30T13:28:20+00:00] TO: dev-lead@company.com
+SUBJECT: Approval needed: bgb (TASK-20395)
+Environment: DEV
+Description: 
+Please review and approve/reject.
+------------------------------------------------------------
+[2026-06-30T13:45:58+00:00] TO: dev-lead@company.com
+SUBJECT: Approval needed: jkhj (TASK-20396)
+Environment: DEV
+Description: kjh
+Please review and approve/reject.
+------------------------------------------------------------
+[2026-06-30T14:29:09+00:00] TO: dev-lead@company.com
+SUBJECT: Approval needed: TRB-2026 (TASK-20397)
+Environment: INTEG
+Description: 
+Please review and approve/reject.
+------------------------------------------------------------
+[2026-06-30T14:44:57+00:00] TO: devops@company.com
+SUBJECT: Approval needed: TRB-2026 (TASK-20397)
+dev_lead has approved. Your approval is now required.
+------------------------------------------------------------
+[2026-06-30T14:46:04+00:00] TO: requester@company.com
+SUBJECT: Request approved and running: TRB-2026
+All approvals complete. Orchestrator has started.
+------------------------------------------------------------
+[2026-06-30T14:50:34+00:00] TO: dev-lead@company.com
+SUBJECT: Approval needed: resaf (TASK-20398)
+Environment: DEV
+Description: 
+Please review and approve/reject.
+------------------------------------------------------------
+[2026-06-30T15:44:56+00:00] TO: dev-lead@company.com
+SUBJECT: Approval needed: TRB-1 (TASK-20392)
+Environment: INTEG
+Description: role test
+Please review and approve/reject.
+------------------------------------------------------------
+[2026-06-30T15:44:56+00:00] TO: qa@company.com
+SUBJECT: Approval needed: TRB-1 (TASK-20392)
+dev_lead has approved. Your approval is now required.
+------------------------------------------------------------
+[2026-06-30T15:45:22+00:00] TO: dev-lead@company.com
+SUBJECT: Approval needed: TRB-1 (TASK-20392)
+Environment: INTEG
+Description: role test
+Please review and approve/reject.
+------------------------------------------------------------
+[2026-06-30T15:45:22+00:00] TO: devops@company.com
+SUBJECT: Approval needed: TRB-1 (TASK-20392)
+dev_lead has approved. Your approval is now required.
+------------------------------------------------------------
+[2026-06-30T15:45:22+00:00] TO: requester@company.com
+SUBJECT: Request approved and running: TRB-1
+All approvals complete. Orchestrator has started.
+------------------------------------------------------------
+[2026-06-30T15:50:35+00:00] TO: dev-lead@company.com
+SUBJECT: Approval needed: sadafa (TASK-20393)
+Environment: DEV
+Description: 
+Please review and approve/reject.
+------------------------------------------------------------
+[2026-06-30T15:53:15+00:00] TO: devops@company.com
+SUBJECT: Approval needed: sadafa (TASK-20393)
+dev_lead has approved. Your approval is now required.
+------------------------------------------------------------
+[2026-06-30T18:32:59+00:00] TO: dev-lead@company.com
+SUBJECT: Approval needed: TRB-AI-1 (TASK-20394)
+Environment: INTEG
+Description: e2e validation test
+Please review and approve/reject.
+------------------------------------------------------------
+[2026-06-30T18:35:35+00:00] TO: dev-lead@company.com
+SUBJECT: Approval needed: TRB-AI-1 (TASK-20395)
+Environment: INTEG
+Description: e2e validation test
+Please review and approve/reject.
+------------------------------------------------------------
+[2026-06-30T18:43:19+00:00] TO: dev-lead@company.com
+SUBJECT: Approval needed: TRB-16996 (TASK-20396)
+Environment: DEV
+Description: 
+Please review and approve/reject.
+------------------------------------------------------------

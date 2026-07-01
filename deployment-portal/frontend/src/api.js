@@ -1,10 +1,28 @@
 const BASE = '/api'
 
+function getToken() {
+  return localStorage.getItem('aap_token')
+}
+
 async function request(path, options = {}) {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  })
+  const token = getToken()
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options.headers,
+  }
+
+  const res = await fetch(`${BASE}${path}`, { ...options, headers })
+
+  if (res.status === 401) {
+    localStorage.removeItem('aap_token')
+    localStorage.removeItem('aap_user')
+    if (window.location.pathname !== '/login') {
+      window.location.href = '/login'
+    }
+    throw new Error('Your session has expired. Please sign in again.')
+  }
+
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
     const detail = body.detail
@@ -44,6 +62,12 @@ export const api = {
   },
 
   getTask: (taskId) => request(`/tasks/${taskId}`),
+
+  revalidateTask: (taskId) =>
+    request(`/tasks/${taskId}/revalidate`, { method: 'POST' }),
+
+  validatePreview: (payload) =>
+    request('/validate/preview', { method: 'POST', body: JSON.stringify(payload) }),
 
   approveTask: (taskId, payload) =>
     request(`/tasks/${taskId}/approve`, { method: 'POST', body: JSON.stringify(payload) }),

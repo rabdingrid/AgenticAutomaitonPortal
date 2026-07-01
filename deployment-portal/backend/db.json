@@ -3,12 +3,92 @@
     "TASK-20392": {
       "task_id": "TASK-20392",
       "environment": "INTEG",
-      "jira_id": "TRB-16996",
-      "description": "Account service update + billing config + DB migration",
-      "branch_from": "develop",
-      "branch_to": "release/2026-06",
+      "jira_id": "TRB-1",
+      "description": "role test",
+      "branch_from": "",
+      "branch_to": "",
+      "branches": [],
       "approver_key": "a-sharma",
-      "requested_by": "demo-user",
+      "requested_by": "Dev User",
+      "status": "running",
+      "code_freeze_enabled": false,
+      "approval_chain": [
+        "dev_lead",
+        "devops"
+      ],
+      "approvals": {
+        "dev_lead": {
+          "decision": "approved",
+          "comment": null,
+          "by": "Lead",
+          "at": "2026-06-30T15:45:22Z"
+        },
+        "devops": {
+          "decision": "approved",
+          "comment": null,
+          "by": "Devops Admin",
+          "at": "2026-06-30T15:45:22Z"
+        }
+      },
+      "rejection_reason": null,
+      "created_at": "2026-06-30T15:45:22Z",
+      "updated_at": "2026-06-30T15:45:22Z",
+      "jobs": [
+        "JOB-1"
+      ]
+    },
+    "TASK-20393": {
+      "task_id": "TASK-20393",
+      "environment": "DEV",
+      "jira_id": "sadafa",
+      "description": "",
+      "branch_from": "fdsa",
+      "branch_to": "develop",
+      "branches": [
+        {
+          "from": "fdsa",
+          "to": "develop"
+        }
+      ],
+      "approver_key": "a-sharma",
+      "requested_by": "Dev User",
+      "status": "pending_approval",
+      "code_freeze_enabled": false,
+      "approval_chain": [
+        "dev_lead",
+        "devops"
+      ],
+      "approvals": {
+        "dev_lead": {
+          "decision": "approved",
+          "comment": null,
+          "by": "Lead",
+          "at": "2026-06-30T15:53:15Z"
+        },
+        "devops": null
+      },
+      "rejection_reason": null,
+      "created_at": "2026-06-30T15:50:35Z",
+      "updated_at": "2026-06-30T15:53:15Z",
+      "jobs": [
+        "JOB-2"
+      ]
+    },
+    "TASK-20394": {
+      "task_id": "TASK-20394",
+      "environment": "INTEG",
+      "jira_id": "TRB-AI-1",
+      "description": "e2e validation test",
+      "branch_from": "develop",
+      "branch_to": "R-2026-07-W1",
+      "branches": [
+        {
+          "from": "develop",
+          "to": "R-2026-07-W1"
+        }
+      ],
+      "approver_key": "a-sharma",
+      "requested_by": "Dev User",
       "status": "pending_approval",
       "code_freeze_enabled": false,
       "approval_chain": [
@@ -20,273 +100,267 @@
         "devops": null
       },
       "rejection_reason": null,
-      "created_at": "2026-06-30T09:03:35Z",
-      "updated_at": "2026-06-30T09:03:35Z",
+      "created_at": "2026-06-30T18:32:59Z",
+      "updated_at": "2026-06-30T18:32:59Z",
       "jobs": [
-        "JOB-1",
-        "JOB-2",
-        "JOB-3"
-      ]
-    },
-    "TASK-20393": {
-      "task_id": "TASK-20393",
-      "environment": "INTEG",
-      "jira_id": "TRB-17812",
-      "description": "Admin portal refresh",
-      "branch_from": "develop",
-      "branch_to": "main",
-      "approver_key": "r-patel",
-      "requested_by": "demo-user",
-      "status": "done",
-      "code_freeze_enabled": false,
-      "approval_chain": [
-        "dev_lead",
-        "devops"
-      ],
-      "approvals": {
-        "dev_lead": {
-          "decision": "approved",
-          "comment": null,
-          "by": "Dev Lead",
-          "at": "2026-06-30T09:03:35Z"
-        },
-        "devops": {
-          "decision": "approved",
-          "comment": null,
-          "by": "DevOps",
-          "at": "2026-06-30T09:03:35Z"
-        }
-      },
-      "rejection_reason": null,
-      "created_at": "2026-06-30T09:03:35Z",
-      "updated_at": "2026-06-30T09:03:35Z",
-      "jobs": [
+        "JOB-3",
         "JOB-4"
-      ]
-    },
-    "TASK-20394": {
-      "task_id": "TASK-20394",
-      "environment": "UAT",
-      "jira_id": "TRB-18055",
-      "description": "Apollo SQL migration \u2014 rejected for missing environment field",
-      "branch_from": "release/2026-05",
-      "branch_to": "main",
-      "approver_key": "d-kumar",
-      "requested_by": "demo-user",
-      "status": "rejected",
-      "code_freeze_enabled": false,
-      "approval_chain": [
-        "dev_lead",
-        "devops"
-      ],
-      "approvals": {
-        "dev_lead": {
-          "decision": "rejected",
-          "comment": "Environment field is required before this can run.",
-          "by": "Dev Lead",
-          "at": "2026-06-30T09:03:35Z"
-        },
-        "devops": null
-      },
-      "rejection_reason": "Environment field is required before this can run.",
-      "created_at": "2026-06-30T09:03:35Z",
-      "updated_at": "2026-06-30T09:03:35Z",
-      "jobs": [
-        "JOB-5"
       ]
     },
     "TASK-20395": {
       "task_id": "TASK-20395",
       "environment": "INTEG",
-      "jira_id": "TRB-2001",
-      "description": "this is a dummy project",
-      "branch_from": "feature/login-669",
-      "branch_to": "integ",
-      "approver_key": "d-kumar",
-      "requested_by": "demo-user",
-      "status": "running",
-      "code_freeze_enabled": true,
-      "approval_chain": [
-        "dev_lead",
-        "qa",
-        "devops"
-      ],
-      "approvals": {
-        "dev_lead": {
-          "decision": "approved",
-          "comment": "looks good we can proceed",
-          "by": "Development Lead",
-          "at": "2026-06-30T09:35:39Z"
-        },
-        "qa": {
-          "decision": "approved",
-          "comment": "we can have this in current release",
-          "by": "QA",
-          "at": "2026-06-30T09:37:24Z"
-        },
-        "devops": {
-          "decision": "approved",
-          "comment": "plan looks good, proceed.",
-          "by": "DevOps Team",
-          "at": "2026-06-30T09:37:41Z"
+      "jira_id": "TRB-AI-1",
+      "description": "e2e validation test",
+      "branch_from": "develop",
+      "branch_to": "R-2026-07-W1",
+      "branches": [
+        {
+          "from": "develop",
+          "to": "R-2026-07-W1"
         }
-      },
-      "rejection_reason": null,
-      "created_at": "2026-06-30T09:35:03Z",
-      "updated_at": "2026-06-30T09:37:41Z",
-      "jobs": [
-        "JOB-6",
-        "JOB-7",
-        "JOB-8",
-        "JOB-9"
-      ]
-    },
-    "TASK-20396": {
-      "task_id": "TASK-20396",
-      "environment": "INTEG",
-      "jira_id": "TRB-2026",
-      "description": "similated",
-      "branch_from": "feature/billing-492",
-      "branch_to": "integ",
-      "approver_key": "d-kumar",
-      "requested_by": "demo-user",
-      "status": "rejected",
-      "code_freeze_enabled": true,
-      "approval_chain": [
-        "dev_lead",
-        "qa",
-        "devops"
       ],
-      "approvals": {
-        "dev_lead": {
-          "decision": "approved",
-          "comment": null,
-          "by": "Development Lead",
-          "at": "2026-06-30T09:46:40Z"
-        },
-        "qa": {
-          "decision": "rejected",
-          "comment": "Cant have this in current week release",
-          "by": "QA",
-          "at": "2026-06-30T09:47:06Z"
-        },
-        "devops": null
-      },
-      "rejection_reason": "Cant have this in current week release",
-      "created_at": "2026-06-30T09:46:20Z",
-      "updated_at": "2026-06-30T09:47:06Z",
-      "jobs": [
-        "JOB-10",
-        "JOB-11",
-        "JOB-12"
-      ]
-    },
-    "TASK-20397": {
-      "task_id": "TASK-20397",
-      "environment": "INTEG",
-      "jira_id": "jgjhg",
-      "description": "uhuh",
-      "branch_from": "bugfix/billing-251",
-      "branch_to": "integ",
       "approver_key": "a-sharma",
-      "requested_by": "demo-user",
-      "status": "running",
+      "requested_by": "Dev User",
+      "status": "pending_approval",
       "code_freeze_enabled": false,
       "approval_chain": [
         "dev_lead",
         "devops"
       ],
       "approvals": {
-        "dev_lead": {
-          "decision": "approved",
-          "comment": null,
-          "by": "Development Lead",
-          "at": "2026-06-30T09:49:03Z"
-        },
-        "devops": {
-          "decision": "approved",
-          "comment": null,
-          "by": "DevOps Team",
-          "at": "2026-06-30T09:49:04Z"
-        }
+        "dev_lead": null,
+        "devops": null
       },
       "rejection_reason": null,
-      "created_at": "2026-06-30T09:49:01Z",
-      "updated_at": "2026-06-30T09:49:04Z",
-      "jobs": [
-        "JOB-13"
-      ]
-    },
-    "TASK-20398": {
-      "task_id": "TASK-20398",
-      "environment": "INTEG",
-      "jira_id": "fdksjakl",
-      "description": "dasf",
-      "branch_from": "feature/login-573",
-      "branch_to": "integ",
-      "approver_key": "a-sharma",
-      "requested_by": "demo-user",
-      "status": "running",
-      "code_freeze_enabled": true,
-      "approval_chain": [
-        "dev_lead",
-        "qa",
-        "devops"
-      ],
-      "approvals": {
-        "dev_lead": {
-          "decision": "approved",
-          "comment": "dfsfd",
-          "by": "Development Lead",
-          "at": "2026-06-30T10:42:35Z"
+      "validation_status": "ready",
+      "validation_report": {
+        "generated_at": "2026-06-30T18:35:36Z",
+        "environment": "INTEG",
+        "jira_id": "TRB-AI-1",
+        "overall_status": "passed",
+        "stats": {
+          "checked": 2,
+          "passed": 2,
+          "warnings": 0,
+          "failed": 0
         },
-        "qa": {
-          "decision": "approved",
-          "comment": "qweq",
-          "by": "QA",
-          "at": "2026-06-30T10:43:17Z"
-        },
-        "devops": {
-          "decision": "approved",
-          "comment": null,
-          "by": "DevOps Team",
-          "at": "2026-06-30T10:43:48Z"
-        }
+        "sections": [
+          {
+            "section": "phrases",
+            "title": "Phrases",
+            "items": [
+              {
+                "service_key": "phrases:portal:customercareportalv2",
+                "label": "CustomerCarePortalV2",
+                "sub_type": "portal",
+                "status": "pass",
+                "checks": [
+                  {
+                    "name": "File present",
+                    "status": "pass",
+                    "detail": "Artifact located on the release branch."
+                  },
+                  {
+                    "name": "Valid JSON",
+                    "status": "pass",
+                    "detail": "Phrases file parses as JSON."
+                  },
+                  {
+                    "name": "AI content review",
+                    "status": "pass",
+                    "detail": "The artifact is syntactically valid and structurally correct."
+                  }
+                ],
+                "urls": {
+                  "file": "https://gitspace.foreverliving.com/Titan/flpi-titan-release/-/blob/R-2026-07-W1/Portals/CustomerCarePortalV2/R-2026-07-W1/Phrases/Phrases.json?ref_type=heads"
+                },
+                "merge": null,
+                "ai_insight": {
+                  "summary": "The artifact is syntactically valid and structurally correct.",
+                  "issues": [],
+                  "verdict": "pass",
+                  "confidence": 100
+                }
+              }
+            ],
+            "status": "pass"
+          },
+          {
+            "section": "build",
+            "title": "Build / Gitspace merge",
+            "items": [
+              {
+                "service_key": "build:microservice:reporttitan",
+                "label": "ReportTitan",
+                "sub_type": "microservice",
+                "status": "pass",
+                "checks": [
+                  {
+                    "name": "Mergeability",
+                    "status": "pass",
+                    "detail": "Clean merge develop \u2192 R-2026-07-W1 (MR !2054)."
+                  }
+                ],
+                "urls": {
+                  "merge_request": "https://gitspace.foreverliving.com/Titan/ReportingService/-/merge_requests/2054",
+                  "compare": "https://gitspace.foreverliving.com/Titan/ReportingService/-/compare/develop...R-2026-07-W1?from_project_id=&straight=false"
+                },
+                "merge": {
+                  "iid": 2054,
+                  "state": "opened",
+                  "mergeable": true,
+                  "conflicts": [],
+                  "detail": "Fast-forward / clean merge",
+                  "source_branch": "develop",
+                  "target_branch": "R-2026-07-W1"
+                },
+                "ai_insight": null
+              }
+            ],
+            "status": "pass"
+          }
+        ],
+        "steps": [
+          "All checks passed \u2014 Dev Lead can approve; orchestrator will proceed on approval."
+        ],
+        "ai_used": true,
+        "ai_model": "qwen2.5-coder:7b",
+        "summary_markdown": "## Verdict\n**APPROVE-READY**: All checks passed without any issues.\n\n## What this deploys\nThis deployment involves updating the `CustomerCarePortalV2` portal and the `ReportTitan` microservice in the `INTEG` environment. The changes are based on Jira ticket TRB-AI-1.\n\n## Checks\n- **phrases:portal:customercareportalv2**: Passed all checks (File present, Valid JSON, AI content review).\n- **build:microservice:reporttitan**: Mergeability check passed (Clean merge develop \u2192 R-2026-07-W1).\n\n## Risks & insights\nNo risks identified. All artifacts are syntactically valid and structurally correct.\n\n## Recommended next steps\n1. Approve the deployment.\n2. Monitor the INTEG environment for any anomalies post-deployment."
       },
-      "rejection_reason": null,
-      "created_at": "2026-06-30T10:37:37Z",
-      "updated_at": "2026-06-30T10:44:48Z",
+      "created_at": "2026-06-30T18:35:35Z",
+      "updated_at": "2026-06-30T18:35:44Z",
       "jobs": [
-        "JOB-14",
-        "JOB-15"
+        "JOB-5",
+        "JOB-6"
       ]
     },
-    "TASK-20399": {
-      "task_id": "TASK-20399",
-      "environment": "INTEG",
-      "jira_id": "sadfsad",
+    "TASK-20396": {
+      "task_id": "TASK-20396",
+      "environment": "DEV",
+      "jira_id": "TRB-16996",
       "description": "",
       "branch_from": "develop",
-      "branch_to": "integ",
+      "branch_to": "R-2026-07-W1",
+      "branches": [
+        {
+          "from": "develop",
+          "to": "R-2026-07-W1"
+        }
+      ],
       "approver_key": "a-sharma",
-      "requested_by": "demo-user",
+      "requested_by": "Dev User",
       "status": "pending_approval",
-      "code_freeze_enabled": true,
+      "code_freeze_enabled": false,
       "approval_chain": [
         "dev_lead",
-        "qa",
         "devops"
       ],
       "approvals": {
         "dev_lead": null,
-        "qa": null,
         "devops": null
       },
       "rejection_reason": null,
-      "created_at": "2026-06-30T10:49:50Z",
-      "updated_at": "2026-06-30T10:49:50Z",
+      "validation_status": "ready",
+      "validation_report": {
+        "generated_at": "2026-06-30T18:43:21Z",
+        "environment": "DEV",
+        "jira_id": "TRB-16996",
+        "overall_status": "passed",
+        "stats": {
+          "checked": 2,
+          "passed": 2,
+          "warnings": 0,
+          "failed": 0
+        },
+        "sections": [
+          {
+            "section": "phrases",
+            "title": "Phrases",
+            "items": [
+              {
+                "service_key": "phrases:portal:customercareportalv2",
+                "label": "CustomerCarePortalV2",
+                "sub_type": "portal",
+                "status": "pass",
+                "checks": [
+                  {
+                    "name": "File present",
+                    "status": "pass",
+                    "detail": "Artifact located on the release branch."
+                  },
+                  {
+                    "name": "Valid JSON",
+                    "status": "pass",
+                    "detail": "Phrases file parses as JSON."
+                  },
+                  {
+                    "name": "AI content review",
+                    "status": "pass",
+                    "detail": "The artifact is syntactically valid and structurally correct."
+                  }
+                ],
+                "urls": {
+                  "file": "https://gitspace.foreverliving.com/Titan/flpi-titan-release/-/blob/R-2026-07-W1/Portals/CustomerCarePortalV2/R-2026-07-W1/Phrases/Phrases.json?ref_type=heads"
+                },
+                "merge": null,
+                "ai_insight": {
+                  "summary": "The artifact is syntactically valid and structurally correct.",
+                  "issues": [],
+                  "verdict": "pass",
+                  "confidence": 100
+                }
+              }
+            ],
+            "status": "pass"
+          },
+          {
+            "section": "build",
+            "title": "Build / Gitspace merge",
+            "items": [
+              {
+                "service_key": "build:microservice:reporttitan",
+                "label": "ReportTitan",
+                "sub_type": "microservice",
+                "status": "pass",
+                "checks": [
+                  {
+                    "name": "Mergeability",
+                    "status": "pass",
+                    "detail": "Clean merge develop \u2192 R-2026-07-W1 (MR !2054)."
+                  }
+                ],
+                "urls": {
+                  "merge_request": "https://gitspace.foreverliving.com/Titan/ReportingService/-/merge_requests/2054",
+                  "compare": "https://gitspace.foreverliving.com/Titan/ReportingService/-/compare/develop...R-2026-07-W1?from_project_id=&straight=false"
+                },
+                "merge": {
+                  "iid": 2054,
+                  "state": "opened",
+                  "mergeable": true,
+                  "conflicts": [],
+                  "detail": "Fast-forward / clean merge",
+                  "source_branch": "develop",
+                  "target_branch": "R-2026-07-W1"
+                },
+                "ai_insight": null
+              }
+            ],
+            "status": "pass"
+          }
+        ],
+        "steps": [
+          "All checks passed \u2014 Dev Lead can approve; orchestrator will proceed on approval."
+        ],
+        "ai_used": true,
+        "ai_model": "qwen2.5-coder:7b",
+        "summary_markdown": "# Approval Briefing\n\n## Verdict: APPROVE-READY\nAll checks passed; no issues identified.\n\n## What this deploys\nThis deployment includes changes to the `CustomerCarePortalV2` portal and the `ReportTitan` microservice, targeting the `R-2026-07-W1` branch in the `develop` environment.\n\n## Checks\n- **File presence**: Phrases file located on the release branch.\n- **Valid JSON**: Phrases file parses as JSON.\n- **AI content review**: The artifact is syntactically valid and structurally correct.\n- **Mergeability**: Clean merge of `develop` into `R-2026-07-W1`.\n\n## Risks & Insights\nNo risks identified. All checks passed, and the deployment can proceed without issues.\n\n## Recommended Next Steps\n1. Review the [CustomerCarePortalV2 phrases file](https://gitspace.foreverliving.com/Titan/flpi-titan-release/-/blob/R-2026-07-W1/Portals/CustomerCarePortalV2/R-2026-07-W1/Phrases/Phrases.json?ref_type=heads) for any necessary updates.\n2. Confirm the [merge request](https://gitspace.foreverliving.com/Titan/ReportingService/-/merge_requests/2054) is complete and meets all requirements.\n3. Approve the deployment to proceed.\n\nApproval can be confirmed by clicking \"Approve\" in the orchestrator interface."
+      },
+      "created_at": "2026-06-30T18:43:19Z",
+      "updated_at": "2026-06-30T18:43:32Z",
       "jobs": [
-        "JOB-16"
+        "JOB-7",
+        "JOB-8"
       ]
     }
   },
@@ -294,54 +368,13 @@
     "JOB-1": {
       "job_id": "JOB-1",
       "task_id": "TASK-20392",
-      "section": "yaml",
-      "release_branch": "release/2026-07",
-      "agent": "yaml_automation_agent",
-      "status": "queued",
-      "order": 1,
-      "links": [
-        {
-          "sub_type": "microservice",
-          "service_key": "yaml:microservice:account",
-          "label": "Account"
-        }
-      ],
-      "steps": [
-        {
-          "label": "Links validated",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Config fetched",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Jenkins config job running",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Applied to environment",
-          "status": "queued",
-          "ts": null
-        }
-      ],
-      "logs": [
-        "[2026-06-30T09:03:35Z] Job created, awaiting approval before orchestrator starts"
-      ],
-      "created_at": "2026-06-30T09:03:35Z",
-      "updated_at": "2026-06-30T09:03:35Z"
-    },
-    "JOB-2": {
-      "job_id": "JOB-2",
-      "task_id": "TASK-20392",
       "section": "db",
-      "release_branch": "release/2026-07",
+      "release_branch": "release/x",
       "agent": "liquibase_agent",
-      "status": "queued",
-      "order": 2,
+      "status": "running",
+      "order": 1,
+      "branch_from": "",
+      "branch_to": "",
       "links": [
         {
           "sub_type": "microservice",
@@ -352,8 +385,8 @@
       "steps": [
         {
           "label": "Links validated",
-          "status": "queued",
-          "ts": null
+          "status": "running",
+          "ts": "2026-06-30T15:45:22Z"
         },
         {
           "label": "Liquibase changeset fetched",
@@ -372,79 +405,34 @@
         }
       ],
       "logs": [
-        "[2026-06-30T09:03:35Z] Job created, awaiting approval before orchestrator starts"
+        "[2026-06-30T15:45:22Z] Job created, awaiting approval before orchestrator starts",
+        "[2026-06-30T15:45:22Z] All approvals received \u2014 orchestrator dispatched to liquibase_agent"
       ],
-      "created_at": "2026-06-30T09:03:35Z",
-      "updated_at": "2026-06-30T09:03:35Z"
+      "created_at": "2026-06-30T15:45:22Z",
+      "updated_at": "2026-06-30T15:45:22Z"
     },
-    "JOB-3": {
-      "job_id": "JOB-3",
-      "task_id": "TASK-20392",
-      "section": "build",
-      "release_branch": "",
-      "agent": "build_agent",
-      "status": "queued",
-      "order": 3,
-      "links": [
-        {
-          "sub_type": "microservice",
-          "service_key": "build:microservice:account",
-          "label": "Account"
-        },
-        {
-          "sub_type": "portal",
-          "service_key": "build:portal:admin",
-          "label": "Admin"
-        }
-      ],
-      "steps": [
-        {
-          "label": "Links validated",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Merged into target branch",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Jenkins build running",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Deployed",
-          "status": "queued",
-          "ts": null
-        }
-      ],
-      "logs": [
-        "[2026-06-30T09:03:35Z] Job created, awaiting approval before orchestrator starts"
-      ],
-      "created_at": "2026-06-30T09:03:35Z",
-      "updated_at": "2026-06-30T09:03:35Z"
-    },
-    "JOB-4": {
-      "job_id": "JOB-4",
+    "JOB-2": {
+      "job_id": "JOB-2",
       "task_id": "TASK-20393",
       "section": "build",
       "release_branch": "",
       "agent": "build_agent",
-      "status": "done",
+      "status": "queued",
       "order": 1,
+      "branch_from": "fdsa",
+      "branch_to": "develop",
       "links": [
         {
-          "sub_type": "portal",
-          "service_key": "build:portal:ecommerce",
-          "label": "Ecommerce"
+          "sub_type": "microservice",
+          "service_key": "build:microservice:auditlog",
+          "label": "Auditlog"
         }
       ],
       "steps": [
         {
           "label": "Links validated",
-          "status": "running",
-          "ts": "2026-06-30T09:03:35Z"
+          "status": "queued",
+          "ts": null
         },
         {
           "label": "Merged into target branch",
@@ -463,156 +451,26 @@
         }
       ],
       "logs": [
-        "[2026-06-30T09:03:35Z] Job created, awaiting approval before orchestrator starts",
-        "[2026-06-30T09:03:35Z] All approvals received \u2014 orchestrator dispatched to build_agent",
-        "[2026-06-30T09:03:35Z] Portal deployed successfully"
+        "[2026-06-30T15:50:35Z] Job created, awaiting approval before orchestrator starts"
       ],
-      "created_at": "2026-06-30T09:03:35Z",
-      "updated_at": "2026-06-30T09:03:35Z"
+      "created_at": "2026-06-30T15:50:35Z",
+      "updated_at": "2026-06-30T15:50:35Z"
     },
-    "JOB-5": {
-      "job_id": "JOB-5",
+    "JOB-3": {
+      "job_id": "JOB-3",
       "task_id": "TASK-20394",
-      "section": "db",
-      "release_branch": "release/2026-06",
-      "agent": "liquibase_agent",
-      "status": "queued",
-      "order": 1,
-      "links": [
-        {
-          "sub_type": "microservice",
-          "service_key": "db:microservice:order",
-          "label": "Order"
-        }
-      ],
-      "steps": [
-        {
-          "label": "Links validated",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Liquibase changeset fetched",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Liquibase update running",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Migration applied",
-          "status": "queued",
-          "ts": null
-        }
-      ],
-      "logs": [
-        "[2026-06-30T09:03:35Z] Job created, awaiting approval before orchestrator starts"
-      ],
-      "created_at": "2026-06-30T09:03:35Z",
-      "updated_at": "2026-06-30T09:03:35Z"
-    },
-    "JOB-6": {
-      "job_id": "JOB-6",
-      "task_id": "TASK-20395",
-      "section": "yaml",
-      "release_branch": "R-2026-07-W1",
-      "agent": "yaml_automation_agent",
-      "status": "running",
-      "order": 1,
-      "links": [
-        {
-          "sub_type": "microservice",
-          "service_key": "yaml:microservice:scheduler",
-          "label": "Scheduler"
-        }
-      ],
-      "steps": [
-        {
-          "label": "Links validated",
-          "status": "running",
-          "ts": "2026-06-30T09:37:41Z"
-        },
-        {
-          "label": "Config fetched",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Jenkins config job running",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Applied to environment",
-          "status": "queued",
-          "ts": null
-        }
-      ],
-      "logs": [
-        "[2026-06-30T09:35:03Z] Job created, awaiting approval before orchestrator starts",
-        "[2026-06-30T09:37:41Z] All approvals received \u2014 orchestrator dispatched to yaml_automation_agent"
-      ],
-      "created_at": "2026-06-30T09:35:03Z",
-      "updated_at": "2026-06-30T09:37:41Z"
-    },
-    "JOB-7": {
-      "job_id": "JOB-7",
-      "task_id": "TASK-20395",
-      "section": "db",
-      "release_branch": "R-2026-07-W1",
-      "agent": "liquibase_agent",
-      "status": "queued",
-      "order": 2,
-      "links": [
-        {
-          "sub_type": "microservice",
-          "service_key": "db:microservice:batchprocessing",
-          "label": "BatchProcessing"
-        }
-      ],
-      "steps": [
-        {
-          "label": "Links validated",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Liquibase changeset fetched",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Liquibase update running",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Migration applied",
-          "status": "queued",
-          "ts": null
-        }
-      ],
-      "logs": [
-        "[2026-06-30T09:35:03Z] Job created, awaiting approval before orchestrator starts"
-      ],
-      "created_at": "2026-06-30T09:35:03Z",
-      "updated_at": "2026-06-30T09:35:03Z"
-    },
-    "JOB-8": {
-      "job_id": "JOB-8",
-      "task_id": "TASK-20395",
       "section": "phrases",
       "release_branch": "R-2026-07-W1",
       "agent": "phrases_agent",
       "status": "queued",
-      "order": 3,
+      "order": 1,
+      "branch_from": "",
+      "branch_to": "",
       "links": [
         {
           "sub_type": "portal",
-          "service_key": "phrases:portal:admin",
-          "label": "Admin"
+          "service_key": "phrases:portal:customercareportalv2",
+          "label": "CustomerCarePortalV2"
         }
       ],
       "steps": [
@@ -638,39 +496,116 @@
         }
       ],
       "logs": [
-        "[2026-06-30T09:35:03Z] Job created, awaiting approval before orchestrator starts"
+        "[2026-06-30T18:32:59Z] Job created, awaiting approval before orchestrator starts"
       ],
-      "created_at": "2026-06-30T09:35:03Z",
-      "updated_at": "2026-06-30T09:35:03Z"
+      "created_at": "2026-06-30T18:32:59Z",
+      "updated_at": "2026-06-30T18:32:59Z"
     },
-    "JOB-9": {
-      "job_id": "JOB-9",
+    "JOB-4": {
+      "job_id": "JOB-4",
+      "task_id": "TASK-20394",
+      "section": "build",
+      "release_branch": "",
+      "agent": "build_agent",
+      "status": "queued",
+      "order": 2,
+      "branch_from": "develop",
+      "branch_to": "R-2026-07-W1",
+      "links": [
+        {
+          "sub_type": "microservice",
+          "service_key": "build:microservice:reporttitan",
+          "label": "ReportTitan"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Merged into target branch",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins build running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Deployed",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-06-30T18:32:59Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-06-30T18:32:59Z",
+      "updated_at": "2026-06-30T18:32:59Z"
+    },
+    "JOB-5": {
+      "job_id": "JOB-5",
+      "task_id": "TASK-20395",
+      "section": "phrases",
+      "release_branch": "R-2026-07-W1",
+      "agent": "phrases_agent",
+      "status": "queued",
+      "order": 1,
+      "branch_from": "",
+      "branch_to": "",
+      "links": [
+        {
+          "sub_type": "portal",
+          "service_key": "phrases:portal:customercareportalv2",
+          "label": "CustomerCarePortalV2"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Phrases fetched",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Phrases job running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Applied to environment",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-06-30T18:35:35Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-06-30T18:35:35Z",
+      "updated_at": "2026-06-30T18:35:35Z"
+    },
+    "JOB-6": {
+      "job_id": "JOB-6",
       "task_id": "TASK-20395",
       "section": "build",
       "release_branch": "",
       "agent": "build_agent",
       "status": "queued",
-      "order": 4,
+      "order": 2,
+      "branch_from": "develop",
+      "branch_to": "R-2026-07-W1",
       "links": [
         {
           "sub_type": "microservice",
-          "service_key": "build:microservice:address",
-          "label": "Address"
-        },
-        {
-          "sub_type": "microservice",
-          "service_key": "build:microservice:auditlog",
-          "label": "Auditlog"
-        },
-        {
-          "sub_type": "portal",
-          "service_key": "build:portal:flp360pwa",
-          "label": "FLP360PWA"
-        },
-        {
-          "sub_type": "utility",
-          "service_key": "build:utility:nextiveoutility",
-          "label": "NextiveoUtility"
+          "service_key": "build:microservice:reporttitan",
+          "label": "ReportTitan"
         }
       ],
       "steps": [
@@ -696,39 +631,26 @@
         }
       ],
       "logs": [
-        "[2026-06-30T09:35:03Z] Job created, awaiting approval before orchestrator starts"
+        "[2026-06-30T18:35:35Z] Job created, awaiting approval before orchestrator starts"
       ],
-      "created_at": "2026-06-30T09:35:03Z",
-      "updated_at": "2026-06-30T09:35:03Z"
+      "created_at": "2026-06-30T18:35:35Z",
+      "updated_at": "2026-06-30T18:35:35Z"
     },
-    "JOB-10": {
-      "job_id": "JOB-10",
+    "JOB-7": {
+      "job_id": "JOB-7",
       "task_id": "TASK-20396",
-      "section": "yaml",
-      "release_branch": "R-2026-06-W5",
-      "agent": "yaml_automation_agent",
+      "section": "phrases",
+      "release_branch": "R-2026-07-W1",
+      "agent": "phrases_agent",
       "status": "queued",
       "order": 1,
+      "branch_from": "",
+      "branch_to": "",
       "links": [
         {
-          "sub_type": "microservice",
-          "service_key": "yaml:microservice:address",
-          "label": "Address"
-        },
-        {
-          "sub_type": "microservice",
-          "service_key": "yaml:microservice:customercare",
-          "label": "Customercare"
-        },
-        {
           "sub_type": "portal",
-          "service_key": "yaml:portal:customercare",
-          "label": "Customercare"
-        },
-        {
-          "sub_type": "portal",
-          "service_key": "yaml:portal:customercarev2",
-          "label": "Customercarev2"
+          "service_key": "phrases:portal:customercareportalv2",
+          "label": "CustomerCarePortalV2"
         }
       ],
       "steps": [
@@ -738,12 +660,12 @@
           "ts": null
         },
         {
-          "label": "Config fetched",
+          "label": "Phrases fetched",
           "status": "queued",
           "ts": null
         },
         {
-          "label": "Jenkins config job running",
+          "label": "Phrases job running",
           "status": "queued",
           "ts": null
         },
@@ -754,288 +676,26 @@
         }
       ],
       "logs": [
-        "[2026-06-30T09:46:20Z] Job created, awaiting approval before orchestrator starts"
+        "[2026-06-30T18:43:19Z] Job created, awaiting approval before orchestrator starts"
       ],
-      "created_at": "2026-06-30T09:46:20Z",
-      "updated_at": "2026-06-30T09:46:20Z"
+      "created_at": "2026-06-30T18:43:19Z",
+      "updated_at": "2026-06-30T18:43:19Z"
     },
-    "JOB-11": {
-      "job_id": "JOB-11",
-      "task_id": "TASK-20396",
-      "section": "db",
-      "release_branch": "R-2026-06-W5",
-      "agent": "liquibase_agent",
-      "status": "queued",
-      "order": 2,
-      "links": [
-        {
-          "sub_type": "microservice",
-          "service_key": "db:microservice:address",
-          "label": "Address"
-        }
-      ],
-      "steps": [
-        {
-          "label": "Links validated",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Liquibase changeset fetched",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Liquibase update running",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Migration applied",
-          "status": "queued",
-          "ts": null
-        }
-      ],
-      "logs": [
-        "[2026-06-30T09:46:20Z] Job created, awaiting approval before orchestrator starts"
-      ],
-      "created_at": "2026-06-30T09:46:20Z",
-      "updated_at": "2026-06-30T09:46:20Z"
-    },
-    "JOB-12": {
-      "job_id": "JOB-12",
+    "JOB-8": {
+      "job_id": "JOB-8",
       "task_id": "TASK-20396",
       "section": "build",
       "release_branch": "",
       "agent": "build_agent",
       "status": "queued",
-      "order": 3,
-      "links": [
-        {
-          "sub_type": "microservice",
-          "service_key": "build:microservice:address",
-          "label": "Address"
-        },
-        {
-          "sub_type": "microservice",
-          "service_key": "build:microservice:customercare",
-          "label": "Customercare"
-        },
-        {
-          "sub_type": "portal",
-          "service_key": "build:portal:corporate",
-          "label": "Corporate"
-        },
-        {
-          "sub_type": "utility",
-          "service_key": "build:utility:portalutils",
-          "label": "PortalUtils"
-        },
-        {
-          "sub_type": "utility",
-          "service_key": "build:utility:flp360utils",
-          "label": "FLP360Utils"
-        }
-      ],
-      "steps": [
-        {
-          "label": "Links validated",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Merged into target branch",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Jenkins build running",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Deployed",
-          "status": "queued",
-          "ts": null
-        }
-      ],
-      "logs": [
-        "[2026-06-30T09:46:20Z] Job created, awaiting approval before orchestrator starts"
-      ],
-      "created_at": "2026-06-30T09:46:20Z",
-      "updated_at": "2026-06-30T09:46:20Z"
-    },
-    "JOB-13": {
-      "job_id": "JOB-13",
-      "task_id": "TASK-20397",
-      "section": "build",
-      "release_branch": "",
-      "agent": "build_agent",
-      "status": "running",
-      "order": 1,
-      "links": [
-        {
-          "sub_type": "microservice",
-          "service_key": "build:microservice:communication",
-          "label": "Communication"
-        }
-      ],
-      "steps": [
-        {
-          "label": "Links validated",
-          "status": "running",
-          "ts": "2026-06-30T09:49:04Z"
-        },
-        {
-          "label": "Merged into target branch",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Jenkins build running",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Deployed",
-          "status": "queued",
-          "ts": null
-        }
-      ],
-      "logs": [
-        "[2026-06-30T09:49:01Z] Job created, awaiting approval before orchestrator starts",
-        "[2026-06-30T09:49:04Z] All approvals received \u2014 orchestrator dispatched to build_agent"
-      ],
-      "created_at": "2026-06-30T09:49:01Z",
-      "updated_at": "2026-06-30T09:49:04Z"
-    },
-    "JOB-14": {
-      "job_id": "JOB-14",
-      "task_id": "TASK-20398",
-      "section": "yaml",
-      "release_branch": "fgdghf",
-      "agent": "yaml_automation_agent",
-      "status": "done",
-      "order": 1,
-      "links": [
-        {
-          "sub_type": "portal",
-          "service_key": "yaml:portal:customercare",
-          "label": "Customercare"
-        },
-        {
-          "sub_type": "portal",
-          "service_key": "yaml:portal:customercarev2",
-          "label": "Customercarev2"
-        }
-      ],
-      "steps": [
-        {
-          "label": "Links validated",
-          "status": "running",
-          "ts": "2026-06-30T10:43:48Z"
-        },
-        {
-          "label": "Config fetched",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Jenkins config job running",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Applied to environment",
-          "status": "queued",
-          "ts": null
-        }
-      ],
-      "logs": [
-        "[2026-06-30T10:37:37Z] Job created, awaiting approval before orchestrator starts",
-        "[2026-06-30T10:43:48Z] All approvals received \u2014 orchestrator dispatched to yaml_automation_agent",
-        "[2026-06-30T10:44:48Z] Manually marked done (demo control)"
-      ],
-      "created_at": "2026-06-30T10:37:37Z",
-      "updated_at": "2026-06-30T10:44:48Z"
-    },
-    "JOB-15": {
-      "job_id": "JOB-15",
-      "task_id": "TASK-20398",
-      "section": "build",
-      "release_branch": "",
-      "agent": "build_agent",
-      "status": "running",
       "order": 2,
+      "branch_from": "develop",
+      "branch_to": "R-2026-07-W1",
       "links": [
         {
           "sub_type": "microservice",
-          "service_key": "build:microservice:auditlog",
-          "label": "Auditlog"
-        },
-        {
-          "sub_type": "microservice",
-          "service_key": "build:microservice:account",
-          "label": "Account"
-        },
-        {
-          "sub_type": "portal",
-          "service_key": "build:portal:admin",
-          "label": "Admin"
-        },
-        {
-          "sub_type": "portal",
-          "service_key": "build:portal:ecommerce",
-          "label": "Ecommerce"
-        },
-        {
-          "sub_type": "utility",
-          "service_key": "build:utility:kafkacontract",
-          "label": "KafkaContract"
-        }
-      ],
-      "steps": [
-        {
-          "label": "Links validated",
-          "status": "running",
-          "ts": "2026-06-30T10:44:48Z"
-        },
-        {
-          "label": "Merged into target branch",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Jenkins build running",
-          "status": "queued",
-          "ts": null
-        },
-        {
-          "label": "Deployed",
-          "status": "queued",
-          "ts": null
-        }
-      ],
-      "logs": [
-        "[2026-06-30T10:37:37Z] Job created, awaiting approval before orchestrator starts",
-        "[2026-06-30T10:44:48Z] Orchestrator dispatched to build_agent"
-      ],
-      "created_at": "2026-06-30T10:37:37Z",
-      "updated_at": "2026-06-30T10:44:48Z"
-    },
-    "JOB-16": {
-      "job_id": "JOB-16",
-      "task_id": "TASK-20399",
-      "section": "build",
-      "release_branch": "",
-      "agent": "build_agent",
-      "status": "queued",
-      "order": 1,
-      "links": [
-        {
-          "sub_type": "microservice",
-          "service_key": "build:microservice:address",
-          "label": "Address"
+          "service_key": "build:microservice:reporttitan",
+          "label": "ReportTitan"
         }
       ],
       "steps": [
@@ -1061,14 +721,14 @@
         }
       ],
       "logs": [
-        "[2026-06-30T10:49:50Z] Job created, awaiting approval before orchestrator starts"
+        "[2026-06-30T18:43:19Z] Job created, awaiting approval before orchestrator starts"
       ],
-      "created_at": "2026-06-30T10:49:50Z",
-      "updated_at": "2026-06-30T10:49:50Z"
+      "created_at": "2026-06-30T18:43:19Z",
+      "updated_at": "2026-06-30T18:43:19Z"
     }
   },
   "counters": {
-    "task": 20399,
-    "job": 16
+    "task": 20396,
+    "job": 8
   }
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api.js'
+import { useAuth } from '../contexts/AuthContext.jsx'
 
 const STATUS_BADGE = {
   pending_approval: { cls: 'badge-pending', label: 'Pending' },
@@ -13,11 +14,10 @@ const STATUS_BADGE = {
 
 const SECTION_LABEL = { build: 'Build', yaml: 'YAML', db: 'DB', phrases: 'Phrases' }
 
-// TODO: replace with real role check once auth lands.
-const IS_DEVOPS_ROLE = true
-
 export default function Home() {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const isDevops = user?.approval_stage === 'devops'
   const [stats, setStats] = useState(null)
   const [activity, setActivity] = useState([])
   const [period, setPeriod] = useState('weekly')
@@ -74,7 +74,7 @@ export default function Home() {
         </Link>
       </div>
 
-      {IS_DEVOPS_ROLE && codeFreeze && (
+      {isDevops && codeFreeze && (
         <div className="card code-freeze-card" style={{ background: codeFreeze.enabled ? 'var(--red-light)' : 'var(--white)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
             <div>

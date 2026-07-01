@@ -207,6 +207,7 @@ def create_task(
     requested_by: str,
     sections_payload: list[dict[str, Any]],
     code_freeze_enabled: bool = False,
+    branches: list[dict[str, str]] | None = None,
 ) -> dict[str, Any]:
     if not sections_payload:
         raise ValidationError("At least one section (YAML / DB / Phrases / Build) is required")
@@ -239,6 +240,8 @@ def create_task(
                 "agent": _AGENT_MAP.get(section, "orchestrator"),
                 "status": "queued",
                 "order": idx,
+                "branch_from": (sec.get("branch_from") or "").strip(),
+                "branch_to": (sec.get("branch_to") or "").strip(),
                 "links": sec["links"],
                 "steps": _default_steps(section, queued=True),
                 "logs": [f"[{now}] Job created, awaiting approval before orchestrator starts"],
@@ -254,6 +257,7 @@ def create_task(
             "description": description,
             "branch_from": branch_from,
             "branch_to": branch_to,
+            "branches": branches if branches else ([{"from": branch_from, "to": branch_to}] if (branch_from or branch_to) else []),
             "approver_key": approver_key,
             "requested_by": requested_by,
             "status": "pending_approval",
@@ -261,6 +265,8 @@ def create_task(
             "approval_chain": chain,
             "approvals": {role: None for role in chain},
             "rejection_reason": None,
+            "validation_status": "pending",
+            "validation_report": None,
             "created_at": now,
             "updated_at": now,
             "jobs": job_ids,
@@ -299,6 +305,30 @@ def _expand_task(db: dict[str, Any], task_id: str) -> dict[str, Any]:
     task["jobs"] = [db["jobs"][jid] for jid in task["jobs"] if jid in db["jobs"]]
     task["current_stage"] = get_current_approval_stage(db["tasks"][task_id])
     return task
+
+
+def set_validation_status(task_id: str, status: str) -> None:
+    with _LOCK:
+        db = _read()
+        task = db["tasks"].get(task_id)
+        if not task:
+            return
+        task["validation_status"] = status
+        task["updated_at"] = _now()
+        _write(db)
+
+
+def set_validation_report(task_id: str, report: dict[str, Any]) -> dict[str, Any] | None:
+    with _LOCK:
+        db = _read()
+        task = db["tasks"].get(task_id)
+        if not task:
+            return None
+        task["validation_report"] = report
+        task["validation_status"] = "ready"
+        task["updated_at"] = _now()
+        _write(db)
+        return _expand_task(db, task_id)
 
 
 def get_job(job_id: str) -> dict[str, Any] | None:

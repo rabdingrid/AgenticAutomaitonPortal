@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { api } from '../api.js'
-import BranchAutocomplete from './BranchAutocomplete.jsx'
 
 const SUBTYPE_LABELS = {
   microservice: 'Microservice',
@@ -22,11 +21,12 @@ export default function LinkSectionEditor({
   onReleaseBranchChange,
   links,
   onChange,
+  showToggle = true,
+  onRemoveGroup,
   showBranches,
-  branchServiceKey,
-  branchFrom,
-  onBranchFromChange,
-  branchTo,
+  branchPair,
+  onBranchChange,
+  onAddGroup,
 }) {
   const [activeTab, setActiveTab] = useState(allowedSubTypes[0])
   const [services, setServices] = useState({})
@@ -80,14 +80,25 @@ export default function LinkSectionEditor({
           </div>
         )}
 
-        <button
-          type="button"
-          className={`toggle-switch ${enabled ? 'on' : ''}`}
-          onClick={onToggle}
-          aria-label={`Toggle ${title}`}
-        >
-          <span className="toggle-knob" />
-        </button>
+        {showToggle ? (
+          <button
+            type="button"
+            className={`toggle-switch ${enabled ? 'on' : ''}`}
+            onClick={onToggle}
+            aria-label={`Toggle ${title}`}
+          >
+            <span className="toggle-knob" />
+          </button>
+        ) : onRemoveGroup ? (
+          <button
+            type="button"
+            className="card-remove-btn"
+            onClick={onRemoveGroup}
+            title="Remove this card"
+          >
+            ×
+          </button>
+        ) : null}
       </div>
 
       {enabled && (
@@ -137,22 +148,41 @@ export default function LinkSectionEditor({
             </div>
           </div>
 
-          {showBranches && (
+          {showBranches && branchPair && (
             <div className="build-branches">
-              <div className="field-row" style={{ marginBottom: 0 }}>
-                <div>
-                  <label className="field-label">Gitspace branch — From (autocomplete)</label>
-                  <BranchAutocomplete
-                    serviceKey={branchServiceKey}
-                    value={branchFrom}
-                    onChange={onBranchFromChange}
-                    placeholder="Type to search branches..."
-                  />
+              <div className="branch-pair">
+                <div className="branch-pair-fields">
+                  <div>
+                    <label className="field-label">Gitspace branch — From</label>
+                    <input
+                      type="text"
+                      value={branchPair.from}
+                      onChange={(e) => onBranchChange({ from: e.target.value })}
+                      placeholder="e.g. feature/my-change"
+                    />
+                  </div>
+                  <div>
+                    <label className="field-label">Gitspace branch — To (auto from environment)</label>
+                    <input
+                      type="text"
+                      value={branchPair.to}
+                      onChange={(e) => onBranchChange({ to: e.target.value })}
+                      placeholder="e.g. develop"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="field-label">Gitspace branch — To (auto from environment)</label>
-                  <input type="text" value={branchTo} readOnly className="readonly-field" />
-                </div>
+                {onAddGroup && (
+                  <div className="branch-pair-actions">
+                    <button
+                      type="button"
+                      className="branch-add-btn"
+                      onClick={onAddGroup}
+                      title="Add another Build card"
+                    >
+                      +
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}

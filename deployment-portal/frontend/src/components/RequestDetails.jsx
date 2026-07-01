@@ -23,8 +23,16 @@ export default function RequestDetails({ task, approverName }) {
           <tr><td>Environment</td><td>{task.environment}</td></tr>
           <tr><td>Jira ID</td><td>{task.jira_id}</td></tr>
           <tr><td>Description</td><td>{task.description || '—'}</td></tr>
-          <tr><td>Branch from</td><td>{task.branch_from || '—'}</td></tr>
-          <tr><td>Branch to</td><td>{task.branch_to || '—'}</td></tr>
+          <tr>
+            <td>Branches</td>
+            <td>
+              {(task.branches && task.branches.length > 0)
+                ? task.branches.map((b, i) => (
+                    <div key={i}>{(b.from || '—')} → {(b.to || '—')}</div>
+                  ))
+                : <span>{(task.branch_from || '—')} → {(task.branch_to || '—')}</span>}
+            </td>
+          </tr>
           <tr><td>Approver (Dev Lead)</td><td>{approverName || task.approver_key}</td></tr>
           <tr><td>Code freeze at submit</td><td>{task.code_freeze_enabled ? 'Enabled' : 'Disabled'}</td></tr>
           <tr><td>Requested by</td><td>{task.requested_by}</td></tr>
@@ -41,6 +49,11 @@ export default function RequestDetails({ task, approverName }) {
               {job.release_branch && (
                 <span className="pill" style={{ marginLeft: 8, background: 'var(--blue-light)', color: 'var(--blue)' }}>
                   release: {job.release_branch}
+                </span>
+              )}
+              {(job.branch_from || job.branch_to) && (
+                <span className="pill" style={{ marginLeft: 8, background: 'var(--blue-light)', color: 'var(--blue)' }}>
+                  {(job.branch_from || '—')} → {(job.branch_to || '—')}
                 </span>
               )}
             </p>

@@ -67,17 +67,21 @@ export default function NewRequest() {
     environment: 'INTEG',
     jira_id: '',
     description: '',
-    branch_from: '',
-    branch_to: '',
     approver_key: '',
   })
+
+  // Build is a list of independent groups — each its own services + a single
+  // source → destination branch pair. The "+" spawns a whole new Build card.
+  const [buildGroups, setBuildGroups] = useState([
+    { links: [], branch: { from: '', to: ENV_TO_BRANCH.INTEG || '' } },
+  ])
 
   const [enabledSections, setEnabledSections] = useState({
     build: true, yaml: false, db: false, phrases: false,
   })
 
   const [sectionLinks, setSectionLinks] = useState({
-    build: [], yaml: [], db: [], phrases: [],
+    yaml: [], db: [], phrases: [],
   })
 
   const [releaseBranches, setReleaseBranches] = useState({ yaml: '', db: '', phrases: '' })
@@ -93,22 +97,41 @@ export default function NewRequest() {
       .catch((e) => setError(e.message))
   }, [])
 
-  // "To" branch auto-populates from the selected environment.
+  // "To" branch auto-populates from the selected environment (still editable).
   useEffect(() => {
-    setForm((prev) => ({ ...prev, branch_to: ENV_TO_BRANCH[prev.environment] || '' }))
+    const def = ENV_TO_BRANCH[form.environment] || ''
+    setBuildGroups((prev) => prev.map((g) => ({ ...g, branch: { ...g.branch, to: def } })))
     setValidation(null)
   }, [form.environment])
+
+  function addBuildGroup() {
+    setBuildGroups((prev) => [
+      ...prev,
+      { links: [], branch: { from: '', to: ENV_TO_BRANCH[form.environment] || '' } },
+    ])
+    setValidation(null)
+  }
+
+  function removeBuildGroup(idx) {
+    setBuildGroups((prev) => (prev.length <= 1 ? prev : prev.filter((_, i) => i !== idx)))
+    setValidation(null)
+  }
+
+  function updateBuildGroupLinks(idx, links) {
+    setBuildGroups((prev) => prev.map((g, i) => (i === idx ? { ...g, links } : g)))
+    setValidation(null)
+  }
+
+  function updateBuildGroupBranch(idx, patch) {
+    setBuildGroups((prev) =>
+      prev.map((g, i) => (i === idx ? { ...g, branch: { ...g.branch, ...patch } } : g)),
+    )
+    setValidation(null)
+  }
 
   const activeSections = useMemo(
     () => SECTION_DEFS.filter((s) => enabledSections[s.key]).sort((a, b) => a.order - b.order),
     [enabledSections],
-  )
-
-  // The "From" branch autocomplete (in the Build card) is driven by the first
-  // selected service in the Build section.
-  const primaryServiceKey = useMemo(
-    () => sectionLinks.build.find((l) => l.service_key)?.service_key || '',
-    [sectionLinks.build],
   )
 
   function updateForm(patch) {
@@ -131,14 +154,37 @@ export default function NewRequest() {
     setValidation(null)
   }
 
+  function mapLinks(links) {
+    return links
+      .filter((l) => l.service_key)
+      .map((l) => ({ sub_type: l.sub_type, service_key: l.service_key, label: l.label || '' }))
+  }
+
   function buildSectionsPayload() {
-    return activeSections.map((sec) => ({
-      section: sec.key,
-      release_branch: sec.needsReleaseBranch ? (releaseBranches[sec.key] || '').trim() : '',
-      links: sectionLinks[sec.key]
-        .filter((l) => l.service_key)
-        .map((l) => ({ sub_type: l.sub_type, service_key: l.service_key, label: l.label || '' })),
-    }))
+    const out = []
+    // Non-build sections (single each).
+    activeSections
+      .filter((sec) => sec.key !== 'build')
+      .forEach((sec) => {
+        out.push({
+          section: sec.key,
+          release_branch: sec.needsReleaseBranch ? (releaseBranches[sec.key] || '').trim() : '',
+          links: mapLinks(sectionLinks[sec.key]),
+        })
+      })
+    // Build groups (one section entry per card).
+    if (enabledSections.build) {
+      buildGroups.forEach((g) => {
+        out.push({
+          section: 'build',
+          release_branch: '',
+          branch_from: (g.branch.from || '').trim(),
+          branch_to: (g.branch.to || '').trim(),
+          links: mapLinks(g.links),
+        })
+      })
+    }
+    return out
   }
 
   async function handleValidate() {
@@ -176,8 +222,6 @@ export default function NewRequest() {
         environment: form.environment,
         jira_id: form.jira_id.trim(),
         description: form.description.trim(),
-        branch_from: form.branch_from.trim(),
-        branch_to: form.branch_to.trim(),
         approver_key: form.approver_key,
         sections: buildSectionsPayload(),
       }
@@ -237,29 +281,70 @@ export default function NewRequest() {
 
       <p className="section-heading">Deployment sections</p>
 
-      {SECTION_DEFS.map((sec) => (
-        <LinkSectionEditor
-          key={sec.key}
-          sectionKey={sec.key}
-          title={sec.title}
-          subtitle={sec.subtitle}
-          icon={sec.icon}
-          iconBg={sec.iconBg}
-          enabled={enabledSections[sec.key]}
-          onToggle={() => toggleSection(sec.key)}
-          allowedSubTypes={sec.subTypes}
-          needsReleaseBranch={sec.needsReleaseBranch}
-          releaseBranch={releaseBranches[sec.key]}
-          onReleaseBranchChange={(val) => setReleaseBranchFor(sec.key, val)}
-          links={sectionLinks[sec.key]}
-          onChange={(links) => setSectionLinksFor(sec.key, links)}
-          showBranches={sec.key === 'build'}
-          branchServiceKey={primaryServiceKey}
-          branchFrom={form.branch_from}
-          onBranchFromChange={(val) => updateForm({ branch_from: val })}
-          branchTo={form.branch_to}
-        />
-      ))}
+      {SECTION_DEFS.map((sec) => {
+        if (sec.key === 'build') {
+          // When disabled, show a single collapsed card with the enable toggle.
+          if (!enabledSections.build) {
+            return (
+              <LinkSectionEditor
+                key="build"
+                sectionKey="build"
+                title={sec.title}
+                subtitle={sec.subtitle}
+                icon={sec.icon}
+                iconBg={sec.iconBg}
+                enabled={false}
+                showToggle
+                onToggle={() => toggleSection('build')}
+                allowedSubTypes={sec.subTypes}
+                links={buildGroups[0]?.links || []}
+                onChange={() => {}}
+              />
+            )
+          }
+          // When enabled, one full card per build group; "+" adds another.
+          return buildGroups.map((g, gi) => (
+            <LinkSectionEditor
+              key={`build-${gi}`}
+              sectionKey="build"
+              title={buildGroups.length > 1 ? `${sec.title} #${gi + 1}` : sec.title}
+              subtitle={sec.subtitle}
+              icon={sec.icon}
+              iconBg={sec.iconBg}
+              enabled
+              showToggle={gi === 0}
+              onToggle={() => toggleSection('build')}
+              onRemoveGroup={gi > 0 ? () => removeBuildGroup(gi) : undefined}
+              allowedSubTypes={sec.subTypes}
+              links={g.links}
+              onChange={(links) => updateBuildGroupLinks(gi, links)}
+              showBranches
+              branchPair={g.branch}
+              onBranchChange={(patch) => updateBuildGroupBranch(gi, patch)}
+              onAddGroup={addBuildGroup}
+            />
+          ))
+        }
+        return (
+          <LinkSectionEditor
+            key={sec.key}
+            sectionKey={sec.key}
+            title={sec.title}
+            subtitle={sec.subtitle}
+            icon={sec.icon}
+            iconBg={sec.iconBg}
+            enabled={enabledSections[sec.key]}
+            showToggle
+            onToggle={() => toggleSection(sec.key)}
+            allowedSubTypes={sec.subTypes}
+            needsReleaseBranch={sec.needsReleaseBranch}
+            releaseBranch={releaseBranches[sec.key]}
+            onReleaseBranchChange={(val) => setReleaseBranchFor(sec.key, val)}
+            links={sectionLinks[sec.key]}
+            onChange={(links) => setSectionLinksFor(sec.key, links)}
+          />
+        )
+      })}
 
       <div className="card">
         <p className="card-title">Approval</p>
@@ -283,15 +368,21 @@ export default function NewRequest() {
           {activeSections.length === 0 ? (
             <span style={{ color: 'var(--text-tertiary)' }}>Enable at least one section above</span>
           ) : (
-            activeSections.map((s, i) => (
-              <span key={s.key}>
-                {i > 0 && <span style={{ color: 'var(--text-tertiary)' }}> → </span>}
-                {s.icon} {s.title}
-                <span style={{ color: 'var(--text-tertiary)', fontSize: 11 }}>
-                  {' '}({sectionLinks[s.key].filter((l) => l.service_key).length} item(s))
+            activeSections.map((s, i) => {
+              const count = s.key === 'build'
+                ? buildGroups.reduce((n, g) => n + g.links.filter((l) => l.service_key).length, 0)
+                : sectionLinks[s.key].filter((l) => l.service_key).length
+              const suffix = s.key === 'build' && buildGroups.length > 1 ? `, ${buildGroups.length} cards` : ''
+              return (
+                <span key={s.key}>
+                  {i > 0 && <span style={{ color: 'var(--text-tertiary)' }}> → </span>}
+                  {s.icon} {s.title}
+                  <span style={{ color: 'var(--text-tertiary)', fontSize: 11 }}>
+                    {' '}({count} item(s){suffix})
+                  </span>
                 </span>
-              </span>
-            ))
+              )
+            })
           )}
         </div>
       </div>

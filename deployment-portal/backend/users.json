@@ -1,0 +1,30 @@
+{
+  "demo-user": {
+    "display_name": "Dev User",
+    "password": "demo1234",
+    "hashed_password": "$2b$12$kkBkhfYt4hi8/XUvufogIunYcOwvmLtTSa9BtOK8loC9oMw83aRGK",
+    "role": "developer",
+    "email": "demo@company.com"
+  },
+  "admin": {
+    "display_name": "Devops Admin",
+    "password": "admin1234",
+    "hashed_password": "$2b$12$n.8ipsRHjYThXNSKBX7/Ceg3Dp7XmwlfxfmxKwODgF6jQ/KjTBDDK",
+    "role": "devops",
+    "email": "admin@company.com"
+  },
+  "qa-user": {
+    "display_name": "QA Tester",
+    "password": "qa1234",
+    "hashed_password": "$2b$12$Jwjz97ENXmuJ7IaApP/YJOCuoQJkmRFdCVY1Xfyv.ex21eKasXOGK",
+    "role": "qa",
+    "email": "qa@company.com"
+  },
+  "dev-lead": {
+    "display_name": "Lead",
+    "password": "devlead1234",
+    "hashed_password": "$2b$12$0Z0aDC3ym9DrdMgIVZ7f1e9M49sexi9AtAFzjp.BdlaCPpt2GEu52",
+    "role": "dev lead",
+    "email": "devlead@company.com"
+  }
+}

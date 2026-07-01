@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../api.js'
 import RequestDetails from '../components/RequestDetails.jsx'
 import ApprovalPanel from '../components/ApprovalPanel.jsx'
+import ValidationReport from '../components/ValidationReport.jsx'
 
 const STATUS_BADGE = {
   pending_approval: { cls: 'badge-pending', label: 'Pending approval', icon: '⏳' },
@@ -32,6 +33,7 @@ export default function TaskDetail() {
   const [task, setTask] = useState(null)
   const [selectedJob, setSelectedJob] = useState(null)
   const [error, setError] = useState(null)
+  const [revalidating, setRevalidating] = useState(false)
 
   const load = useCallback(async () => {
     try {
@@ -56,6 +58,18 @@ export default function TaskDetail() {
   const isRejected = task.status === 'rejected'
   const orchestratorStarted = !isPending && !isRejected
   const approverName = task.approver_name || task.approver_key
+
+  async function handleRevalidate() {
+    setRevalidating(true)
+    try {
+      await api.revalidateTask(taskId)
+      await load()
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setRevalidating(false)
+    }
+  }
 
   async function simulateAdvance(jobId) {
     await api.updateJobStatus(jobId, 'done', 'Manually marked done (demo control)')
@@ -90,6 +104,8 @@ export default function TaskDetail() {
         <p className="card-title">Request details</p>
         <RequestDetails task={task} approverName={approverName} />
       </div>
+
+      <ValidationReport task={task} onRevalidate={handleRevalidate} revalidating={revalidating} />
 
       {(isPending || isRejected) && <ApprovalPanel task={task} onDecided={load} />}
 

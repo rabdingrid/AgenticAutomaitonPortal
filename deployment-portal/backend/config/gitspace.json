@@ -1,0 +1,30 @@
+{
+  "base_url": "https://gitspace.foreverliving.com",
+  "default_group": "Titan",
+  "release_repo": "Titan/flpi-titan-release",
+  "templates": {
+    "blob": "{base}/{project}/-/blob/{ref}/{path}?ref_type=heads",
+    "merge_request": "{base}/{project}/-/merge_requests/{iid}",
+    "merge_requests_index": "{base}/{project}/-/merge_requests",
+    "compare": "{base}/{project}/-/compare/{from}...{to}?from_project_id=&straight=false",
+    "tree": "{base}/{project}/-/tree/{ref}?ref_type=heads",
+    "new_merge_request": "{base}/{project}/-/merge_requests/new?merge_request%5Bsource_branch%5D={from}&merge_request%5Btarget_branch%5D={to}"
+  },
+  "section_file_paths": {
+    "phrases": "Portals/{service}/{release}/Phrases/Phrases.json",
+    "yaml": "{service}/{release}/parameters.yml",
+    "db": "{service}/{release}/changelog.sql"
+  },
+  "section_repo": {
+    "phrases": "release_repo",
+    "yaml": "release_repo",
+    "db": "release_repo",
+    "build": "service_repo"
+  },
+  "service_path_overrides": {
+    "build:portal:customercarev2": "Titan/CustomerCarePortalV2",
+    "build:microservice:reporttitan": "Titan/ReportingService",
+    "build:microservice:tdmreports": "Titan/DataMartReportingService",
+    "build:portal:customercare": "ForeverLiving/Customer-Service-Portal"
+  }
+}
