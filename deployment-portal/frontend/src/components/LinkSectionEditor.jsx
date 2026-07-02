@@ -72,7 +72,7 @@ export default function LinkSectionEditor({
               <button
                 key={st}
                 type="button"
-                className={`subtype-tab ${activeTab === st ? 'active' : ''}`}
+                className={`subtype-tab subtype-tab-${st} ${activeTab === st ? 'active' : ''}`}
                 onClick={() => setActiveTab(st)}
               >
                 {SUBTYPE_LABELS[st]}
@@ -142,7 +142,7 @@ export default function LinkSectionEditor({
                         </span>
                       )}
                       <span className="chip-type">{SUBTYPE_LABELS[l.sub_type]}</span>
-                      {l.label}
+                      <span className="chip-label">{l.label}</span>
                       <button
                         type="button"
                         className="chip-x"
@@ -173,21 +173,23 @@ export default function LinkSectionEditor({
               <div className="branch-pair">
                 <div className="branch-pair-fields">
                   <div>
-                    <label className="field-label">Gitspace branch — From</label>
+                    <label className="field-label field-label-required">Gitspace branch — From</label>
                     <input
                       type="text"
                       value={branchPair.from}
                       onChange={(e) => onBranchChange({ from: e.target.value })}
                       placeholder="e.g. feature/my-change"
+                      required
                     />
                   </div>
                   <div>
-                    <label className="field-label">Gitspace branch — To (auto from environment)</label>
+                    <label className="field-label field-label-required">Gitspace branch — To (auto from environment)</label>
                     <input
                       type="text"
                       value={branchPair.to}
                       onChange={(e) => onBranchChange({ to: e.target.value })}
                       placeholder="e.g. develop"
+                      required
                     />
                   </div>
                 </div>

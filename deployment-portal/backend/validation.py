@@ -234,7 +234,7 @@ def run_validation(
         "sections": section_results,
         "steps": steps,
         "ai_used": False,
-        "ai_model": ai_client.MODEL,
+        "ai_model": ai_client.active_model(),
         "summary_markdown": "",
     }
 

@@ -34,6 +34,9 @@ export default function RequestDetails({ task, approverName }) {
             </td>
           </tr>
           <tr><td>Approver (Dev Lead)</td><td>{approverName || task.approver_key}</td></tr>
+          {task.cc_emails ? (
+            <tr><td>CC</td><td>{task.cc_emails}</td></tr>
+          ) : null}
           <tr><td>Code freeze at submit</td><td>{task.code_freeze_enabled ? 'Enabled' : 'Disabled'}</td></tr>
           <tr><td>Requested by</td><td>{task.requested_by}</td></tr>
           <tr><td>Submitted</td><td>{new Date(task.created_at).toLocaleString()}</td></tr>

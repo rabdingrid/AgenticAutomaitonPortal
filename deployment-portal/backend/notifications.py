@@ -15,23 +15,36 @@ from typing import Any
 LOG_PATH = Path(__file__).parent / "notifications.log"
 
 
-def _send(to: str, subject: str, body: str) -> None:
+def _parse_emails(raw: str) -> list[str]:
+    return [e.strip() for e in (raw or "").split(",") if e.strip() and "@" in e]
+
+
+def _send(to: str, subject: str, body: str, cc: list[str] | None = None) -> None:
     ts = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    entry = f"[{ts}] TO: {to}\nSUBJECT: {subject}\n{body}\n{'-' * 60}\n"
+    cc_line = f"CC: {', '.join(cc)}\n" if cc else ""
+    entry = f"[{ts}] TO: {to}\n{cc_line}SUBJECT: {subject}\n{body}\n{'-' * 60}\n"
     with LOG_PATH.open("a", encoding="utf-8") as f:
         f.write(entry)
     print(f"[MOCK EMAIL] to={to} subject={subject}")
+    for addr in cc or []:
+        print(f"[MOCK EMAIL CC] to={addr} subject={subject}")
 
 
 def notify_submitted(task: dict[str, Any]) -> None:
+    from catalog import get_approver
+
+    approver = get_approver(task.get("approver_key", ""))
+    to = approver["email"] if approver and approver.get("email") else "dev-lead@company.com"
+    cc = _parse_emails(task.get("cc_emails", ""))
     _send(
-        to="dev-lead@company.com",
+        to=to,
         subject=f"Approval needed: {task['jira_id']} ({task['task_id']})",
         body=(
             f"Environment: {task['environment']}\n"
             f"Description: {task['description']}\n"
             f"Please review and approve/reject."
         ),
+        cc=cc,
     )
 
 

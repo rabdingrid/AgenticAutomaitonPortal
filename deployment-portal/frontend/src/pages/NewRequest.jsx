@@ -48,10 +48,33 @@ const SECTION_DEFS = [
 ]
 
 const ENV_TO_BRANCH = {
-  DEV: 'develop',
+  DEV: 'dev',
   SUPPORT: 'support',
   INTEG: 'integ',
-  UAT: 'release/uat',
+  UAT: 'master',
+}
+
+const SECTION_SHORT = {
+  build: 'Build',
+  yaml: 'YAML',
+  db: 'DB',
+  phrases: 'Phrases',
+}
+
+function formatPreviewErrors(sections) {
+  const errors = []
+  for (const sec of sections || []) {
+    const title = sec.title || SECTION_SHORT[sec.section] || sec.section
+    for (const item of sec.items || []) {
+      if (item.status !== 'fail' && item.status !== 'warn') continue
+      const check = (item.checks || []).find((c) => c.status === item.status)
+        || (item.checks || []).find((c) => c.status === 'fail' || c.status === 'warn')
+      const detail = check?.detail || 'Issue detected'
+      const icon = item.status === 'warn' ? '⚠' : '✕'
+      errors.push(`${icon} ${title} · ${item.label}: ${detail}`)
+    }
+  }
+  return errors
 }
 
 export default function NewRequest() {
@@ -68,6 +91,7 @@ export default function NewRequest() {
     jira_id: '',
     description: '',
     approver_key: '',
+    cc_emails: '',
   })
 
   // Build is a list of independent groups — each its own services + a single
@@ -140,8 +164,19 @@ export default function NewRequest() {
     if (!validation?.sections) return null
     const map = {}
     for (const sec of validation.sections) {
-      for (const r of sec.results || []) {
-        map[r.service_key] = { valid: r.valid, errors: r.errors || [] }
+      const rows = sec.items || sec.results || []
+      for (const r of rows) {
+        if (!r.service_key) continue
+        if (sec.items) {
+          map[r.service_key] = {
+            valid: r.status === 'pass',
+            errors: (r.checks || [])
+              .filter((c) => c.status === 'fail' || c.status === 'warn')
+              .map((c) => `${c.name}: ${c.detail}`),
+          }
+        } else {
+          map[r.service_key] = { valid: r.valid, errors: r.errors || [] }
+        }
       }
     }
     return map
@@ -200,23 +235,54 @@ export default function NewRequest() {
     return out
   }
 
+  function getMandatoryFieldErrors() {
+    const errors = []
+    if (!form.jira_id.trim()) {
+      errors.push('Jira ID is required')
+    }
+    if (enabledSections.build) {
+      buildGroups.forEach((g, i) => {
+        const prefix = buildGroups.length > 1 ? `Build #${i + 1}` : 'Build'
+        if (!(g.branch.from || '').trim()) {
+          errors.push(`${prefix}: Gitspace branch — From is required`)
+        }
+        if (!(g.branch.to || '').trim()) {
+          errors.push(`${prefix}: Gitspace branch — To is required`)
+        }
+      })
+    }
+    return errors
+  }
+
   async function handleValidate() {
     setError(null)
+    const mandatoryErrors = getMandatoryFieldErrors()
+    if (mandatoryErrors.length > 0) {
+      setValidation({ valid: false, errors: mandatoryErrors, sections: [] })
+      return
+    }
     setValidating(true)
     try {
-      const result = await api.validateRequest({
+      const report = await api.validatePreview({
         environment: form.environment,
         jira_id: form.jira_id,
         sections: buildSectionsPayload(),
       })
-      // Layer in client-only checks not covered server-side.
+
       const extra = []
       if (!form.approver_key) extra.push('Please select an approver')
       if (activeSections.length === 0) extra.push('Enable at least one section')
+      for (const sec of activeSections) {
+        if (sec.needsReleaseBranch && !(releaseBranches[sec.key] || '').trim()) {
+          extra.push(`Release branch is required for ${sec.title}`)
+        }
+      }
+
+      const sectionErrors = formatPreviewErrors(report.sections)
       const merged = {
-        valid: result.valid && extra.length === 0,
-        errors: [...result.errors, ...extra],
-        sections: result.sections || [],
+        valid: report.overall_status === 'passed' && extra.length === 0,
+        errors: [...sectionErrors, ...extra],
+        sections: report.sections || [],
       }
       setValidation(merged)
     } catch (e) {
@@ -229,6 +295,12 @@ export default function NewRequest() {
   async function handleSubmit(e) {
     e.preventDefault()
     setError(null)
+    const mandatoryErrors = getMandatoryFieldErrors()
+    if (mandatoryErrors.length > 0) {
+      setValidation({ valid: false, errors: mandatoryErrors, sections: [] })
+      setError('Please fill in all required fields before submitting.')
+      return
+    }
     if (!validation || !validation.valid) {
       setError('Please run validation and fix any issues before submitting.')
       return
@@ -240,6 +312,7 @@ export default function NewRequest() {
         jira_id: form.jira_id.trim(),
         description: form.description.trim(),
         approver_key: form.approver_key,
+        cc_emails: form.cc_emails.trim(),
         sections: buildSectionsPayload(),
       }
       const task = await api.createTask(payload)
@@ -275,12 +348,13 @@ export default function NewRequest() {
             </select>
           </div>
           <div>
-            <label className="field-label">Jira ID</label>
+            <label className="field-label field-label-required">Jira ID</label>
             <input
               type="text"
               value={form.jira_id}
               onChange={(e) => updateForm({ jira_id: e.target.value })}
               placeholder="TRB-16996"
+              required
             />
           </div>
         </div>
@@ -367,7 +441,7 @@ export default function NewRequest() {
 
       <div className="card">
         <p className="card-title">Approval</p>
-        <div className="field-group" style={{ marginBottom: 0 }}>
+        <div className="field-group" style={{ marginBottom: 12 }}>
           <label className="field-label">Approver (Development Lead)</label>
           <select value={form.approver_key} onChange={(e) => updateForm({ approver_key: e.target.value })}>
             <option value="">Select approver...</option>
@@ -375,6 +449,16 @@ export default function NewRequest() {
               <option key={a.key} value={a.key}>{a.name}</option>
             ))}
           </select>
+        </div>
+        <div className="field-group" style={{ marginBottom: 0 }}>
+          <label className="field-label">CC</label>
+          <input
+            type="text"
+            value={form.cc_emails}
+            onChange={(e) => updateForm({ cc_emails: e.target.value })}
+            placeholder="e.g. teammate@company.com, manager@company.com"
+          />
+          <p className="field-hint">Optional. Comma-separated email addresses to notify along with the approver.</p>
         </div>
       </div>
 
@@ -411,9 +495,12 @@ export default function NewRequest() {
       {validation && !validation.valid && (
         <div className="alert alert-error">
           <strong>Fix the following before submitting:</strong>
-          <ul style={{ margin: '8px 0 0', paddingLeft: 18 }}>
+          <ul className="validation-error-list">
             {validation.errors.map((e, i) => <li key={i}>{e}</li>)}
           </ul>
+          <p className="validation-error-hint">
+            Issues are also marked on each selected service above. Fix them and click Validate again.
+          </p>
         </div>
       )}
 

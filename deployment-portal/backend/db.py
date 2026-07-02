@@ -551,6 +551,7 @@ def create_task(
     sections_payload: list[dict[str, Any]],
     code_freeze_enabled: bool = False,
     branches: list[dict[str, str]] | None = None,
+    cc_emails: str = "",
 ) -> dict[str, Any]:
     if not sections_payload:
         raise ValidationError("At least one section (YAML / DB / Phrases / Build) is required")
@@ -620,6 +621,7 @@ def create_task(
             "branch_to": branch_to,
             "branches": branches if branches else ([{"from": branch_from, "to": branch_to}] if (branch_from or branch_to) else []),
             "approver_key": approver_key,
+            "cc_emails": cc_emails,
             "requested_by": requested_by,
             "status": "pending_approval",
             "code_freeze_enabled": code_freeze_enabled,
@@ -768,8 +770,7 @@ def get_stats(period: str = "weekly") -> dict[str, Any]:
     resolved = sum(1 for t in tasks if t["status"] == "done")
     pending = sum(1 for t in tasks if t["status"] == "pending_approval")
     in_progress = sum(1 for t in tasks if t["status"] in ("running", "queued"))
-    blocked = sum(1 for t in tasks if t["status"] in ("blocked", "failed"))
-    rejected = sum(1 for t in tasks if t["status"] == "rejected")
+    blocked = sum(1 for t in tasks if t["status"] in ("blocked", "failed", "rejected"))
     return {
         "period": period,
         "total": total,
@@ -777,7 +778,7 @@ def get_stats(period: str = "weekly") -> dict[str, Any]:
         "pending": pending,
         "in_progress": in_progress,
         "blocked": blocked,
-        "rejected": rejected,
+        "rejected": sum(1 for t in tasks if t["status"] == "rejected"),
     }
 
 

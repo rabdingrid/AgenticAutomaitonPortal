@@ -1,9 +1,11 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api.js'
 import { useAuth } from '../contexts/AuthContext.jsx'
 import RequestDetails from '../components/RequestDetails.jsx'
 import ApprovalPanel from '../components/ApprovalPanel.jsx'
+import StatsFilterGrid from '../components/StatsFilterGrid.jsx'
+import { STATUS_FILTERS, filterTasksByStatus } from '../utils/taskFilters.js'
 import { SECTION_ICONS } from '../components/OrchestratorPlan.jsx'
 
 function CompactPlanSummary({ plan, subTasks }) {
@@ -49,6 +51,7 @@ export default function History() {
   const [period, setPeriod] = useState('weekly')
   const [stats, setStats] = useState(null)
   const [tasks, setTasks] = useState([])
+  const [statusFilter, setStatusFilter] = useState('all')
   const [approvers, setApprovers] = useState([])
   const [expandedId, setExpandedId] = useState(null)
   const [fullTasks, setFullTasks] = useState({})
@@ -73,6 +76,13 @@ export default function History() {
   }, [period])
 
   useEffect(() => { load() }, [load])
+
+  const filteredTasks = useMemo(
+    () => filterTasksByStatus(tasks, statusFilter),
+    [tasks, statusFilter],
+  )
+
+  const listTitle = STATUS_FILTERS[statusFilter]?.listHeading || 'All tasks'
 
   async function handleSeed() {
     await api.seedDemo()
@@ -127,38 +137,32 @@ export default function History() {
         ))}
       </div>
 
-      {stats && (
-        <div className="stats-grid">
-          <div className="stat-box">
-            <div className="stat-num">{stats.total}</div>
-            <div className="stat-label">Total requests</div>
-          </div>
-          <div className="stat-box">
-            <div className="stat-num" style={{ color: 'var(--amber)' }}>{stats.pending ?? 0}</div>
-            <div className="stat-label">Pending approval</div>
-          </div>
-          <div className="stat-box">
-            <div className="stat-num" style={{ color: 'var(--green)' }}>{stats.resolved}</div>
-            <div className="stat-label">Resolved</div>
-          </div>
-          <div className="stat-box">
-            <div className="stat-num" style={{ color: 'var(--blue)' }}>{stats.in_progress}</div>
-            <div className="stat-label">In progress</div>
-          </div>
-        </div>
-      )}
+      <StatsFilterGrid
+        stats={stats}
+        activeFilter={statusFilter}
+        onFilterChange={setStatusFilter}
+      />
 
       {error && <div className="alert alert-error">{error}</div>}
 
       <div className="card">
-        <p className="card-title">All tasks</p>
+        <div className="card-title-row">
+          <p className="card-title" style={{ marginBottom: 0 }}>{listTitle}</p>
+          {statusFilter !== 'all' && (
+            <button type="button" className="filter-clear-link" onClick={() => setStatusFilter('all')}>
+              Clear filter
+            </button>
+          )}
+        </div>
 
-        {tasks.length === 0 ? (
+        {filteredTasks.length === 0 ? (
           <div className="empty-state">
-            No tasks yet. Click &quot;Seed demo data&quot; above, or create a new request.
+            {statusFilter === 'all'
+              ? 'No tasks yet. Click "Seed demo data" above, or create a new request.'
+              : `No ${STATUS_FILTERS[statusFilter]?.label.toLowerCase() || 'matching'} requests.`}
           </div>
         ) : (
-          tasks.map((task) => {
+          filteredTasks.map((task) => {
             const badge = STATUS_BADGE[task.status] || STATUS_BADGE.queued
             const isExpanded = expandedId === task.task_id
             const approverName = approverMap[task.approver_key] || task.approver_key

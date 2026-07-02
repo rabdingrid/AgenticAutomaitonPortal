@@ -175,6 +175,19 @@ input:disabled {
   font-weight: 500;
 }
 
+.field-label-required::after {
+  content: ' *';
+  color: var(--red);
+  font-weight: 700;
+}
+
+.field-hint {
+  font-size: 11.5px;
+  color: var(--text-tertiary);
+  margin: 6px 0 0;
+  line-height: 1.4;
+}
+
 .field-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -379,12 +392,39 @@ input:disabled {
   margin-bottom: 1.25rem;
 }
 
+.stats-grid-5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+
 .stat-box {
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 1rem;
   text-align: center;
+}
+
+.stat-box-btn {
+  cursor: pointer;
+  font: inherit;
+  width: 100%;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.stat-box-btn:hover {
+  border-color: var(--blue);
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-box-btn.active {
+  border-color: var(--blue);
+  background: var(--blue-light);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-box-btn:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
 }
 
 .stat-num {
@@ -719,6 +759,45 @@ input:disabled {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+}
+
+.section-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-heading-link {
+  font-size: 12px;
+  color: var(--blue);
+  text-decoration: none;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.filter-clear-link {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.filter-clear-link:hover {
+  color: var(--blue);
+  text-decoration: underline;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 /* ── Job section cards (Build / YAML / DB) ──────────────────────── */
@@ -807,13 +886,13 @@ input:disabled {
 .subtype-tab {
   border: none;
   background: transparent;
-  padding: 4px 12px;
+  padding: 5px 14px;
   border-radius: 6px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-tertiary);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
 }
 
 .subtype-tab:hover { color: var(--text-secondary); }
@@ -821,8 +900,26 @@ input:disabled {
 .subtype-tab.active {
   background: var(--white);
   color: var(--text-primary);
-  font-weight: 600;
+  font-weight: 700;
   box-shadow: var(--shadow-sm);
+}
+
+.subtype-tab-microservice.active {
+  background: var(--blue-light);
+  color: var(--blue);
+  box-shadow: inset 0 0 0 1px #BFDBFE;
+}
+
+.subtype-tab-portal.active {
+  background: var(--purple-light);
+  color: var(--purple);
+  box-shadow: inset 0 0 0 1px #DDD6FE;
+}
+
+.subtype-tab-utility.active {
+  background: var(--teal-light);
+  color: var(--teal);
+  box-shadow: inset 0 0 0 1px #99F6E4;
 }
 
 /* Two-column select + selected chips layout */
@@ -862,7 +959,7 @@ input:disabled {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 4px 3px 8px;
+  padding: 4px 6px 4px 6px;
   border-radius: 14px;
   font-size: 12px;
   font-weight: 500;
@@ -872,22 +969,28 @@ input:disabled {
 }
 
 .chip-type {
-  font-size: 9px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
-  padding: 1px 5px;
-  border-radius: 8px;
-  background: var(--slate-light);
-  color: var(--text-tertiary);
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 10px;
+  line-height: 1.2;
+  flex-shrink: 0;
 }
 
-.chip-microservice { border-color: #BFDBFE; }
-.chip-microservice .chip-type { background: var(--blue-light); color: var(--blue); }
-.chip-portal { border-color: #DDD6FE; }
-.chip-portal .chip-type { background: var(--purple-light); color: var(--purple); }
-.chip-utility { border-color: #BBF7D0; }
-.chip-utility .chip-type { background: var(--teal-light); color: var(--teal); }
+.chip-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.chip-microservice { border-color: #93C5FD; background: #F8FBFF; }
+.chip-microservice .chip-type { background: var(--blue); color: var(--white); }
+.chip-portal { border-color: #C4B5FD; background: #FAF8FF; }
+.chip-portal .chip-type { background: var(--purple); color: var(--white); }
+.chip-utility { border-color: #5EEAD4; background: #F7FEFC; }
+.chip-utility .chip-type { background: var(--teal); color: var(--white); }
 
 .chip-x {
   border: none;
@@ -1799,6 +1902,8 @@ input:disabled {
 .validation-badge.invalid { background: var(--red-light); color: var(--red); }
 .validation-badge.pending { background: var(--slate-light); color: var(--text-tertiary); }
 .validation-error-text { font-size: 11.5px; color: var(--red); margin: 2px 0 8px 0; }
+.validation-error-list { margin: 8px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.5; }
+.validation-error-hint { margin: 10px 0 0; font-size: 12px; color: var(--text-secondary); }
 .chip-validation { display: inline-flex; align-items: center; gap: 6px; }
 .chip-badge { font-size: 12px; font-weight: 700; }
 .chip-badge.valid { color: var(--green); }

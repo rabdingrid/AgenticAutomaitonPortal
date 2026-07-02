@@ -269,3 +269,29 @@ dev_lead has approved. Your approval is now required.
 SUBJECT: Request approved and running: dfgh
 All approvals complete. Orchestrator has started.
 ------------------------------------------------------------
+[2026-07-02T09:36:08+00:00] TO: dev-lead@company.com
+SUBJECT: Approval needed: TRB-1097 (TASK-20403)
+Environment: INTEG
+Description: assa
+Please review and approve/reject.
+------------------------------------------------------------
+[2026-07-02T09:39:07+00:00] TO: devops@company.com
+SUBJECT: Approval needed: TRB-1097 (TASK-20403)
+dev_lead has approved. Your approval is now required.
+------------------------------------------------------------
+[2026-07-02T09:40:43+00:00] TO: requester@company.com
+SUBJECT: Request approved and running: TRB-1097
+All approvals complete. Orchestrator has started.
+------------------------------------------------------------
+[2026-07-02T11:48:55+00:00] TO: dev-lead@company.com
+SUBJECT: Approval needed: TRB-1234 (TASK-20404)
+Environment: INTEG
+Description: 
+Please review and approve/reject.
+------------------------------------------------------------
+[2026-07-02T12:09:26+00:00] TO: dev-lead@company.com
+SUBJECT: Approval needed: TRB-1090 (TASK-20405)
+Environment: INTEG
+Description: 
+Please review and approve/reject.
+------------------------------------------------------------

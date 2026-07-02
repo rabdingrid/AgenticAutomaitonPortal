@@ -72,6 +72,7 @@ class CreateTaskRequest(BaseModel):
     branch_to: str = ""
     branches: list[BranchPair] = []
     approver_key: str
+    cc_emails: str = ""
     sections: list[SectionInput]
 
 
@@ -278,6 +279,7 @@ def create_task(
             branch_to=branch_to,
             branches=branches,
             approver_key=payload.approver_key,
+            cc_emails=payload.cc_emails.strip(),
             requested_by=current_user["display_name"],
             sections_payload=sections_payload,
             code_freeze_enabled=code_freeze,

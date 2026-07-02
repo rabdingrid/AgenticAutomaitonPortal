@@ -23,21 +23,51 @@ from typing import Any
 import httpx
 
 BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5-coder:7b")
+_PREFERRED_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5-coder:7b")
 _TIMEOUT = float(os.getenv("OLLAMA_TIMEOUT", "90"))
+
+_resolved_model: str | None = None
+
+
+def _list_models() -> list[str]:
+    try:
+        r = httpx.get(f"{BASE_URL}/api/tags", timeout=4)
+        if r.status_code != 200:
+            return []
+        return [m.get("name", "") for m in r.json().get("models", []) if m.get("name")]
+    except Exception:
+        return []
+
+
+def resolve_model() -> str | None:
+    """Pick OLLAMA_MODEL if installed, else the first model Ollama reports."""
+    global _resolved_model
+    if _resolved_model:
+        return _resolved_model
+    models = _list_models()
+    if not models:
+        return None
+    if _PREFERRED_MODEL in models:
+        _resolved_model = _PREFERRED_MODEL
+    else:
+        _resolved_model = models[0]
+    return _resolved_model
+
+
+def active_model() -> str:
+    return resolve_model() or _PREFERRED_MODEL
 
 
 def is_available() -> bool:
-    try:
-        r = httpx.get(f"{BASE_URL}/api/tags", timeout=4)
-        return r.status_code == 200
-    except Exception:
-        return False
+    return resolve_model() is not None
 
 
 def _generate(prompt: str, *, system: str | None = None, fmt_json: bool = False) -> str | None:
+    model = resolve_model()
+    if not model:
+        return None
     payload: dict[str, Any] = {
-        "model": MODEL,
+        "model": model,
         "prompt": prompt,
         "stream": False,
         "options": {"temperature": 0.2, "num_ctx": 8192},

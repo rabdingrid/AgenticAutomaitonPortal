@@ -1,7 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api.js'
 import { useAuth } from '../contexts/AuthContext.jsx'
+import StatsFilterGrid from '../components/StatsFilterGrid.jsx'
+import { STATUS_FILTERS, filterTasksByStatus } from '../utils/taskFilters.js'
 
 const STATUS_BADGE = {
   pending_approval: { cls: 'badge-pending', label: 'Pending' },
@@ -20,6 +22,8 @@ export default function Home() {
   const isDevops = user?.approval_stage === 'devops'
   const [stats, setStats] = useState(null)
   const [activity, setActivity] = useState([])
+  const [tasks, setTasks] = useState([])
+  const [statusFilter, setStatusFilter] = useState('all')
   const [period, setPeriod] = useState('weekly')
   const [codeFreeze, setCodeFreeze] = useState(null)
   const [freezeBusy, setFreezeBusy] = useState(false)
@@ -27,14 +31,16 @@ export default function Home() {
 
   const load = useCallback(async () => {
     try {
-      const [s, a, cf] = await Promise.all([
+      const [s, a, cf, t] = await Promise.all([
         api.getStats(period),
         api.getActivity(6),
         api.getCodeFreeze(),
+        api.listTasks(),
       ])
       setStats(s)
       setActivity(a)
       setCodeFreeze(cf)
+      setTasks(t)
       setError(null)
     } catch (e) {
       setError(e.message)
@@ -42,6 +48,21 @@ export default function Home() {
   }, [period])
 
   useEffect(() => { load() }, [load])
+
+  const displayItems = useMemo(() => {
+    if (statusFilter === 'all') return activity
+    return filterTasksByStatus(tasks, statusFilter).map((task) => ({
+      task_id: task.task_id,
+      jira_id: task.jira_id,
+      environment: task.environment,
+      status: task.status,
+      requested_by: task.requested_by,
+      created_at: task.created_at,
+      sections: (task.jobs || []).map((j) => j.section),
+    }))
+  }, [statusFilter, activity, tasks])
+
+  const sectionHeading = STATUS_FILTERS[statusFilter]?.heading || 'Recent activity'
 
   async function handleSeed() {
     await api.seedDemo()
@@ -114,26 +135,11 @@ export default function Home() {
         ))}
       </div>
 
-      {stats && (
-        <div className="stats-grid">
-          <div className="stat-box">
-            <div className="stat-num">{stats.total}</div>
-            <div className="stat-label">Total requests</div>
-          </div>
-          <div className="stat-box">
-            <div className="stat-num" style={{ color: 'var(--green)' }}>{stats.resolved}</div>
-            <div className="stat-label">Resolved</div>
-          </div>
-          <div className="stat-box">
-            <div className="stat-num" style={{ color: 'var(--blue)' }}>{stats.in_progress}</div>
-            <div className="stat-label">In progress</div>
-          </div>
-          <div className="stat-box">
-            <div className="stat-num" style={{ color: 'var(--red)' }}>{stats.blocked}</div>
-            <div className="stat-label">Failed / blocked</div>
-          </div>
-        </div>
-      )}
+      <StatsFilterGrid
+        stats={stats}
+        activeFilter={statusFilter}
+        onFilterChange={setStatusFilter}
+      />
 
       <div className="quick-actions">
         <Link to="/request" className="quick-tile">
@@ -156,21 +162,38 @@ export default function Home() {
       {error && <div className="alert alert-error">{error}</div>}
 
       <p className="section-heading">
-        <span>Recent activity</span>
-        <Link to="/history" style={{ fontSize: 12, color: 'var(--blue)', textDecoration: 'none', textTransform: 'none', letterSpacing: 0 }}>
-          View all →
-        </Link>
+        <span>{sectionHeading}</span>
+        <span className="section-heading-actions">
+          {statusFilter !== 'all' && (
+            <button
+              type="button"
+              className="filter-clear-link"
+              onClick={() => setStatusFilter('all')}
+            >
+              Clear filter
+            </button>
+          )}
+          <Link to="/history" className="section-heading-link">
+            View all →
+          </Link>
+        </span>
       </p>
 
       <div className="card" style={{ padding: '0.75rem 1rem' }}>
-        {activity.length === 0 ? (
+        {displayItems.length === 0 ? (
           <div className="empty-state" style={{ padding: '2rem 1rem' }}>
-            No requests yet.{' '}
-            <Link to="/request" style={{ color: 'var(--blue)' }}>Create your first request</Link>
-            {' '}or load demo data above.
+            {statusFilter === 'all'
+              ? (
+                <>
+                  No requests yet.{' '}
+                  <Link to="/request" style={{ color: 'var(--blue)' }}>Create your first request</Link>
+                  {' '}or load demo data above.
+                </>
+              )
+              : `No ${STATUS_FILTERS[statusFilter]?.label.toLowerCase() || 'matching'} requests.`}
           </div>
         ) : (
-          activity.map((item) => {
+          displayItems.map((item) => {
             const badge = STATUS_BADGE[item.status] || STATUS_BADGE.queued
             return (
               <div
