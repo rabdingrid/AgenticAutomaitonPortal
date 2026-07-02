@@ -72,6 +72,11 @@ export const api = {
   approveTask: (taskId, payload) =>
     request(`/tasks/${taskId}/approve`, { method: 'POST', body: JSON.stringify(payload) }),
 
+  getTaskFull: (taskId) => request(`/tasks/${taskId}/full`),
+  getOrchestratorPlan: (taskId) => request(`/tasks/${taskId}/orchestrator-plan`),
+  getSubTask: (subTaskId) => request(`/sub-tasks/${subTaskId}`),
+  tickSubTask: (subTaskId) => request(`/sub-tasks/${subTaskId}/tick`, { method: 'POST' }),
+
   getJob: (jobId) => request(`/jobs/${jobId}`),
 
   updateJobStatus: (jobId, status, logLine) =>

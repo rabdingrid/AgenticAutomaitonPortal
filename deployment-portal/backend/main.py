@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field
 
 import catalog
 import db
+import mock_executor
 import mock_gitlab
 import notifications
 import validation
@@ -196,7 +197,9 @@ def validate_request(
     payload: ValidateRequest,
     current_user: dict = Depends(get_current_user),
 ) -> dict[str, Any]:
-    """Validate-before-submit. Never raises — returns an error checklist."""
+    """Validate-before-submit. Never raises — returns per-link results plus a
+    flat error checklist. `sections` drives the per-link ✓/✕ badges in the form;
+    `errors` keeps the legacy summary alert working."""
     errors: list[str] = []
 
     if not payload.environment:
@@ -206,15 +209,38 @@ def validate_request(
     if not payload.sections:
         errors.append("At least one section (YAML / DB / Phrases / Build) must be filled")
 
+    all_valid = True
+    section_results: list[dict[str, Any]] = []
+
     for sec in payload.sections:
+        # Structural rules (allowed sub-types, release branch present, etc.).
         try:
             db.validate_section_links(sec.section, [l.model_dump() for l in sec.links])
         except db.ValidationError as e:
             errors.append(str(e))
+            all_valid = False
         if sec.section in db.SECTIONS_NEEDING_RELEASE_BRANCH and not sec.release_branch.strip():
             errors.append(f"Release branch is required for the {sec.section} section")
+            all_valid = False
 
-    return {"valid": len(errors) == 0, "errors": errors}
+        # Per-link content checks (GitSpace / YAML / SQL / phrases, mocked).
+        link_results = mock_executor.mock_validate_section(
+            sec.section, [l.model_dump() for l in sec.links]
+        )
+        if not all(r["valid"] for r in link_results):
+            all_valid = False
+            for r in link_results:
+                for err in r["errors"]:
+                    errors.append(f"[{sec.section.upper()}] {err}")
+        section_results.append({"section": sec.section, "results": link_results})
+
+    valid = all_valid and len(errors) == 0
+    return {
+        "valid": valid,
+        "errors": errors,
+        "summary_errors": errors,
+        "sections": section_results,
+    }
 
 
 @app.post("/tasks")
@@ -373,6 +399,63 @@ async def gitspace_webhook(request: Request) -> dict[str, Any]:
     return {"received": True, "event": event}
 
 
+# ──────────────────────────────────────────────────────────────────────────
+# Sub-tasks & orchestrator plan
+# ──────────────────────────────────────────────────────────────────────────
+
+@app.get("/tasks/{task_id}/full")
+def get_task_full(task_id: str, current_user: dict = Depends(get_current_user)) -> dict[str, Any]:
+    """Task + all jobs + all sub-tasks expanded. Used by the TaskDetail page."""
+    task = db.get_task_with_sub_tasks(task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+    return _decorate(task)
+
+
+@app.get("/tasks/{task_id}/orchestrator-plan")
+def get_orchestrator_plan(task_id: str, current_user: dict = Depends(get_current_user)) -> dict[str, Any]:
+    plan = db.get_orchestrator_plan(task_id)
+    if plan is None:
+        raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+    return plan
+
+
+@app.get("/sub-tasks/{sub_task_id}")
+def get_sub_task(sub_task_id: str, current_user: dict = Depends(get_current_user)) -> dict[str, Any]:
+    st = db.get_sub_task(sub_task_id)
+    if not st:
+        raise HTTPException(status_code=404, detail=f"Sub-task {sub_task_id} not found")
+    return st
+
+
+@app.post("/sub-tasks/{sub_task_id}/tick")
+def tick_sub_task(sub_task_id: str, current_user: dict = Depends(get_current_user)) -> dict[str, Any]:
+    """Advance the sub-task one step in the mock simulation. The frontend polls
+    this every few seconds while a sub-task is running."""
+    st = db.get_sub_task(sub_task_id)
+    if not st:
+        raise HTTPException(status_code=404, detail=f"Sub-task {sub_task_id} not found")
+    if st["status"] not in ("running", "queued"):
+        return {"sub_task": st, "tick": {"completed": st["status"] == "done", "failed": st["status"] == "failed"}}
+
+    tick_result = mock_executor.tick_sub_task(st)
+
+    new_status = st["status"]
+    if tick_result["completed"]:
+        new_status = "done"
+    elif tick_result["failed"]:
+        new_status = "failed"
+    elif st["status"] == "queued":
+        new_status = "running"
+
+    updated = db.update_sub_task_after_tick(sub_task_id, st["steps"], new_status, tick_result["detail"])
+    if tick_result["completed"] or tick_result["failed"]:
+        db.advance_orchestrator_phase(st["task_id"])
+        updated = db.get_sub_task(sub_task_id)
+
+    return {"sub_task": updated, "tick": tick_result}
+
+
 @app.get("/jobs/{job_id}")
 def get_job(job_id: str, current_user: dict = Depends(get_current_user)) -> dict[str, Any]:
     job = db.get_job(job_id)
@@ -458,90 +541,157 @@ def _decorate(task: dict[str, Any]) -> dict[str, Any]:
 # Demo helpers
 # ──────────────────────────────────────────────────────────────────────────
 
+def _seed_complete_sub_task(sub_task_id: str) -> None:
+    st = db.get_sub_task(sub_task_id)
+    if not st:
+        return
+    for step in st["steps"]:
+        step["status"] = "done"
+        step["ts"] = db._now()
+    db.update_sub_task_after_tick(sub_task_id, st["steps"], "done", "Completed (seed)")
+
+
+def _seed_fail_sub_task(sub_task_id: str) -> None:
+    st = db.get_sub_task(sub_task_id)
+    if not st:
+        return
+    steps = st["steps"]
+    mid = max(1, len(steps) // 2)
+    for i, step in enumerate(steps):
+        if i < mid:
+            step["status"] = "done"
+            step["ts"] = db._now()
+        elif i == mid:
+            step["status"] = "failed"
+            step["detail"] = "MOCK ERROR: Jenkins build reported failing tests"
+            step["ts"] = db._now()
+    db.update_sub_task_after_tick(sub_task_id, steps, "failed", "Failed on a middle step (seed)")
+
+
+def _seed_drive(task_id: str, complete_phases: int = 0, fail_phase: int | None = None) -> None:
+    """Move a running task's sub-tasks into a realistic execution state."""
+    plan = db.get_orchestrator_plan(task_id) or {}
+    phases = plan.get("phases", [])
+    for i, phase in enumerate(phases):
+        if fail_phase is not None and i == fail_phase:
+            for j, sid in enumerate(phase["sub_task_ids"]):
+                (_seed_fail_sub_task if j == 0 else _seed_complete_sub_task)(sid)
+            db.advance_orchestrator_phase(task_id)
+            return
+        if i < complete_phases:
+            for sid in phase["sub_task_ids"]:
+                _seed_complete_sub_task(sid)
+            db.advance_orchestrator_phase(task_id)
+        else:
+            break
+
+
+def _seed_approved(task_id: str) -> None:
+    db.apply_approval_decision(task_id, "dev_lead", "approved", "Dev Lead")
+    db.apply_approval_decision(task_id, "devops", "approved", "DevOps")
+
+
 @app.post("/demo/seed")
 def seed_demo_data(current_user: dict = Depends(get_current_user)) -> dict[str, str]:
     db.reset_db()
 
+    common = dict(requested_by="demo-user", code_freeze_enabled=False)
+
+    # 1) pending_approval — brand new, waiting for Dev Lead.
     db.create_task(
-        environment="INTEG",
-        jira_id="TRB-16996",
+        environment="INTEG", jira_id="TRB-16996",
         description="Account service update + billing config + DB migration",
-        branch_from="develop",
-        branch_to="release/2026-06",
-        approver_key="a-sharma",
-        requested_by="demo-user",
-        code_freeze_enabled=False,
+        branch_from="develop", branch_to="release/2026-06", approver_key="a-sharma",
         sections_payload=[
-            {
-                "section": "yaml",
-                "release_branch": "release/2026-07",
-                "links": [
-                    {"sub_type": "microservice", "service_key": "yaml:microservice:account", "label": "Account"},
-                ],
-            },
-            {
-                "section": "db",
-                "release_branch": "release/2026-07",
-                "links": [
-                    {"sub_type": "microservice", "service_key": "db:microservice:payment", "label": "Payment"},
-                ],
-            },
-            {
-                "section": "build",
-                "release_branch": "",
-                "links": [
-                    {"sub_type": "microservice", "service_key": "build:microservice:account", "label": "Account"},
-                    {"sub_type": "portal", "service_key": "build:portal:admin", "label": "Admin"},
-                ],
-            },
-        ],
+            {"section": "yaml", "release_branch": "release/2026-07",
+             "links": [{"sub_type": "microservice", "service_key": "yaml:microservice:account", "label": "Account"}]},
+            {"section": "db", "release_branch": "release/2026-07",
+             "links": [{"sub_type": "microservice", "service_key": "db:microservice:payment", "label": "Payment"}]},
+            {"section": "build", "release_branch": "",
+             "links": [
+                 {"sub_type": "microservice", "service_key": "build:microservice:account", "label": "Account"},
+                 {"sub_type": "portal", "service_key": "build:portal:admin", "label": "Admin"},
+             ]},
+        ], **common,
     )
 
+    # 2) running — Phase 1 (DB) in progress.
     t2 = db.create_task(
-        environment="INTEG",
-        jira_id="TRB-17812",
-        description="Admin portal refresh",
-        branch_from="develop",
-        branch_to="main",
-        approver_key="r-patel",
-        requested_by="demo-user",
-        code_freeze_enabled=False,
+        environment="INTEG", jira_id="TRB-17020",
+        description="Payments DB migration then service build",
+        branch_from="develop", branch_to="release/2026-07", approver_key="r-patel",
         sections_payload=[
-            {
-                "section": "build",
-                "release_branch": "",
-                "links": [
-                    {"sub_type": "portal", "service_key": "build:portal:ecommerce", "label": "Ecommerce"},
-                ],
-            },
-        ],
+            {"section": "db", "release_branch": "release/2026-07",
+             "links": [{"sub_type": "microservice", "service_key": "db:microservice:payment", "label": "Payment"}]},
+            {"section": "build", "release_branch": "",
+             "links": [{"sub_type": "microservice", "service_key": "build:microservice:account", "label": "Account"}]},
+        ], **common,
     )
-    db.apply_approval_decision(t2["task_id"], "dev_lead", "approved", "Dev Lead")
-    db.apply_approval_decision(t2["task_id"], "devops", "approved", "DevOps")
-    t2 = db.get_task(t2["task_id"])
-    db.update_job_status(t2["jobs"][0]["job_id"], "done", "Portal deployed successfully")
+    _seed_approved(t2["task_id"])  # Phase 1 auto-starts.
 
+    # 3) running — Phase 3 (Build) in progress, Phases 1 & 2 done.
     t3 = db.create_task(
-        environment="UAT",
-        jira_id="TRB-18055",
-        description="Apollo SQL migration — rejected for missing environment field",
-        branch_from="release/2026-05",
-        branch_to="main",
-        approver_key="d-kumar",
-        requested_by="demo-user",
-        code_freeze_enabled=False,
+        environment="UAT", jira_id="TRB-17188",
+        description="Full-stack release: DB + config + two builds",
+        branch_from="develop", branch_to="release/2026-07", approver_key="d-kumar",
         sections_payload=[
-            {
-                "section": "db",
-                "release_branch": "release/2026-06",
-                "links": [
-                    {"sub_type": "microservice", "service_key": "db:microservice:order", "label": "Order"},
-                ],
-            },
-        ],
+            {"section": "db", "release_branch": "release/2026-07",
+             "links": [{"sub_type": "microservice", "service_key": "db:microservice:order", "label": "Order"}]},
+            {"section": "yaml", "release_branch": "release/2026-07",
+             "links": [{"sub_type": "microservice", "service_key": "yaml:microservice:account", "label": "Account"}]},
+            {"section": "build", "release_branch": "",
+             "links": [
+                 {"sub_type": "microservice", "service_key": "build:microservice:account", "label": "Account"},
+                 {"sub_type": "portal", "service_key": "build:portal:admin", "label": "Admin"},
+             ]},
+        ], **common,
+    )
+    _seed_approved(t3["task_id"])
+    _seed_drive(t3["task_id"], complete_phases=2)
+
+    # 4) done — all sub-tasks complete.
+    t4 = db.create_task(
+        environment="INTEG", jira_id="TRB-17812",
+        description="Admin portal refresh with config update",
+        branch_from="develop", branch_to="main", approver_key="r-patel",
+        sections_payload=[
+            {"section": "yaml", "release_branch": "release/2026-07",
+             "links": [{"sub_type": "portal", "service_key": "yaml:portal:admin", "label": "Admin"}]},
+            {"section": "build", "release_branch": "",
+             "links": [{"sub_type": "portal", "service_key": "build:portal:ecommerce", "label": "Ecommerce"}]},
+        ], **common,
+    )
+    _seed_approved(t4["task_id"])
+    plan4 = db.get_orchestrator_plan(t4["task_id"]) or {}
+    _seed_drive(t4["task_id"], complete_phases=len(plan4.get("phases", [])))
+
+    # 5) blocked — a Phase 1 sub-task failed on a middle step.
+    t5 = db.create_task(
+        environment="UAT", jira_id="TRB-17999",
+        description="Order DB migration + build (fails in DB phase)",
+        branch_from="release/2026-05", branch_to="main", approver_key="d-kumar",
+        sections_payload=[
+            {"section": "db", "release_branch": "release/2026-06",
+             "links": [{"sub_type": "microservice", "service_key": "db:microservice:order", "label": "Order"}]},
+            {"section": "build", "release_branch": "",
+             "links": [{"sub_type": "microservice", "service_key": "build:microservice:account", "label": "Account"}]},
+        ], **common,
+    )
+    _seed_approved(t5["task_id"])
+    _seed_drive(t5["task_id"], fail_phase=0)
+
+    # 6) rejected — Dev Lead rejected with a comment.
+    t6 = db.create_task(
+        environment="UAT", jira_id="TRB-18055",
+        description="Apollo SQL migration — rejected for missing environment field",
+        branch_from="release/2026-05", branch_to="main", approver_key="d-kumar",
+        sections_payload=[
+            {"section": "db", "release_branch": "release/2026-06",
+             "links": [{"sub_type": "microservice", "service_key": "db:microservice:order", "label": "Order"}]},
+        ], **common,
     )
     db.apply_approval_decision(
-        t3["task_id"], "dev_lead", "rejected", "Dev Lead",
+        t6["task_id"], "dev_lead", "rejected", "Dev Lead",
         comment="Environment field is required before this can run.",
     )
 

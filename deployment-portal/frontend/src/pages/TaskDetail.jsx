@@ -1,9 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../api.js'
+import { useAuth } from '../contexts/AuthContext.jsx'
 import RequestDetails from '../components/RequestDetails.jsx'
 import ApprovalPanel from '../components/ApprovalPanel.jsx'
 import ValidationReport from '../components/ValidationReport.jsx'
+import OrchestratorPlan from '../components/OrchestratorPlan.jsx'
+import { useSubTaskTicker } from '../hooks/useSubTaskTicker.js'
 
 const STATUS_BADGE = {
   pending_approval: { cls: 'badge-pending', label: 'Pending approval', icon: '⏳' },
@@ -30,15 +33,19 @@ function Badge({ status }) {
 export default function TaskDetail() {
   const { taskId } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const role = user?.approval_stage || 'developer'
   const [task, setTask] = useState(null)
+  const [subTasks, setSubTasks] = useState([])
   const [selectedJob, setSelectedJob] = useState(null)
   const [error, setError] = useState(null)
   const [revalidating, setRevalidating] = useState(false)
 
   const load = useCallback(async () => {
     try {
-      const t = await api.getTask(taskId)
+      const t = await api.getTaskFull(taskId)
       setTask(t)
+      setSubTasks(t.sub_tasks || [])
       setError(null)
     } catch (e) {
       setError(e.message)
@@ -51,12 +58,23 @@ export default function TaskDetail() {
     return () => clearInterval(interval)
   }, [load])
 
+  // Live-advance running sub-tasks via the mock ticker (every 2s).
+  useSubTaskTicker(task?.status, subTasks, (updatedSt) => {
+    setSubTasks((prev) => prev.map((st) => (st.sub_task_id === updatedSt.sub_task_id ? updatedSt : st)))
+  })
+
   if (error && !task) return <div className="alert alert-error">{error}</div>
   if (!task) return <div className="empty-state">Loading task...</div>
 
   const isPending = task.status === 'pending_approval'
   const isRejected = task.status === 'rejected'
   const orchestratorStarted = !isPending && !isRejected
+  const hasPlan = task.orchestrator_plan?.phases?.length > 0
+  // DevOps can preview the execution plan before approval; other roles only
+  // see it once the task is actually running.
+  const isDevops = role === 'devops'
+  const showPlan = hasPlan && (orchestratorStarted || isDevops)
+  const planPreview = !orchestratorStarted
   const approverName = task.approver_name || task.approver_key
 
   async function handleRevalidate() {
@@ -107,11 +125,31 @@ export default function TaskDetail() {
 
       <ValidationReport task={task} onRevalidate={handleRevalidate} revalidating={revalidating} />
 
-      {(isPending || isRejected) && <ApprovalPanel task={task} onDecided={load} />}
-
       {error && <div className="alert alert-error">{error}</div>}
 
-      {orchestratorStarted && (
+      {showPlan && (
+        <div className="card">
+          <p className="card-title">
+            {planPreview ? 'Orchestrator — planned execution order' : 'Orchestrator — execution plan'}
+          </p>
+          {planPreview && (
+            <p className="card-sub" style={{ marginBottom: 12 }}>
+              Preview of what will run once this request is approved. Sub-tasks execute phase by
+              phase — click any sub-task to see the job it triggers, its agent, and parameters.
+            </p>
+          )}
+          <OrchestratorPlan
+            plan={task.orchestrator_plan}
+            subTasks={subTasks}
+            role={role}
+            preview={planPreview}
+          />
+        </div>
+      )}
+
+      {(isPending || isRejected) && <ApprovalPanel task={task} onDecided={load} />}
+
+      {orchestratorStarted && !hasPlan && (
         <div className="card">
           <p className="card-title">Orchestrator — job sequence</p>
 

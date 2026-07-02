@@ -26,7 +26,8 @@ _LOCK = threading.Lock()
 _DEFAULT_DB: dict[str, Any] = {
     "tasks": {},
     "jobs": {},
-    "counters": {"task": 20391, "job": 0},
+    "sub_tasks": {},
+    "counters": {"task": 20391, "job": 0, "sub_task": 0},
 }
 
 # Per the meeting discussion: YAML and DB both allow Portal + Microservice.
@@ -57,6 +58,98 @@ _STEP_TEMPLATES = {
     "phrases": ["Links validated", "Phrases fetched", "Phrases job running", "Applied to environment"],
 }
 
+# ──────────────────────────────────────────────────────────────────────────
+# Sub-task model (v4)
+#
+# A Job is a section container. Sub-Tasks are the atomic units the
+# orchestrator actually plans and executes (one merge, one YAML file, one DB
+# script, one phrases deploy). See july_2orchestratorPlan.md sections 1–2.
+# ──────────────────────────────────────────────────────────────────────────
+
+# Which agent handles each sub-task type.
+_SUB_TASK_AGENT = {
+    "build": "merge_build_agent",
+    "yaml": "yaml_agent",
+    "db": "db_agent",
+    "phrases": "phrases_agent",
+}
+
+# Jenkins job triggered by each sub-task (portal builds use a different job).
+_JENKINS_JOB = {
+    ("build", "microservice"): "Titan-Microservices",
+    ("build", "portal"): "Titan-Portals",
+    ("build", "utility"): "Titan-Utilities",
+    ("yaml", None): "yml_automation_2.0",
+    ("phrases", None): "phrase-deploy",
+    ("db", None): "liquibase-runner",
+}
+
+# Verbatim step labels per sub-task type (plan §1.2). Do not reorder.
+_SUB_TASK_STEP_LABELS = {
+    ("build", "microservice"): [
+        "Validate MR is mergeable (GitSpace check)",
+        "Merge !{mr_id} into {release_branch}",
+        "Trigger Jenkins job: {jenkins_job}",
+        "Waiting for Jenkins build #{build_number} to complete",
+        "Poll API gateway: GET {gateway}/health every 5 min",
+        "AI verification: Ollama reads Jenkins logs, confirms success",
+    ],
+    ("build", "portal"): [
+        "Validate MR is mergeable (GitSpace check)",
+        "Merge !{mr_id} into {release_branch}",
+        "Trigger Jenkins job: Titan-Portals",
+        "Waiting for Jenkins build #{build_number} to complete",
+        "Poll portal URL for HTTP 200 every 5 min",
+        "AI verification: Ollama reads Jenkins logs, confirms success",
+    ],
+    ("yaml", None): [
+        "Validate YAML syntax (parse check)",
+        "Validate config file against schema",
+        "Trigger Jenkins job: yml_automation_2.0",
+        "Waiting for Jenkins build #{build_number} to complete",
+        "Verify config applied: GET {config_endpoint}",
+        "Mark config propagated",
+    ],
+    ("db", None): [
+        "Validate SQL syntax (no DROP/TRUNCATE/DELETE without WHERE)",
+        "Validate Liquibase changeset format",
+        "Run Liquibase update",
+        "Verify DB migration applied",
+        "Run smoke test query",
+    ],
+    ("phrases", None): [
+        "Validate phrase file format",
+        "Validate phrases against key schema",
+        "Trigger phrase deployment job",
+        "Verify phrases propagated to CDN",
+    ],
+}
+
+# Ordered phases the orchestrator runs (plan §1.3). DB → config/phrases → build.
+_PHASE_DEFS = [
+    (1, "Database migrations", ["db"]),
+    (2, "Config & phrases", ["yaml", "phrases"]),
+    (3, "Build & deploy", ["build"]),
+]
+
+_MOCK_JENKINS_BASE = 1280
+
+
+def _stable_seed(*parts: str) -> int:
+    """Deterministic, process-independent seed (unlike hash())."""
+    return sum(ord(c) for c in "".join(parts))
+
+
+def _step_labels(section: str, sub_type: str) -> list[str]:
+    return _SUB_TASK_STEP_LABELS.get(
+        (section, sub_type), _SUB_TASK_STEP_LABELS.get((section, None), [])
+    )
+
+
+def _jenkins_job(section: str, sub_type: str) -> str | None:
+    return _JENKINS_JOB.get((section, sub_type), _JENKINS_JOB.get((section, None)))
+
+
 ApprovalRole = Literal["dev_lead", "qa", "devops"]
 
 
@@ -69,7 +162,14 @@ def _read() -> dict[str, Any]:
         _write(_DEFAULT_DB)
         return json.loads(json.dumps(_DEFAULT_DB))
     with DB_PATH.open("r", encoding="utf-8") as f:
-        return json.load(f)
+        data = json.load(f)
+    # Forward-migrate older DB files that predate the sub-task model.
+    data.setdefault("sub_tasks", {})
+    data.setdefault("counters", {})
+    data["counters"].setdefault("task", 20391)
+    data["counters"].setdefault("job", 0)
+    data["counters"].setdefault("sub_task", 0)
+    return data
 
 
 def _write(data: dict[str, Any]) -> None:
@@ -92,6 +192,11 @@ def next_task_id(db: dict[str, Any]) -> str:
 def next_job_id(db: dict[str, Any]) -> str:
     db["counters"]["job"] += 1
     return f"JOB-{db['counters']['job']}"
+
+
+def next_sub_task_id(db: dict[str, Any]) -> str:
+    db["counters"]["sub_task"] += 1
+    return f"ST-{db['counters']['sub_task']}"
 
 
 class ValidationError(Exception):
@@ -186,6 +291,8 @@ def apply_approval_decision(
                 if first.get("steps"):
                     first["steps"][0]["status"] = "running"
                     first["steps"][0]["ts"] = now
+            # Kick off Phase 1 sub-tasks (the orchestrator executes sub-tasks).
+            _reconcile_sub_task_orchestration(db, task)
         else:
             task["status"] = "pending_approval"
 
@@ -194,8 +301,244 @@ def apply_approval_decision(
 
 
 # ──────────────────────────────────────────────────────────────────────────
+# Sub-task orchestration & mutation
+# ──────────────────────────────────────────────────────────────────────────
+
+def _sub_tasks_of(db: dict[str, Any], task: dict[str, Any]) -> list[dict[str, Any]]:
+    return [db["sub_tasks"][sid] for sid in task.get("sub_tasks", []) if sid in db["sub_tasks"]]
+
+
+def _start_phase(db: dict[str, Any], phase: dict[str, Any], now: str) -> None:
+    for sid in phase["sub_task_ids"]:
+        st = db["sub_tasks"].get(sid)
+        if st and st["status"] == "queued":
+            st["status"] = "running"
+            st["updated_at"] = now
+            st["logs"].append(f"[{now}] Orchestrator dispatched to {st['agent']}")
+            if st.get("steps"):
+                st["steps"][0]["status"] = "running"
+                st["steps"][0]["ts"] = now
+
+
+def _reconcile_sub_task_orchestration(db: dict[str, Any], task: dict[str, Any]) -> None:
+    """Advance the phase machine: start the next phase when the current one is
+    fully done; block the task if any sub-task failed."""
+    plan = task.get("orchestrator_plan") or {}
+    phases = plan.get("phases", [])
+    if not phases:
+        return
+
+    now = _now()
+    all_sts = _sub_tasks_of(db, task)
+
+    # A failed sub-task blocks its phase and the whole task.
+    if any(s["status"] == "failed" for s in all_sts):
+        task["status"] = "blocked"
+        task["updated_at"] = now
+        return
+
+    for phase in phases:
+        phase_sts = [db["sub_tasks"][sid] for sid in phase["sub_task_ids"] if sid in db["sub_tasks"]]
+        if not phase_sts:
+            continue
+        if all(s["status"] == "done" for s in phase_sts):
+            continue
+        # First phase that is not fully done: start it if idle, else it's in flight.
+        if not any(s["status"] == "running" for s in phase_sts):
+            _start_phase(db, phase, now)
+        task["status"] = "running"
+        task["updated_at"] = now
+        return
+
+    # Every phase complete.
+    task["status"] = "done"
+    task["updated_at"] = now
+
+
+def get_sub_task(sub_task_id: str) -> dict[str, Any] | None:
+    db = _read()
+    return db["sub_tasks"].get(sub_task_id)
+
+
+def get_orchestrator_plan(task_id: str) -> dict[str, Any] | None:
+    db = _read()
+    task = db["tasks"].get(task_id)
+    if not task:
+        return None
+    return task.get("orchestrator_plan")
+
+
+def get_task_with_sub_tasks(task_id: str) -> dict[str, Any] | None:
+    db = _read()
+    if task_id not in db["tasks"]:
+        return None
+    task = _expand_task(db, task_id)
+    task["sub_tasks"] = _sub_tasks_of(db, db["tasks"][task_id])
+    task["orchestrator_plan"] = db["tasks"][task_id].get("orchestrator_plan")
+    return task
+
+
+def update_sub_task_status(
+    sub_task_id: str, status: str, log_line: str | None = None
+) -> dict[str, Any] | None:
+    with _LOCK:
+        db = _read()
+        st = db["sub_tasks"].get(sub_task_id)
+        if not st:
+            return None
+        now = _now()
+        st["status"] = status
+        st["updated_at"] = now
+        if log_line:
+            st["logs"].append(f"[{now}] {log_line}")
+        _write(db)
+        return st
+
+
+def advance_sub_task_step(
+    sub_task_id: str, step_id: str, status: str, detail: str | None = None
+) -> dict[str, Any] | None:
+    with _LOCK:
+        db = _read()
+        st = db["sub_tasks"].get(sub_task_id)
+        if not st:
+            return None
+        now = _now()
+        for step in st["steps"]:
+            if step["step_id"] == step_id:
+                step["status"] = status
+                step["detail"] = detail
+                step["ts"] = now
+                break
+        st["updated_at"] = now
+        _write(db)
+        return st
+
+
+def update_sub_task_after_tick(
+    sub_task_id: str, steps: list[dict[str, Any]], status: str, detail: str | None = None
+) -> dict[str, Any] | None:
+    """Persist the mutated steps + status produced by mock_executor.tick_sub_task."""
+    with _LOCK:
+        db = _read()
+        st = db["sub_tasks"].get(sub_task_id)
+        if not st:
+            return None
+        now = _now()
+        st["steps"] = steps
+        st["status"] = status
+        st["updated_at"] = now
+        if detail:
+            st["logs"].append(f"[{now}] {detail}")
+        _write(db)
+        return st
+
+
+def advance_orchestrator_phase(task_id: str) -> dict[str, Any] | None:
+    """Re-evaluate the phase machine after a sub-task completes or fails."""
+    with _LOCK:
+        db = _read()
+        task = db["tasks"].get(task_id)
+        if not task:
+            return None
+        _reconcile_sub_task_orchestration(db, task)
+        _write(db)
+        return _expand_task(db, task_id)
+
+
+# ──────────────────────────────────────────────────────────────────────────
 # Task operations
 # ──────────────────────────────────────────────────────────────────────────
+
+def _make_sub_task_steps(section: str, sub_type: str, ctx: dict[str, Any]) -> list[dict[str, Any]]:
+    steps = []
+    for i, raw in enumerate(_step_labels(section, sub_type), start=1):
+        try:
+            label = raw.format(**ctx)
+        except Exception:
+            label = raw
+        steps.append({"step_id": f"s{i}", "label": label, "status": "queued", "detail": None, "ts": None})
+    return steps
+
+
+def _build_sub_task(
+    db: dict[str, Any],
+    task_id: str,
+    job_id: str,
+    section: str,
+    sub_type: str,
+    service_key: str,
+    label: str,
+    release_branch: str,
+) -> str:
+    sub_task_id = next_sub_task_id(db)
+    now = _now()
+    seed_key = service_key or label or sub_task_id
+    build_number = _MOCK_JENKINS_BASE + _stable_seed(seed_key) % 100
+    mr_id = 2800 + _stable_seed(seed_key) % 200
+    jenkins_job = _jenkins_job(section, sub_type)
+    ctx = {
+        "mr_id": mr_id,
+        "release_branch": release_branch or "release branch",
+        "jenkins_job": jenkins_job or "jenkins",
+        "build_number": build_number,
+        "gateway": f"https://api.titan.internal/{service_key or 'svc'}",
+        "config_endpoint": f"https://config.titan.internal/{service_key or 'svc'}",
+    }
+
+    if section == "build":
+        jenkins_params = {"Service": label, "MergeID": f"!{mr_id}", "ReleaseBranch": release_branch or ""}
+    elif section == "yaml":
+        jenkins_params = {"ConfigFile": label, "Environment": "auto"}
+    elif section == "db":
+        jenkins_params = {"Changelog": service_key, "Mode": "update"}
+    elif section == "phrases":
+        jenkins_params = {"Service": label, "Regions": "3"}
+    else:
+        jenkins_params = {}
+
+    db["sub_tasks"][sub_task_id] = {
+        "sub_task_id": sub_task_id,
+        "job_id": job_id,
+        "task_id": task_id,
+        "section": section,
+        "sub_type": sub_type,
+        "service_key": service_key,
+        "label": label,
+        "release_branch": release_branch or None,
+        "order": 0,  # assigned by _build_orchestrator_plan
+        "status": "queued",
+        "agent": _SUB_TASK_AGENT.get(section, "orchestrator"),
+        "steps": _make_sub_task_steps(section, sub_type, ctx),
+        "logs": [],
+        "jenkins_job": jenkins_job,
+        "jenkins_params": jenkins_params,
+        "mock_build_number": build_number,
+        "created_at": now,
+        "updated_at": now,
+    }
+    return sub_task_id
+
+
+def _build_orchestrator_plan(db: dict[str, Any], sub_task_ids: list[str]) -> dict[str, Any]:
+    sts = [db["sub_tasks"][sid] for sid in sub_task_ids]
+    phases: list[dict[str, Any]] = []
+    order_counter = 0
+    for phase_num, label, sections in _PHASE_DEFS:
+        ids = [st["sub_task_id"] for st in sts if st["section"] in sections]
+        if not ids:
+            continue
+        for sid in ids:
+            order_counter += 1
+            db["sub_tasks"][sid]["order"] = order_counter
+        phases.append({"phase": phase_num, "label": label, "parallel": True, "sub_task_ids": ids})
+    total = len(sub_task_ids)
+    return {
+        "phases": phases,
+        "total_sub_tasks": total,
+        "estimated_minutes": (10 + total * 6) if total else 0,
+    }
+
 
 def create_task(
     environment: str,
@@ -228,6 +571,7 @@ def create_task(
         )
 
         job_ids: list[str] = []
+        sub_task_ids: list[str] = []
         for idx, sec in enumerate(sorted_sections, start=1):
             job_id = next_job_id(db)
             job_ids.append(job_id)
@@ -248,6 +592,23 @@ def create_task(
                 "created_at": now,
                 "updated_at": now,
             }
+
+            # Each link in a section becomes one atomic sub-task.
+            release_branch = sec.get("release_branch") or sec.get("branch_to") or ""
+            for link in sec["links"]:
+                sid = _build_sub_task(
+                    db,
+                    task_id=task_id,
+                    job_id=job_id,
+                    section=section,
+                    sub_type=link.get("sub_type", ""),
+                    service_key=link.get("service_key", ""),
+                    label=link.get("label") or link.get("service_key", ""),
+                    release_branch=release_branch,
+                )
+                sub_task_ids.append(sid)
+
+        orchestrator_plan = _build_orchestrator_plan(db, sub_task_ids)
 
         chain = get_approval_chain(code_freeze_enabled)
         db["tasks"][task_id] = {
@@ -270,6 +631,8 @@ def create_task(
             "created_at": now,
             "updated_at": now,
             "jobs": job_ids,
+            "sub_tasks": sub_task_ids,
+            "orchestrator_plan": orchestrator_plan,
         }
 
         _write(db)

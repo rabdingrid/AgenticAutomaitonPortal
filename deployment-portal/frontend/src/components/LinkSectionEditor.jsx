@@ -27,6 +27,7 @@ export default function LinkSectionEditor({
   branchPair,
   onBranchChange,
   onAddGroup,
+  linkValidation,
 }) {
   const [activeTab, setActiveTab] = useState(allowedSubTypes[0])
   const [services, setServices] = useState({})
@@ -130,21 +131,40 @@ export default function LinkSectionEditor({
               <label className="field-label">Selected ({links.length})</label>
               <div className="chip-list">
                 {links.length === 0 && <span className="chip-empty">Nothing selected yet</span>}
-                {links.map((l) => (
-                  <span key={l.service_key} className={`chip chip-${l.sub_type}`}>
-                    <span className="chip-type">{SUBTYPE_LABELS[l.sub_type]}</span>
-                    {l.label}
-                    <button
-                      type="button"
-                      className="chip-x"
-                      onClick={() => removeService(l.service_key)}
-                      title="Remove"
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
+                {links.map((l) => {
+                  const v = linkValidation ? linkValidation[l.service_key] : undefined
+                  const state = !v ? 'pending' : v.valid ? 'valid' : 'invalid'
+                  return (
+                    <span key={l.service_key} className={`chip chip-${l.sub_type} chip-validation`}>
+                      {linkValidation && (
+                        <span className={`chip-badge ${state}`} title={state}>
+                          {state === 'valid' ? '✓' : state === 'invalid' ? '✕' : '–'}
+                        </span>
+                      )}
+                      <span className="chip-type">{SUBTYPE_LABELS[l.sub_type]}</span>
+                      {l.label}
+                      <button
+                        type="button"
+                        className="chip-x"
+                        onClick={() => removeService(l.service_key)}
+                        title="Remove"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )
+                })}
               </div>
+              {linkValidation &&
+                links.map((l) => {
+                  const v = linkValidation[l.service_key]
+                  if (!v || v.valid || !v.errors?.length) return null
+                  return v.errors.map((err, i) => (
+                    <p className="validation-error-text" key={`${l.service_key}-${i}`}>
+                      {l.label}: {err}
+                    </p>
+                  ))
+                })}
             </div>
           </div>
 

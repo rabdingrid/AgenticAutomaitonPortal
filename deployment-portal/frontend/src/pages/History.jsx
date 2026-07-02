@@ -1,8 +1,34 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api.js'
+import { useAuth } from '../contexts/AuthContext.jsx'
 import RequestDetails from '../components/RequestDetails.jsx'
 import ApprovalPanel from '../components/ApprovalPanel.jsx'
+import { SECTION_ICONS } from '../components/OrchestratorPlan.jsx'
+
+function CompactPlanSummary({ plan, subTasks }) {
+  if (!plan?.phases?.length) return null
+  const stMap = Object.fromEntries((subTasks || []).map((st) => [st.sub_task_id, st]))
+  return (
+    <div className="history-plan-summary">
+      {plan.phases.map((phase) => (
+        <div key={phase.phase} className="hps-phase">
+          <span className="hps-phase-label">Phase {phase.phase}</span>
+          <div className="hps-sub-tasks">
+            {phase.sub_task_ids.map((stId) => {
+              const st = stMap[stId]
+              return (
+                <span key={stId} className={`hps-chip hps-chip-${st?.status || 'queued'}`}>
+                  {SECTION_ICONS[st?.section] || '🔧'} {st?.label || stId}
+                </span>
+              )
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 const STATUS_BADGE = {
   pending_approval: { cls: 'badge-pending', label: 'Pending approval' },
@@ -18,11 +44,14 @@ const SECTION_ICON = { build: 'Build', yaml: 'YAML', db: 'DB', phrases: 'Phrases
 
 export default function History() {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const role = user?.approval_stage || 'developer'
   const [period, setPeriod] = useState('weekly')
   const [stats, setStats] = useState(null)
   const [tasks, setTasks] = useState([])
   const [approvers, setApprovers] = useState([])
   const [expandedId, setExpandedId] = useState(null)
+  const [fullTasks, setFullTasks] = useState({})
   const [error, setError] = useState(null)
 
   const approverMap = Object.fromEntries(approvers.map((a) => [a.key, a.name]))
@@ -56,9 +85,18 @@ export default function History() {
     load()
   }
 
-  function toggleExpand(taskId, e) {
+  async function toggleExpand(taskId, e) {
     e.stopPropagation()
     setExpandedId((prev) => (prev === taskId ? null : taskId))
+    // DevOps sees a compact execution-plan summary — fetch the expanded task.
+    if (role === 'devops' && !fullTasks[taskId]) {
+      try {
+        const full = await api.getTaskFull(taskId)
+        setFullTasks((prev) => ({ ...prev, [taskId]: full }))
+      } catch {
+        /* summary is best-effort */
+      }
+    }
   }
 
   return (
@@ -169,6 +207,17 @@ export default function History() {
                   <div className="history-expanded" onClick={(e) => e.stopPropagation()}>
                     <RequestDetails task={task} approverName={approverName} />
                     {showApproval && <ApprovalPanel task={task} onDecided={load} />}
+                    {role === 'devops' && fullTasks[task.task_id]?.orchestrator_plan?.phases?.length > 0 && (
+                      <>
+                        <p className="card-sub" style={{ fontWeight: 600, marginTop: 14, marginBottom: 0 }}>
+                          Execution plan
+                        </p>
+                        <CompactPlanSummary
+                          plan={fullTasks[task.task_id].orchestrator_plan}
+                          subTasks={fullTasks[task.task_id].sub_tasks}
+                        />
+                      </>
+                    )}
                   </div>
                 )}
               </div>

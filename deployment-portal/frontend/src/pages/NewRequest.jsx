@@ -134,6 +134,19 @@ export default function NewRequest() {
     [enabledSections],
   )
 
+  // Flatten the per-link validation results into a { service_key: {valid, errors} }
+  // map so each selected service can show a ✓/✕ badge. Cleared when null.
+  const linkValidation = useMemo(() => {
+    if (!validation?.sections) return null
+    const map = {}
+    for (const sec of validation.sections) {
+      for (const r of sec.results || []) {
+        map[r.service_key] = { valid: r.valid, errors: r.errors || [] }
+      }
+    }
+    return map
+  }, [validation])
+
   function updateForm(patch) {
     setForm((prev) => ({ ...prev, ...patch }))
     setValidation(null)
@@ -200,7 +213,11 @@ export default function NewRequest() {
       const extra = []
       if (!form.approver_key) extra.push('Please select an approver')
       if (activeSections.length === 0) extra.push('Enable at least one section')
-      const merged = { valid: result.valid && extra.length === 0, errors: [...result.errors, ...extra] }
+      const merged = {
+        valid: result.valid && extra.length === 0,
+        errors: [...result.errors, ...extra],
+        sections: result.sections || [],
+      }
       setValidation(merged)
     } catch (e) {
       setError(e.message)
@@ -322,6 +339,7 @@ export default function NewRequest() {
               branchPair={g.branch}
               onBranchChange={(patch) => updateBuildGroupBranch(gi, patch)}
               onAddGroup={addBuildGroup}
+              linkValidation={linkValidation}
             />
           ))
         }
@@ -342,6 +360,7 @@ export default function NewRequest() {
             onReleaseBranchChange={(val) => setReleaseBranchFor(sec.key, val)}
             links={sectionLinks[sec.key]}
             onChange={(links) => setSectionLinksFor(sec.key, links)}
+            linkValidation={linkValidation}
           />
         )
       })}

@@ -1788,3 +1788,151 @@ input:disabled {
 }
 .validation-steps { margin-top: 16px; }
 .validation-steps .md-list { font-size: 12.5px; color: var(--text-secondary); }
+
+/* ── Per-link validation badges (NewRequest) ───────────────────────────── */
+.validation-badge {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; flex-shrink: 0;
+}
+.validation-badge.valid { background: var(--green-light); color: var(--green); }
+.validation-badge.invalid { background: var(--red-light); color: var(--red); }
+.validation-badge.pending { background: var(--slate-light); color: var(--text-tertiary); }
+.validation-error-text { font-size: 11.5px; color: var(--red); margin: 2px 0 8px 0; }
+.chip-validation { display: inline-flex; align-items: center; gap: 6px; }
+.chip-badge { font-size: 12px; font-weight: 700; }
+.chip-badge.valid { color: var(--green); }
+.chip-badge.invalid { color: var(--red); }
+.chip-badge.pending { color: var(--text-tertiary); }
+
+/* ── Orchestrator Plan view (TaskDetail) ───────────────────────────────── */
+.orchestrator-plan { margin-top: 1rem; }
+
+.op-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 1rem;
+}
+.op-title { font-size: 15px; font-weight: 600; margin: 0; }
+.op-meta { font-size: 12px; color: var(--text-tertiary); }
+
+.op-phase { margin-bottom: 12px; }
+.op-phase-arrow {
+  text-align: center; font-size: 11.5px; color: var(--text-tertiary);
+  padding: 6px 0; letter-spacing: 0.02em;
+}
+.op-phase-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 8px;
+}
+.op-phase-num {
+  font-size: 10.5px; font-weight: 700; color: var(--white);
+  background: var(--blue); padding: 2px 8px; border-radius: 4px;
+}
+.op-phase-label { font-size: 13px; font-weight: 600; color: var(--navy); }
+.op-parallel-badge {
+  font-size: 10.5px; color: var(--purple);
+  background: var(--purple-light); padding: 2px 8px; border-radius: 4px;
+}
+
+.op-phase-lanes { display: flex; flex-direction: column; gap: 8px; }
+.op-phase-lanes.parallel {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start; /* don't stretch collapsed cards to the tallest one */
+}
+.op-phase-lanes.parallel .op-sub-task {
+  flex: 1 1 240px;
+  min-width: 0;            /* allow shrink so long text wraps instead of leaking */
+  max-width: 100%;
+}
+/* An expanded card takes the whole row so its details are readable. */
+.op-phase-lanes.parallel .op-sub-task.op-expanded { flex-basis: 100%; }
+
+.op-sub-task {
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: 10px 12px; cursor: pointer; transition: border-color 0.15s;
+  background: var(--white);
+  min-width: 0;
+  overflow: hidden;        /* keep content inside the rounded border */
+}
+.op-sub-task:hover { border-color: var(--blue); }
+.op-sub-task.op-status-running { border-color: var(--blue); background: var(--blue-light); }
+.op-sub-task.op-status-done { border-color: var(--green); background: var(--green-light); }
+.op-sub-task.op-status-failed { border-color: var(--red); background: var(--red-light); }
+
+.op-st-header { display: flex; align-items: center; gap: 10px; }
+.op-st-icon { font-size: 16px; flex-shrink: 0; }
+.op-st-info { flex: 1; min-width: 0; }
+.op-st-id { font-size: 10.5px; color: var(--text-tertiary); display: block; }
+.op-st-label {
+  font-size: 13px; font-weight: 500; display: block;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.op-st-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.op-st-agent {
+  font-size: 10.5px; color: var(--text-tertiary);
+  max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.op-expand-toggle { font-size: 10px; color: var(--text-tertiary); }
+
+.op-st-steps { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; }
+.op-step {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 4px 0; font-size: 12px; min-width: 0;
+}
+.op-step-icon { width: 16px; flex-shrink: 0; text-align: center; }
+.op-step-label { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.op-step-detail { font-size: 11px; color: var(--text-secondary); font-style: italic; display: block; margin-top: 2px; overflow-wrap: anywhere; }
+.op-step-ts { font-size: 10px; color: var(--text-tertiary); flex-shrink: 0; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.op-step.op-step-done .op-step-icon { color: var(--green); }
+.op-step.op-step-running .op-step-icon { color: var(--blue); }
+.op-step.op-step-failed .op-step-icon { color: var(--red); }
+.op-step.op-step-queued { opacity: 0.5; }
+
+.op-jenkins-params { margin-top: 8px; }
+.op-params-label { font-size: 11px; color: var(--text-tertiary); margin: 0 0 4px; }
+
+/* Details card shown when a DevOps user clicks a sub-task */
+.op-st-card {
+  background: var(--slate-light); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 10px 12px; margin-bottom: 12px;
+}
+.op-card-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--text-secondary); margin-bottom: 8px;
+}
+.op-card-row {
+  display: flex; justify-content: space-between; gap: 12px;
+  font-size: 12px; padding: 3px 0; border-bottom: 1px dashed var(--border);
+}
+.op-card-row:last-child { border-bottom: none; }
+.op-card-row > span:first-child { color: var(--text-tertiary); }
+.op-card-row > span:last-child { color: var(--text-primary); font-weight: 500; text-align: right; word-break: break-word; }
+.op-card-params { margin-top: 8px; }
+.op-card-params-label {
+  display: block; font-size: 10.5px; font-weight: 700; color: var(--purple);
+  background: var(--purple-light); padding: 2px 8px; border-radius: 4px;
+  margin-bottom: 4px; width: fit-content;
+}
+.op-steps-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--text-secondary); margin-bottom: 4px;
+}
+
+/* ── Compact plan summary (History rows) ───────────────────────────────── */
+.history-plan-summary { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.hps-phase { display: flex; align-items: flex-start; gap: 10px; }
+.hps-phase-label {
+  font-size: 10.5px; font-weight: 700; color: var(--text-secondary);
+  min-width: 64px; padding-top: 3px;
+}
+.hps-sub-tasks { display: flex; flex-wrap: wrap; gap: 6px; }
+.hps-chip {
+  font-size: 11px; padding: 2px 8px; border-radius: 12px;
+  background: var(--slate-light); color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.hps-chip-running { background: var(--blue-light); color: var(--blue); border-color: var(--blue-light); }
+.hps-chip-done { background: var(--green-light); color: var(--green); border-color: var(--green-light); }
+.hps-chip-failed { background: var(--red-light); color: var(--red); border-color: var(--red-light); }
