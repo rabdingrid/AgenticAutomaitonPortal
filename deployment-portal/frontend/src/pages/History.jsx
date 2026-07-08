@@ -63,7 +63,7 @@ export default function History() {
     try {
       const [s, t, appr] = await Promise.all([
         api.getStats(period),
-        api.listTasks(),
+        api.listTasks({ period }),
         api.getApprovers(),
       ])
       setStats(s)

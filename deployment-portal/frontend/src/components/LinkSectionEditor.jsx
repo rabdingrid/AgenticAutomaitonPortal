@@ -7,6 +7,16 @@ const SUBTYPE_LABELS = {
   utility: 'Utilities',
 }
 
+function validationForLink(linkValidation, sectionKey, serviceKey, branchPair) {
+  if (!linkValidation) return undefined
+  if (sectionKey === 'build' && branchPair) {
+    const from = (branchPair.from || '').trim()
+    const to = (branchPair.to || '').trim()
+    return linkValidation[`build:${serviceKey}:${from}:${to}`]
+  }
+  return linkValidation[serviceKey]
+}
+
 export default function LinkSectionEditor({
   sectionKey,
   title,
@@ -132,13 +142,13 @@ export default function LinkSectionEditor({
               <div className="chip-list">
                 {links.length === 0 && <span className="chip-empty">Nothing selected yet</span>}
                 {links.map((l) => {
-                  const v = linkValidation ? linkValidation[l.service_key] : undefined
-                  const state = !v ? 'pending' : v.valid ? 'valid' : 'invalid'
+                  const v = validationForLink(linkValidation, sectionKey, l.service_key, branchPair)
+                  const state = !v ? 'pending' : !v.valid ? 'invalid' : v.warn ? 'warn' : 'valid'
                   return (
                     <span key={l.service_key} className={`chip chip-${l.sub_type} chip-validation`}>
                       {linkValidation && (
                         <span className={`chip-badge ${state}`} title={state}>
-                          {state === 'valid' ? '✓' : state === 'invalid' ? '✕' : '–'}
+                          {state === 'valid' ? '✓' : state === 'warn' ? '⚠' : state === 'invalid' ? '✕' : '–'}
                         </span>
                       )}
                       <span className="chip-type">{SUBTYPE_LABELS[l.sub_type]}</span>
@@ -157,13 +167,22 @@ export default function LinkSectionEditor({
               </div>
               {linkValidation &&
                 links.map((l) => {
-                  const v = linkValidation[l.service_key]
-                  if (!v || v.valid || !v.errors?.length) return null
-                  return v.errors.map((err, i) => (
-                    <p className="validation-error-text" key={`${l.service_key}-${i}`}>
-                      {l.label}: {err}
-                    </p>
-                  ))
+                  const v = validationForLink(linkValidation, sectionKey, l.service_key, branchPair)
+                  if (!v) return null
+                  return (
+                    <React.Fragment key={l.service_key}>
+                      {(v.errors || []).map((err, i) => (
+                        <p className="validation-error-text" key={`e-${l.service_key}-${i}`}>
+                          {l.label}: {err}
+                        </p>
+                      ))}
+                      {(v.warnings || []).map((warn, i) => (
+                        <p className="validation-warning-text" key={`w-${l.service_key}-${i}`}>
+                          {l.label}: {warn}
+                        </p>
+                      ))}
+                    </React.Fragment>
+                  )
                 })}
             </div>
           </div>

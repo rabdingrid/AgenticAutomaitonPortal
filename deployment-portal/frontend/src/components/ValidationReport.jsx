@@ -88,25 +88,42 @@ function Markdown({ text }) {
 export default function ValidationReport({ task, onRevalidate, revalidating }) {
   const status = task.validation_status
   const report = task.validation_report
+  const isRunning = status === 'pending' || status === 'running'
 
-  if (status === 'pending' || status === 'running' || !report) {
+  // First validation: no report yet — show spinner only.
+  if (!report && isRunning) {
     return (
       <div className="card validation-card">
         <div className="validation-head">
           <p className="card-title" style={{ marginBottom: 0 }}>🤖 AI validation report</p>
         </div>
         <p className="card-sub" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span className="spinner" /> Running smart validation (GitSpace checks + AI review)…
+          <span className="spinner" /> Running GitSpace validation…
         </p>
+      </div>
+    )
+  }
+
+  if (!report) {
+    return (
+      <div className="card validation-card">
+        <p className="card-title" style={{ marginBottom: 0 }}>🤖 AI validation report</p>
+        <p className="card-sub">No validation report yet.</p>
       </div>
     )
   }
 
   const overall = OVERALL[report.overall_status] || OVERALL.warnings
   const s = report.stats || { checked: 0, passed: 0, warnings: 0, failed: 0 }
+  const showRunningBanner = isRunning || revalidating
 
   return (
     <div className="card validation-card">
+      {showRunningBanner && (
+        <p className="card-sub" style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <span className="spinner" /> Re-validation in progress… showing last report until complete.
+        </p>
+      )}
       <div className="validation-head">
         <div>
           <p className="card-title" style={{ marginBottom: 2 }}>
@@ -145,8 +162,15 @@ export default function ValidationReport({ task, onRevalidate, revalidating }) {
               </div>
               <ul className="validation-checks">
                 {it.checks.map((c, ci) => (
-                  <li key={ci} style={{ color: CHECK_COLOR[c.status] || 'inherit' }}>
-                    <span style={{ fontWeight: 600 }}>{c.name}:</span> <span style={{ color: 'var(--text-secondary)' }}>{c.detail}</span>
+                  <li key={ci} style={{ color: CHECK_COLOR[c.status] || 'inherit', whiteSpace: 'pre-line' }}>
+                    {g.section === 'db' ? (
+                      <span style={{ color: 'var(--text-secondary)' }}>{c.detail}</span>
+                    ) : (
+                      <>
+                        <span style={{ fontWeight: 600 }}>{c.name}:</span>{' '}
+                        <span style={{ color: 'var(--text-secondary)' }}>{c.detail}</span>
+                      </>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -158,11 +182,23 @@ export default function ValidationReport({ task, onRevalidate, revalidating }) {
                 </p>
               )}
               <div className="validation-links">
-                {Object.entries(it.urls || {}).map(([k, url]) => url && (
-                  <a key={k} href={url} target="_blank" rel="noreferrer" className="validation-link">
-                    {k === 'merge_request' ? 'Merge request' : k === 'file' ? 'File' : k === 'compare' ? 'Compare' : k} ↗
-                  </a>
-                ))}
+                {it.baseline?.release && (
+                  <span className="validation-meta" style={{ marginRight: 8 }}>
+                    Baseline: {it.baseline.release}
+                  </span>
+                )}
+                {Object.entries(it.urls || {}).map(([k, url]) => {
+                  if (!url || k === 'file' || k === 'baseline_file') return null
+                  const label = k.endsWith('.sql') ? k
+                    : k === 'merge_request' ? 'Merge request'
+                    : k === 'compare' ? 'Compare'
+                    : k.replace(/_/g, '.')
+                  return (
+                    <a key={k} href={url} target="_blank" rel="noreferrer" className="validation-link">
+                      {label} ↗
+                    </a>
+                  )
+                })}
               </div>
             </div>
           ))}

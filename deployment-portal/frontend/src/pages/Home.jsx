@@ -33,9 +33,9 @@ export default function Home() {
     try {
       const [s, a, cf, t] = await Promise.all([
         api.getStats(period),
-        api.getActivity(6),
+        api.getActivity(6, period),
         api.getCodeFreeze(),
-        api.listTasks(),
+        api.listTasks({ period }),
       ])
       setStats(s)
       setActivity(a)

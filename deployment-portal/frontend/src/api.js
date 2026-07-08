@@ -87,7 +87,11 @@ export const api = {
 
   getStats: (period = 'weekly') => request(`/stats?period=${period}`),
 
-  getActivity: (limit = 6) => request(`/activity?limit=${limit}`),
+  getActivity: (limit = 6, period = null) => {
+    const params = new URLSearchParams({ limit: String(limit) })
+    if (period) params.set('period', period)
+    return request(`/activity?${params}`)
+  },
 
   seedDemo: () => request('/demo/seed', { method: 'POST' }),
   resetDemo: () => request('/demo/reset', { method: 'POST' }),

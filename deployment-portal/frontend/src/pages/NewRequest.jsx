@@ -61,8 +61,9 @@ const SECTION_SHORT = {
   phrases: 'Phrases',
 }
 
-function formatPreviewErrors(sections) {
-  const errors = []
+function formatPreviewIssues(sections) {
+  const blocking = []
+  const warnings = []
   for (const sec of sections || []) {
     const title = sec.title || SECTION_SHORT[sec.section] || sec.section
     for (const item of sec.items || []) {
@@ -70,11 +71,16 @@ function formatPreviewErrors(sections) {
       const check = (item.checks || []).find((c) => c.status === item.status)
         || (item.checks || []).find((c) => c.status === 'fail' || c.status === 'warn')
       const detail = check?.detail || 'Issue detected'
-      const icon = item.status === 'warn' ? '⚠' : '✕'
-      errors.push(`${icon} ${title} · ${item.label}: ${detail}`)
+      const branchHint = item.merge?.source_branch
+        ? ` (${item.merge.source_branch} → ${item.merge.target_branch})`
+        : ''
+      const prefix = `${title} · ${item.label}${branchHint}`
+      const line = detail.includes('\n') ? `${prefix}:\n${detail}` : `${prefix}: ${detail}`
+      if (item.status === 'fail') blocking.push(`✕ ${line}`)
+      else warnings.push(`⚠ ${line}`)
     }
   }
-  return errors
+  return { blocking, warnings }
 }
 
 export default function NewRequest() {
@@ -158,8 +164,8 @@ export default function NewRequest() {
     [enabledSections],
   )
 
-  // Flatten the per-link validation results into a { service_key: {valid, errors} }
-  // map so each selected service can show a ✓/✕ badge. Cleared when null.
+  // Per-link validation badges. Build uses service_key + branch pair (same service
+  // can appear on multiple Build cards with different branches).
   const linkValidation = useMemo(() => {
     if (!validation?.sections) return null
     const map = {}
@@ -167,15 +173,24 @@ export default function NewRequest() {
       const rows = sec.items || sec.results || []
       for (const r of rows) {
         if (!r.service_key) continue
+        const from = r.merge?.source_branch ?? ''
+        const to = r.merge?.target_branch ?? ''
+        const key = sec.section === 'build' && (from || to)
+          ? `build:${r.service_key}:${from}:${to}`
+          : r.service_key
         if (sec.items) {
-          map[r.service_key] = {
-            valid: r.status === 'pass',
+          map[key] = {
+            valid: r.status === 'pass' || r.status === 'warn',
+            warn: r.status === 'warn',
             errors: (r.checks || [])
-              .filter((c) => c.status === 'fail' || c.status === 'warn')
+              .filter((c) => c.status === 'fail')
               .map((c) => `${c.name}: ${c.detail}`),
+            warnings: (r.checks || [])
+              .filter((c) => c.status === 'warn')
+              .map((c) => c.detail || c.name),
           }
         } else {
-          map[r.service_key] = { valid: r.valid, errors: r.errors || [] }
+          map[key] = { valid: r.valid, errors: r.errors || [] }
         }
       }
     }
@@ -278,10 +293,13 @@ export default function NewRequest() {
         }
       }
 
-      const sectionErrors = formatPreviewErrors(report.sections)
+      const { blocking, warnings } = formatPreviewIssues(report.sections)
+      const canSubmit = report.overall_status !== 'failed' && extra.length === 0
       const merged = {
-        valid: report.overall_status === 'passed' && extra.length === 0,
-        errors: [...sectionErrors, ...extra],
+        valid: canSubmit,
+        hasWarnings: report.overall_status === 'warnings' || warnings.length > 0,
+        errors: [...blocking, ...extra],
+        warnings,
         sections: report.sections || [],
       }
       setValidation(merged)
@@ -301,8 +319,12 @@ export default function NewRequest() {
       setError('Please fill in all required fields before submitting.')
       return
     }
-    if (!validation || !validation.valid) {
-      setError('Please run validation and fix any issues before submitting.')
+    if (!validation) {
+      setError('Please run validation before submitting.')
+      return
+    }
+    if (!validation.valid) {
+      setError('Please run validation and fix blocking issues before submitting.')
       return
     }
     setSubmitting(true)
@@ -499,12 +521,24 @@ export default function NewRequest() {
             {validation.errors.map((e, i) => <li key={i}>{e}</li>)}
           </ul>
           <p className="validation-error-hint">
-            Issues are also marked on each selected service above. Fix them and click Validate again.
+            Blocking issues are marked on each selected service above. Fix them and click Validate again.
           </p>
         </div>
       )}
 
-      {validation && validation.valid && (
+      {validation && validation.valid && validation.warnings?.length > 0 && (
+        <>
+          <div className="alert alert-warning">
+            <strong>Advisory warnings (submit allowed):</strong>
+            <ul className="validation-warning-list">
+              {validation.warnings.map((w, i) => <li key={i}>{w}</li>)}
+            </ul>
+          </div>
+          <div className="alert alert-success">✓ No blocking issues — you can submit.</div>
+        </>
+      )}
+
+      {validation && validation.valid && !validation.warnings?.length && (
         <div className="alert alert-success">✓ All validations passed — you can submit now.</div>
       )}
 

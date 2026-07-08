@@ -1901,12 +1901,17 @@ input:disabled {
 .validation-badge.valid { background: var(--green-light); color: var(--green); }
 .validation-badge.invalid { background: var(--red-light); color: var(--red); }
 .validation-badge.pending { background: var(--slate-light); color: var(--text-tertiary); }
-.validation-error-text { font-size: 11.5px; color: var(--red); margin: 2px 0 8px 0; }
+.validation-error-text { font-size: 11.5px; color: var(--red); margin: 2px 0 8px 0; white-space: pre-line; }
+.validation-warning-text { font-size: 11.5px; color: var(--amber, #b45309); margin: 2px 0 8px 0; white-space: pre-line; }
 .validation-error-list { margin: 8px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.5; }
+.validation-error-list li { white-space: pre-line; }
+.validation-warning-list { margin: 8px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.5; color: var(--amber, #b45309); }
+.validation-warning-list li { white-space: pre-line; }
 .validation-error-hint { margin: 10px 0 0; font-size: 12px; color: var(--text-secondary); }
 .chip-validation { display: inline-flex; align-items: center; gap: 6px; }
 .chip-badge { font-size: 12px; font-weight: 700; }
 .chip-badge.valid { color: var(--green); }
+.chip-badge.warn { color: var(--amber, #b45309); }
 .chip-badge.invalid { color: var(--red); }
 .chip-badge.pending { color: var(--text-tertiary); }
 
