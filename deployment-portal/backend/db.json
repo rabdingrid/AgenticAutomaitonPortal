@@ -1057,6 +1057,1957 @@
         "total_sub_tasks": 1,
         "estimated_minutes": 16
       }
+    },
+    "TASK-20398": {
+      "task_id": "TASK-20398",
+      "environment": "UAT",
+      "jira_id": "dsaffas",
+      "description": "asdfdsfasd",
+      "branch_from": "asdfafd",
+      "branch_to": "master",
+      "branches": [
+        {
+          "from": "asdfafd",
+          "to": "master"
+        }
+      ],
+      "approver_key": "a-sharma",
+      "cc_emails": "",
+      "requested_by": "Lead",
+      "status": "pending_approval",
+      "code_freeze_enabled": false,
+      "approval_chain": [
+        "dev_lead",
+        "devops"
+      ],
+      "approvals": {
+        "dev_lead": null,
+        "devops": null
+      },
+      "rejection_reason": null,
+      "validation_status": "ready",
+      "validation_report": {
+        "generated_at": "2026-07-03T08:45:51Z",
+        "environment": "UAT",
+        "jira_id": "dsaffas",
+        "overall_status": "failed",
+        "stats": {
+          "checked": 3,
+          "passed": 0,
+          "warnings": 0,
+          "failed": 3
+        },
+        "sections": [
+          {
+            "section": "yaml",
+            "title": "YAML / Config",
+            "items": [
+              {
+                "service_key": "yaml:microservice:account",
+                "label": "Account",
+                "sub_type": "microservice",
+                "status": "fail",
+                "checks": [
+                  {
+                    "name": "Branch exists",
+                    "status": "fail",
+                    "detail": "Branch `asdfdfdf` was not found in `Titan/flpi-titan-release`."
+                  }
+                ],
+                "urls": {
+                  "file": "https://gitspace.foreverliving.com/Titan/flpi-titan-release/-/blob/asdfdfdf/Microservices/Account/asdfdfdf/YML/parameters.yml?ref_type=heads"
+                },
+                "merge": null,
+                "ai_insight": null
+              }
+            ],
+            "status": "fail"
+          },
+          {
+            "section": "build",
+            "title": "Build / Gitspace merge",
+            "items": [
+              {
+                "service_key": "build:utility:kafkacontract",
+                "label": "KafkaContract",
+                "sub_type": "utility",
+                "status": "fail",
+                "checks": [
+                  {
+                    "name": "Branches exist",
+                    "status": "fail",
+                    "detail": "Branch not found in GitSpace: `asdfafd`, `master`"
+                  }
+                ],
+                "urls": {
+                  "compare": "https://gitspace.foreverliving.com/Titan/KafkaContract/-/compare/asdfafd...master?from_project_id=&straight=false"
+                },
+                "merge": {
+                  "iid": 0,
+                  "state": "not_created",
+                  "mergeable": null,
+                  "conflicts": [],
+                  "detail": "MR creation disabled (read-only token); branch existence verified.",
+                  "source_branch": "asdfafd",
+                  "target_branch": "master"
+                },
+                "ai_insight": null
+              },
+              {
+                "service_key": "build:microservice:auditlog",
+                "label": "Auditlog",
+                "sub_type": "microservice",
+                "status": "fail",
+                "checks": [
+                  {
+                    "name": "Branches exist",
+                    "status": "fail",
+                    "detail": "Branch not found in GitSpace: `asdfafd`, `master`"
+                  }
+                ],
+                "urls": {
+                  "compare": "https://gitspace.foreverliving.com/Titan/Auditlog/-/compare/asdfafd...master?from_project_id=&straight=false"
+                },
+                "merge": {
+                  "iid": 0,
+                  "state": "not_created",
+                  "mergeable": null,
+                  "conflicts": [],
+                  "detail": "MR creation disabled (read-only token); branch existence verified.",
+                  "source_branch": "asdfafd",
+                  "target_branch": "master"
+                },
+                "ai_insight": null
+              }
+            ],
+            "status": "fail"
+          }
+        ],
+        "steps": [
+          "Fix [YAML / Config \u00b7 Account] \u2014 Branch exists: Branch `asdfdfdf` was not found in `Titan/flpi-titan-release`.",
+          "Fix [Build / Gitspace merge \u00b7 KafkaContract] \u2014 Branches exist: Branch not found in GitSpace: `asdfafd`, `master`",
+          "Fix [Build / Gitspace merge \u00b7 Auditlog] \u2014 Branches exist: Branch not found in GitSpace: `asdfafd`, `master`",
+          "Resolve the failures above and re-run validation before approving."
+        ],
+        "ai_used": false,
+        "ai_model": "qwen2.5-coder:7b",
+        "summary_markdown": "## Verdict \u2014 BLOCKED\n0 passed \u00b7 0 warning(s) \u00b7 3 failed across 3 item(s) for **dsaffas** \u2192 **UAT**.\n\n## Checks\n**YAML / Config**\n- \u274c Account \u2014 Branch `asdfdfdf` was not found in `Titan/flpi-titan-release`.\n  - https://gitspace.foreverliving.com/Titan/flpi-titan-release/-/blob/asdfdfdf/Microservices/Account/asdfdfdf/YML/parameters.yml?ref_type=heads\n**Build / Gitspace merge**\n- \u274c KafkaContract \u2014 Branch not found in GitSpace: `asdfafd`, `master`\n- \u274c Auditlog \u2014 Branch not found in GitSpace: `asdfafd`, `master`\n\n## Recommended next steps\n1. Fix [YAML / Config \u00b7 Account] \u2014 Branch exists: Branch `asdfdfdf` was not found in `Titan/flpi-titan-release`.\n2. Fix [Build / Gitspace merge \u00b7 KafkaContract] \u2014 Branches exist: Branch not found in GitSpace: `asdfafd`, `master`\n3. Fix [Build / Gitspace merge \u00b7 Auditlog] \u2014 Branches exist: Branch not found in GitSpace: `asdfafd`, `master`\n4. Resolve the failures above and re-run validation before approving.\n\n_AI briefing unavailable \u2014 this is the deterministic fallback report._"
+      },
+      "created_at": "2026-07-02T20:25:32Z",
+      "updated_at": "2026-07-03T08:45:51Z",
+      "jobs": [
+        "JOB-14",
+        "JOB-15"
+      ],
+      "sub_tasks": [
+        "ST-16",
+        "ST-17",
+        "ST-18"
+      ],
+      "orchestrator_plan": {
+        "phases": [
+          {
+            "phase": 2,
+            "label": "Config & phrases",
+            "parallel": true,
+            "sub_task_ids": [
+              "ST-16"
+            ]
+          },
+          {
+            "phase": 3,
+            "label": "Build & deploy",
+            "parallel": true,
+            "sub_task_ids": [
+              "ST-17",
+              "ST-18"
+            ]
+          }
+        ],
+        "total_sub_tasks": 3,
+        "estimated_minutes": 28
+      }
+    },
+    "TASK-20399": {
+      "task_id": "TASK-20399",
+      "environment": "INTEG",
+      "jira_id": "dfsaf",
+      "description": "",
+      "branch_from": "feature-parent-bom",
+      "branch_to": "integ",
+      "branches": [
+        {
+          "from": "feature-parent-bom",
+          "to": "integ"
+        },
+        {
+          "from": "Feature-TRB-18109",
+          "to": "integ"
+        }
+      ],
+      "approver_key": "a-sharma",
+      "cc_emails": "",
+      "requested_by": "Lead",
+      "status": "done",
+      "code_freeze_enabled": false,
+      "approval_chain": [
+        "dev_lead",
+        "devops"
+      ],
+      "approvals": {
+        "dev_lead": {
+          "decision": "approved",
+          "comment": null,
+          "by": "Lead",
+          "at": "2026-07-05T07:23:21Z"
+        },
+        "devops": {
+          "decision": "approved",
+          "comment": null,
+          "by": "Devops Admin",
+          "at": "2026-07-05T07:28:05Z"
+        }
+      },
+      "rejection_reason": null,
+      "validation_status": "ready",
+      "validation_report": {
+        "generated_at": "2026-07-03T09:24:37Z",
+        "environment": "INTEG",
+        "jira_id": "dfsaf",
+        "overall_status": "passed",
+        "stats": {
+          "checked": 2,
+          "passed": 2,
+          "warnings": 0,
+          "failed": 0
+        },
+        "sections": [
+          {
+            "section": "build",
+            "title": "Build / Gitspace merge",
+            "items": [
+              {
+                "service_key": "build:microservice:customer-service-v2",
+                "label": "customer-service-v2",
+                "sub_type": "microservice",
+                "status": "pass",
+                "checks": [
+                  {
+                    "name": "Branches exist",
+                    "status": "pass",
+                    "detail": "Both `feature-parent-bom` and `integ` exist. Merge request creation deferred (read-only mode)."
+                  }
+                ],
+                "urls": {
+                  "compare": "https://gitspace.foreverliving.com/Titan/customer-service-v2/-/compare/feature-parent-bom...integ?from_project_id=&straight=false"
+                },
+                "merge": {
+                  "iid": 0,
+                  "state": "not_created",
+                  "mergeable": null,
+                  "conflicts": [],
+                  "detail": "MR creation disabled (read-only token); branch existence verified.",
+                  "source_branch": "feature-parent-bom",
+                  "target_branch": "integ"
+                },
+                "ai_insight": null
+              },
+              {
+                "service_key": "build:microservice:address",
+                "label": "Address",
+                "sub_type": "microservice",
+                "status": "pass",
+                "checks": [
+                  {
+                    "name": "Branches exist",
+                    "status": "pass",
+                    "detail": "Both `Feature-TRB-18109` and `integ` exist. Merge request creation deferred (read-only mode)."
+                  }
+                ],
+                "urls": {
+                  "compare": "https://gitspace.foreverliving.com/Titan/AddressService/-/compare/Feature-TRB-18109...integ?from_project_id=&straight=false"
+                },
+                "merge": {
+                  "iid": 0,
+                  "state": "not_created",
+                  "mergeable": null,
+                  "conflicts": [],
+                  "detail": "MR creation disabled (read-only token); branch existence verified.",
+                  "source_branch": "Feature-TRB-18109",
+                  "target_branch": "integ"
+                },
+                "ai_insight": null
+              }
+            ],
+            "status": "pass"
+          }
+        ],
+        "steps": [
+          "All checks passed \u2014 Dev Lead can approve; orchestrator will proceed on approval."
+        ],
+        "ai_used": false,
+        "ai_model": "qwen2.5-coder:7b",
+        "summary_markdown": "## Verdict \u2014 APPROVE-READY\n2 passed \u00b7 0 warning(s) \u00b7 0 failed across 2 item(s) for **dfsaf** \u2192 **INTEG**.\n\n## Checks\n**Build / Gitspace merge**\n- \u2705 customer-service-v2 \u2014 Both `feature-parent-bom` and `integ` exist. Merge request creation deferred (read-only mode).\n- \u2705 Address \u2014 Both `Feature-TRB-18109` and `integ` exist. Merge request creation deferred (read-only mode).\n\n## Recommended next steps\n1. All checks passed \u2014 Dev Lead can approve; orchestrator will proceed on approval.\n\n_AI briefing unavailable \u2014 this is the deterministic fallback report._"
+      },
+      "created_at": "2026-07-03T09:24:33Z",
+      "updated_at": "2026-07-05T07:28:22Z",
+      "jobs": [
+        "JOB-16",
+        "JOB-17"
+      ],
+      "sub_tasks": [
+        "ST-19",
+        "ST-20"
+      ],
+      "orchestrator_plan": {
+        "phases": [
+          {
+            "phase": 3,
+            "label": "Build & deploy",
+            "parallel": true,
+            "sub_task_ids": [
+              "ST-19",
+              "ST-20"
+            ]
+          }
+        ],
+        "total_sub_tasks": 2,
+        "estimated_minutes": 22
+      }
+    },
+    "TASK-20400": {
+      "task_id": "TASK-20400",
+      "environment": "INTEG",
+      "jira_id": "asdfa",
+      "description": "",
+      "branch_from": "Feature-TRB-18109",
+      "branch_to": "integ",
+      "branches": [
+        {
+          "from": "Feature-TRB-18109",
+          "to": "integ"
+        }
+      ],
+      "approver_key": "a-sharma",
+      "cc_emails": "shukumar@nextsphere.com",
+      "requested_by": "Devops Admin",
+      "status": "pending_approval",
+      "code_freeze_enabled": false,
+      "approval_chain": [
+        "dev_lead",
+        "devops"
+      ],
+      "approvals": {
+        "dev_lead": null,
+        "devops": null
+      },
+      "rejection_reason": null,
+      "validation_status": "ready",
+      "validation_report": {
+        "generated_at": "2026-07-05T07:52:38Z",
+        "environment": "INTEG",
+        "jira_id": "asdfa",
+        "overall_status": "passed",
+        "stats": {
+          "checked": 1,
+          "passed": 1,
+          "warnings": 0,
+          "failed": 0
+        },
+        "sections": [
+          {
+            "section": "build",
+            "title": "Build / Gitspace merge",
+            "items": [
+              {
+                "service_key": "build:microservice:address",
+                "label": "Address",
+                "sub_type": "microservice",
+                "status": "pass",
+                "checks": [
+                  {
+                    "name": "Branches exist",
+                    "status": "pass",
+                    "detail": "Both `Feature-TRB-18109` and `integ` exist. Merge request creation deferred (read-only mode)."
+                  }
+                ],
+                "urls": {
+                  "compare": "https://gitspace.foreverliving.com/Titan/AddressService/-/compare/Feature-TRB-18109...integ?from_project_id=&straight=false"
+                },
+                "merge": {
+                  "iid": 0,
+                  "state": "not_created",
+                  "mergeable": null,
+                  "conflicts": [],
+                  "detail": "MR creation disabled (read-only token); branch existence verified.",
+                  "source_branch": "Feature-TRB-18109",
+                  "target_branch": "integ"
+                },
+                "ai_insight": null
+              }
+            ],
+            "status": "pass"
+          }
+        ],
+        "steps": [
+          "All checks passed \u2014 Dev Lead can approve; orchestrator will proceed on approval."
+        ],
+        "ai_used": false,
+        "ai_model": "qwen2.5-coder:7b",
+        "summary_markdown": "## Verdict \u2014 APPROVE-READY\n1 passed \u00b7 0 warning(s) \u00b7 0 failed across 1 item(s) for **asdfa** \u2192 **INTEG**.\n\n## Checks\n**Build / Gitspace merge**\n- \u2705 Address \u2014 Both `Feature-TRB-18109` and `integ` exist. Merge request creation deferred (read-only mode).\n\n## Recommended next steps\n1. All checks passed \u2014 Dev Lead can approve; orchestrator will proceed on approval.\n\n_AI briefing unavailable \u2014 this is the deterministic fallback report._"
+      },
+      "created_at": "2026-07-05T07:52:36Z",
+      "updated_at": "2026-07-05T07:52:38Z",
+      "jobs": [
+        "JOB-18"
+      ],
+      "sub_tasks": [
+        "ST-21"
+      ],
+      "orchestrator_plan": {
+        "phases": [
+          {
+            "phase": 3,
+            "label": "Build & deploy",
+            "parallel": true,
+            "sub_task_ids": [
+              "ST-21"
+            ]
+          }
+        ],
+        "total_sub_tasks": 1,
+        "estimated_minutes": 16
+      }
+    },
+    "TASK-20401": {
+      "task_id": "TASK-20401",
+      "environment": "INTEG",
+      "jira_id": "Email testing",
+      "description": "",
+      "branch_from": "Feature-TRB-18109",
+      "branch_to": "integ",
+      "branches": [
+        {
+          "from": "Feature-TRB-18109",
+          "to": "integ"
+        }
+      ],
+      "approver_key": "s-kumar",
+      "cc_emails": "",
+      "requested_by": "Devops Admin",
+      "status": "pending_approval",
+      "code_freeze_enabled": false,
+      "approval_chain": [
+        "dev_lead",
+        "devops"
+      ],
+      "approvals": {
+        "dev_lead": null,
+        "devops": null
+      },
+      "rejection_reason": null,
+      "validation_status": "ready",
+      "validation_report": {
+        "generated_at": "2026-07-05T07:57:21Z",
+        "environment": "INTEG",
+        "jira_id": "Email testing",
+        "overall_status": "passed",
+        "stats": {
+          "checked": 1,
+          "passed": 1,
+          "warnings": 0,
+          "failed": 0
+        },
+        "sections": [
+          {
+            "section": "build",
+            "title": "Build / Gitspace merge",
+            "items": [
+              {
+                "service_key": "build:microservice:address",
+                "label": "Address",
+                "sub_type": "microservice",
+                "status": "pass",
+                "checks": [
+                  {
+                    "name": "Branches exist",
+                    "status": "pass",
+                    "detail": "Both `Feature-TRB-18109` and `integ` exist. Merge request creation deferred (read-only mode)."
+                  }
+                ],
+                "urls": {
+                  "compare": "https://gitspace.foreverliving.com/Titan/AddressService/-/compare/Feature-TRB-18109...integ?from_project_id=&straight=false"
+                },
+                "merge": {
+                  "iid": 0,
+                  "state": "not_created",
+                  "mergeable": null,
+                  "conflicts": [],
+                  "detail": "MR creation disabled (read-only token); branch existence verified.",
+                  "source_branch": "Feature-TRB-18109",
+                  "target_branch": "integ"
+                },
+                "ai_insight": null
+              }
+            ],
+            "status": "pass"
+          }
+        ],
+        "steps": [
+          "All checks passed \u2014 Dev Lead can approve; orchestrator will proceed on approval."
+        ],
+        "ai_used": false,
+        "ai_model": "qwen2.5-coder:7b",
+        "summary_markdown": "## Verdict \u2014 APPROVE-READY\n1 passed \u00b7 0 warning(s) \u00b7 0 failed across 1 item(s) for **Email testing** \u2192 **INTEG**.\n\n## Checks\n**Build / Gitspace merge**\n- \u2705 Address \u2014 Both `Feature-TRB-18109` and `integ` exist. Merge request creation deferred (read-only mode).\n\n## Recommended next steps\n1. All checks passed \u2014 Dev Lead can approve; orchestrator will proceed on approval.\n\n_AI briefing unavailable \u2014 this is the deterministic fallback report._"
+      },
+      "created_at": "2026-07-05T07:57:19Z",
+      "updated_at": "2026-07-05T07:57:21Z",
+      "jobs": [
+        "JOB-19"
+      ],
+      "sub_tasks": [
+        "ST-22"
+      ],
+      "orchestrator_plan": {
+        "phases": [
+          {
+            "phase": 3,
+            "label": "Build & deploy",
+            "parallel": true,
+            "sub_task_ids": [
+              "ST-22"
+            ]
+          }
+        ],
+        "total_sub_tasks": 1,
+        "estimated_minutes": 16
+      }
+    },
+    "TASK-20402": {
+      "task_id": "TASK-20402",
+      "environment": "INTEG",
+      "jira_id": "gsdfg",
+      "description": "",
+      "branch_from": "feature-parent-bom",
+      "branch_to": "integ",
+      "branches": [
+        {
+          "from": "feature-parent-bom",
+          "to": "integ"
+        },
+        {
+          "from": "Feature-TRB-18109",
+          "to": "integ"
+        }
+      ],
+      "approver_key": "a-sharma",
+      "cc_emails": "",
+      "requested_by": "Devops Admin",
+      "status": "pending_approval",
+      "code_freeze_enabled": false,
+      "approval_chain": [
+        "dev_lead",
+        "devops"
+      ],
+      "approvals": {
+        "dev_lead": null,
+        "devops": null
+      },
+      "rejection_reason": null,
+      "validation_status": "ready",
+      "validation_report": {
+        "generated_at": "2026-07-05T20:35:48Z",
+        "environment": "INTEG",
+        "jira_id": "gsdfg",
+        "overall_status": "passed",
+        "stats": {
+          "checked": 2,
+          "passed": 2,
+          "warnings": 0,
+          "failed": 0
+        },
+        "sections": [
+          {
+            "section": "build",
+            "title": "Build / Gitspace merge",
+            "items": [
+              {
+                "service_key": "build:microservice:customercarev2",
+                "label": "Customercarev2",
+                "sub_type": "microservice",
+                "status": "pass",
+                "checks": [
+                  {
+                    "name": "Branches exist",
+                    "status": "pass",
+                    "detail": "Both `feature-parent-bom` and `integ` exist. Merge request creation deferred (read-only mode)."
+                  }
+                ],
+                "urls": {
+                  "compare": "https://gitspace.foreverliving.com/Titan/customer-service-v2/-/compare/feature-parent-bom...integ?from_project_id=&straight=false"
+                },
+                "merge": {
+                  "iid": 0,
+                  "state": "not_created",
+                  "mergeable": null,
+                  "conflicts": [],
+                  "detail": "MR creation disabled (read-only token); branch existence verified.",
+                  "source_branch": "feature-parent-bom",
+                  "target_branch": "integ"
+                },
+                "ai_insight": null
+              },
+              {
+                "service_key": "build:microservice:address",
+                "label": "Address",
+                "sub_type": "microservice",
+                "status": "pass",
+                "checks": [
+                  {
+                    "name": "Branches exist",
+                    "status": "pass",
+                    "detail": "Both `Feature-TRB-18109` and `integ` exist. Merge request creation deferred (read-only mode)."
+                  }
+                ],
+                "urls": {
+                  "compare": "https://gitspace.foreverliving.com/Titan/AddressService/-/compare/Feature-TRB-18109...integ?from_project_id=&straight=false"
+                },
+                "merge": {
+                  "iid": 0,
+                  "state": "not_created",
+                  "mergeable": null,
+                  "conflicts": [],
+                  "detail": "MR creation disabled (read-only token); branch existence verified.",
+                  "source_branch": "Feature-TRB-18109",
+                  "target_branch": "integ"
+                },
+                "ai_insight": null
+              }
+            ],
+            "status": "pass"
+          }
+        ],
+        "steps": [
+          "All checks passed \u2014 Dev Lead can approve; orchestrator will proceed on approval."
+        ],
+        "ai_used": false,
+        "ai_model": "qwen2.5-coder:7b",
+        "summary_markdown": "## Verdict \u2014 APPROVE-READY\n2 passed \u00b7 0 warning(s) \u00b7 0 failed across 2 item(s) for **gsdfg** \u2192 **INTEG**.\n\n## Checks\n**Build / Gitspace merge**\n- \u2705 Customercarev2 \u2014 Both `feature-parent-bom` and `integ` exist. Merge request creation deferred (read-only mode).\n- \u2705 Address \u2014 Both `Feature-TRB-18109` and `integ` exist. Merge request creation deferred (read-only mode).\n\n## Recommended next steps\n1. All checks passed \u2014 Dev Lead can approve; orchestrator will proceed on approval.\n\n_AI briefing unavailable \u2014 this is the deterministic fallback report._"
+      },
+      "created_at": "2026-07-05T20:31:29Z",
+      "updated_at": "2026-07-05T20:35:48Z",
+      "jobs": [
+        "JOB-20",
+        "JOB-21"
+      ],
+      "sub_tasks": [
+        "ST-23",
+        "ST-24"
+      ],
+      "orchestrator_plan": {
+        "phases": [
+          {
+            "phase": 3,
+            "label": "Build & deploy",
+            "parallel": true,
+            "sub_task_ids": [
+              "ST-23",
+              "ST-24"
+            ]
+          }
+        ],
+        "total_sub_tasks": 2,
+        "estimated_minutes": 22
+      }
+    },
+    "TASK-20403": {
+      "task_id": "TASK-20403",
+      "environment": "INTEG",
+      "jira_id": "email verification",
+      "description": "",
+      "branch_from": "Feature-TRB-18109",
+      "branch_to": "integ",
+      "branches": [
+        {
+          "from": "Feature-TRB-18109",
+          "to": "integ"
+        }
+      ],
+      "approver_key": "s-kumar",
+      "cc_emails": "msreddy@nextsphere.com",
+      "requested_by": "Devops Admin",
+      "status": "pending_approval",
+      "code_freeze_enabled": false,
+      "approval_chain": [
+        "dev_lead",
+        "devops"
+      ],
+      "approvals": {
+        "dev_lead": null,
+        "devops": null
+      },
+      "rejection_reason": null,
+      "validation_status": "ready",
+      "validation_report": {
+        "generated_at": "2026-07-06T08:54:54Z",
+        "environment": "INTEG",
+        "jira_id": "email verification",
+        "overall_status": "passed",
+        "stats": {
+          "checked": 1,
+          "passed": 1,
+          "warnings": 0,
+          "failed": 0
+        },
+        "sections": [
+          {
+            "section": "build",
+            "title": "Build / Gitspace merge",
+            "items": [
+              {
+                "service_key": "build:microservice:address",
+                "label": "Address",
+                "sub_type": "microservice",
+                "status": "pass",
+                "checks": [
+                  {
+                    "name": "Branches exist",
+                    "status": "pass",
+                    "detail": "Both `Feature-TRB-18109` and `integ` exist. Merge request creation deferred (read-only mode)."
+                  }
+                ],
+                "urls": {
+                  "compare": "https://gitspace.foreverliving.com/Titan/AddressService/-/compare/Feature-TRB-18109...integ?from_project_id=&straight=false"
+                },
+                "merge": {
+                  "iid": 0,
+                  "state": "not_created",
+                  "mergeable": null,
+                  "conflicts": [],
+                  "detail": "MR creation disabled (read-only token); branch existence verified.",
+                  "source_branch": "Feature-TRB-18109",
+                  "target_branch": "integ"
+                },
+                "ai_insight": null
+              }
+            ],
+            "status": "pass"
+          }
+        ],
+        "steps": [
+          "All checks passed \u2014 Dev Lead can approve; orchestrator will proceed on approval."
+        ],
+        "ai_used": false,
+        "ai_model": "qwen2.5-coder:7b",
+        "summary_markdown": "## Verdict \u2014 APPROVE-READY\n1 passed \u00b7 0 warning(s) \u00b7 0 failed across 1 item(s) for **email verification** \u2192 **INTEG**.\n\n## Checks\n**Build / Gitspace merge**\n- \u2705 Address \u2014 Both `Feature-TRB-18109` and `integ` exist. Merge request creation deferred (read-only mode).\n\n## Recommended next steps\n1. All checks passed \u2014 Dev Lead can approve; orchestrator will proceed on approval.\n\n_AI briefing unavailable \u2014 this is the deterministic fallback report._"
+      },
+      "created_at": "2026-07-06T08:54:52Z",
+      "updated_at": "2026-07-06T08:54:54Z",
+      "jobs": [
+        "JOB-22"
+      ],
+      "sub_tasks": [
+        "ST-25"
+      ],
+      "orchestrator_plan": {
+        "phases": [
+          {
+            "phase": 3,
+            "label": "Build & deploy",
+            "parallel": true,
+            "sub_task_ids": [
+              "ST-25"
+            ]
+          }
+        ],
+        "total_sub_tasks": 1,
+        "estimated_minutes": 16
+      }
+    },
+    "TASK-20404": {
+      "task_id": "TASK-20404",
+      "environment": "INTEG",
+      "jira_id": "mail testing 07",
+      "description": "",
+      "branch_from": "Feature-TRB-18109",
+      "branch_to": "integ",
+      "branches": [
+        {
+          "from": "Feature-TRB-18109",
+          "to": "integ"
+        }
+      ],
+      "approver_key": "s-kumar",
+      "cc_emails": "msreddy@nextsphere.com",
+      "requested_by": "Devops Admin",
+      "status": "pending_approval",
+      "code_freeze_enabled": false,
+      "approval_chain": [
+        "dev_lead",
+        "devops"
+      ],
+      "approvals": {
+        "dev_lead": {
+          "decision": "approved",
+          "comment": null,
+          "by": "Shukumar",
+          "at": "2026-07-06T09:04:02Z"
+        },
+        "devops": null
+      },
+      "rejection_reason": null,
+      "validation_status": "ready",
+      "validation_report": {
+        "generated_at": "2026-07-06T08:59:19Z",
+        "environment": "INTEG",
+        "jira_id": "mail testing 07",
+        "overall_status": "passed",
+        "stats": {
+          "checked": 1,
+          "passed": 1,
+          "warnings": 0,
+          "failed": 0
+        },
+        "sections": [
+          {
+            "section": "build",
+            "title": "Build / Gitspace merge",
+            "items": [
+              {
+                "service_key": "build:microservice:address",
+                "label": "Address",
+                "sub_type": "microservice",
+                "status": "pass",
+                "checks": [
+                  {
+                    "name": "Branches exist",
+                    "status": "pass",
+                    "detail": "Both `Feature-TRB-18109` and `integ` exist. Merge request creation deferred (read-only mode)."
+                  }
+                ],
+                "urls": {
+                  "compare": "https://gitspace.foreverliving.com/Titan/AddressService/-/compare/Feature-TRB-18109...integ?from_project_id=&straight=false"
+                },
+                "merge": {
+                  "iid": 0,
+                  "state": "not_created",
+                  "mergeable": null,
+                  "conflicts": [],
+                  "detail": "MR creation disabled (read-only token); branch existence verified.",
+                  "source_branch": "Feature-TRB-18109",
+                  "target_branch": "integ"
+                },
+                "ai_insight": null
+              }
+            ],
+            "status": "pass"
+          }
+        ],
+        "steps": [
+          "All checks passed \u2014 Dev Lead can approve; orchestrator will proceed on approval."
+        ],
+        "ai_used": false,
+        "ai_model": "qwen2.5-coder:7b",
+        "summary_markdown": "## Verdict \u2014 APPROVE-READY\n1 passed \u00b7 0 warning(s) \u00b7 0 failed across 1 item(s) for **mail testing 07** \u2192 **INTEG**.\n\n## Checks\n**Build / Gitspace merge**\n- \u2705 Address \u2014 Both `Feature-TRB-18109` and `integ` exist. Merge request creation deferred (read-only mode).\n\n## Recommended next steps\n1. All checks passed \u2014 Dev Lead can approve; orchestrator will proceed on approval.\n\n_AI briefing unavailable \u2014 this is the deterministic fallback report._"
+      },
+      "created_at": "2026-07-06T08:59:16Z",
+      "updated_at": "2026-07-06T09:04:02Z",
+      "jobs": [
+        "JOB-23"
+      ],
+      "sub_tasks": [
+        "ST-26"
+      ],
+      "orchestrator_plan": {
+        "phases": [
+          {
+            "phase": 3,
+            "label": "Build & deploy",
+            "parallel": true,
+            "sub_task_ids": [
+              "ST-26"
+            ]
+          }
+        ],
+        "total_sub_tasks": 1,
+        "estimated_minutes": 16
+      }
+    },
+    "TASK-20405": {
+      "task_id": "TASK-20405",
+      "environment": "INTEG",
+      "jira_id": "email 8",
+      "description": "",
+      "branch_from": "Feature-TRB-18109",
+      "branch_to": "integ",
+      "branches": [
+        {
+          "from": "Feature-TRB-18109",
+          "to": "integ"
+        }
+      ],
+      "approver_key": "s-kumar",
+      "cc_emails": "",
+      "requested_by": "Devops Admin",
+      "status": "pending_approval",
+      "code_freeze_enabled": false,
+      "approval_chain": [
+        "dev_lead",
+        "devops"
+      ],
+      "approvals": {
+        "dev_lead": null,
+        "devops": null
+      },
+      "rejection_reason": null,
+      "validation_status": "ready",
+      "validation_report": {
+        "generated_at": "2026-07-06T22:26:54Z",
+        "environment": "INTEG",
+        "jira_id": "email 8",
+        "overall_status": "failed",
+        "stats": {
+          "checked": 1,
+          "passed": 0,
+          "warnings": 0,
+          "failed": 1
+        },
+        "sections": [
+          {
+            "section": "build",
+            "title": "Build / Gitspace merge",
+            "items": [
+              {
+                "service_key": "build:microservice:address",
+                "label": "Address",
+                "sub_type": "microservice",
+                "status": "fail",
+                "checks": [
+                  {
+                    "name": "Mergeability",
+                    "status": "fail",
+                    "detail": "Cannot merge: src/main/resources/application.yml."
+                  }
+                ],
+                "urls": {
+                  "merge_request": "https://gitspace.foreverliving.com/Titan/AddressService/-/merge_requests/6364",
+                  "compare": "https://gitspace.foreverliving.com/Titan/AddressService/-/compare/integ...Feature-TRB-18109?from_project_id=&straight=false"
+                },
+                "merge": {
+                  "iid": 6364,
+                  "state": "opened",
+                  "mergeable": false,
+                  "conflicts": [
+                    "src/main/resources/application.yml"
+                  ],
+                  "detail": "Merge conflicts must be resolved",
+                  "source_branch": "Feature-TRB-18109",
+                  "target_branch": "integ"
+                },
+                "ai_insight": null
+              }
+            ],
+            "status": "fail"
+          }
+        ],
+        "steps": [
+          "Fix [Build / Gitspace merge \u00b7 Address] \u2014 Mergeability: Cannot merge: src/main/resources/application.yml.",
+          "Resolve the failures above and re-run validation before approving."
+        ],
+        "ai_used": true,
+        "ai_model": "qwen2.5-coder:7b",
+        "summary_markdown": "## Verdict: BLOCKED\n\n## What this deploys:\nThis deployment request is for the INTEG environment related to Jira ID email 8.\n\n## Findings:\n- **Mergeability Failure**: The merge of `src/main/resources/application.yml` has failed, preventing the build from proceeding. This is a blocking issue that needs resolution before deployment can be approved.\n\n## Recommended next steps:\n1. Review and resolve the merge conflicts in `src/main/resources/application.yml`.\n2. Ensure all changes are committed and pushed to the branch.\n3. Re-run the validation to confirm the issue is resolved.\n4. Once validated, re-submit the deployment request for approval.\n5. If further assistance is needed, consult with the Dev Lead or relevant team members."
+      },
+      "created_at": "2026-07-06T09:27:19Z",
+      "updated_at": "2026-07-06T22:27:00Z",
+      "jobs": [
+        "JOB-24"
+      ],
+      "sub_tasks": [
+        "ST-27"
+      ],
+      "orchestrator_plan": {
+        "phases": [
+          {
+            "phase": 3,
+            "label": "Build & deploy",
+            "parallel": true,
+            "sub_task_ids": [
+              "ST-27"
+            ]
+          }
+        ],
+        "total_sub_tasks": 1,
+        "estimated_minutes": 16
+      }
+    },
+    "TASK-20406": {
+      "task_id": "TASK-20406",
+      "environment": "INTEG",
+      "jira_id": "TRB-16996",
+      "description": "",
+      "branch_from": "Feature-TRB-16996",
+      "branch_to": "integ",
+      "branches": [
+        {
+          "from": "Feature-TRB-16996",
+          "to": "integ"
+        }
+      ],
+      "approver_key": "s-kumar",
+      "cc_emails": "Dhiraj.Kasliwal@nextsphere.com",
+      "requested_by": "Devops Admin",
+      "status": "done",
+      "code_freeze_enabled": false,
+      "approval_chain": [
+        "dev_lead",
+        "devops"
+      ],
+      "approvals": {
+        "dev_lead": {
+          "decision": "approved",
+          "comment": null,
+          "by": "Shukumar",
+          "at": "2026-07-06T09:56:28Z"
+        },
+        "devops": {
+          "decision": "approved",
+          "comment": null,
+          "by": "Devops Admin",
+          "at": "2026-07-06T09:59:06Z"
+        }
+      },
+      "rejection_reason": null,
+      "validation_status": "ready",
+      "validation_report": {
+        "generated_at": "2026-07-07T07:20:34Z",
+        "environment": "INTEG",
+        "jira_id": "TRB-16996",
+        "overall_status": "failed",
+        "stats": {
+          "checked": 4,
+          "passed": 3,
+          "warnings": 0,
+          "failed": 1
+        },
+        "sections": [
+          {
+            "section": "yaml",
+            "title": "YAML / Config",
+            "items": [
+              {
+                "service_key": "yaml:microservice:customlinkgeneratorservice",
+                "label": "CustomLinkGeneratorService",
+                "sub_type": "microservice",
+                "status": "pass",
+                "checks": [
+                  {
+                    "name": "Branch exists",
+                    "status": "pass",
+                    "detail": "Branch `R-2026-06-W4` found in `Titan/flpi-titan-release`."
+                  },
+                  {
+                    "name": "File present",
+                    "status": "pass",
+                    "detail": "Artifact located on the release branch."
+                  },
+                  {
+                    "name": "YAML structure",
+                    "status": "pass",
+                    "detail": "Valid YAML; no duplicate keys within any block."
+                  },
+                  {
+                    "name": "YAML value changes",
+                    "status": "pass",
+                    "detail": "2 value change(s) vs baseline: `server.port`: 8080 \u2192 9090; `feature.newCheckout`: False \u2192 True."
+                  },
+                  {
+                    "name": "AI new vs old",
+                    "status": "pass",
+                    "detail": "No issues found."
+                  }
+                ],
+                "urls": {
+                  "file": "https://gitspace.foreverliving.com/Titan/flpi-titan-release/-/blob/R-2026-06-W4/Microservices/CustomLinkGeneratorService/R-2026-06-W4/YML/parameters.yml?ref_type=heads",
+                  "baseline_file": "https://gitspace.foreverliving.com/Titan/flpi-titan-release/-/blob/R-2026-06-W3/Microservices/CustomLinkGeneratorService/R-2026-06-W3/YML/parameters.yml?ref_type=heads"
+                },
+                "merge": null,
+                "ai_insight": {
+                  "summary": "No issues found.",
+                  "issues": [],
+                  "verdict": "pass",
+                  "confidence": 100,
+                  "baseline_release": "R-2026-06-W3",
+                  "has_conflicts": false
+                },
+                "baseline": {
+                  "release": "R-2026-06-W3",
+                  "path": "Microservices/CustomLinkGeneratorService/R-2026-06-W3/YML/parameters.yml"
+                },
+                "ai_ran": true
+              }
+            ],
+            "status": "pass"
+          },
+          {
+            "section": "db",
+            "title": "DB / Liquibase",
+            "items": [
+              {
+                "service_key": "db:microservice:customlinkgeneratorservice",
+                "label": "CustomLinkGeneratorService",
+                "sub_type": "microservice",
+                "status": "fail",
+                "checks": [
+                  {
+                    "name": "Branch exists",
+                    "status": "pass",
+                    "detail": "Branch `R-2026-06-W4` found in `Titan/flpi-titan-release`."
+                  },
+                  {
+                    "name": "File present",
+                    "status": "pass",
+                    "detail": "Artifact located on the release branch."
+                  },
+                  {
+                    "name": "Liquibase changeset",
+                    "status": "pass",
+                    "detail": "Changeset header present."
+                  },
+                  {
+                    "name": "Liquibase changeset diff",
+                    "status": "pass",
+                    "detail": "1 new changeset(s) vs baseline: titan:2026-07-w1."
+                  },
+                  {
+                    "name": "AI new vs old",
+                    "status": "fail",
+                    "detail": "Duplicate Liquibase changeset ID detected. Duplicate changeset ID 'titan:2026-07-w1' found in the new artifact. This will cause a conflict during deployment."
+                  }
+                ],
+                "urls": {
+                  "file": "https://gitspace.foreverliving.com/Titan/flpi-titan-release/-/blob/R-2026-06-W4/Microservices/CustomLinkGeneratorService/R-2026-06-W4/DB/Common.sql?ref_type=heads",
+                  "baseline_file": "https://gitspace.foreverliving.com/Titan/flpi-titan-release/-/blob/R-2026-06-W3/Microservices/CustomLinkGeneratorService/R-2026-06-W3/DB/Common.sql?ref_type=heads"
+                },
+                "merge": null,
+                "ai_insight": {
+                  "summary": "Duplicate Liquibase changeset ID detected.",
+                  "issues": [
+                    "Duplicate changeset ID 'titan:2026-07-w1' found in the new artifact. This will cause a conflict during deployment."
+                  ],
+                  "verdict": "fail",
+                  "confidence": 100,
+                  "baseline_release": "R-2026-06-W3",
+                  "has_conflicts": true
+                },
+                "baseline": {
+                  "release": "R-2026-06-W3",
+                  "path": "Microservices/CustomLinkGeneratorService/R-2026-06-W3/DB/Common.sql"
+                },
+                "ai_ran": true
+              }
+            ],
+            "status": "fail"
+          },
+          {
+            "section": "build",
+            "title": "Build / Gitspace merge",
+            "items": [
+              {
+                "service_key": "build:microservice:account",
+                "label": "Account",
+                "sub_type": "microservice",
+                "status": "pass",
+                "checks": [
+                  {
+                    "name": "Mergeability",
+                    "status": "pass",
+                    "detail": "Clean merge Feature-TRB-16996 \u2192 integ (MR !7604)."
+                  }
+                ],
+                "urls": {
+                  "merge_request": "https://gitspace.foreverliving.com/Titan/AccountService/-/merge_requests/7604",
+                  "compare": "https://gitspace.foreverliving.com/Titan/AccountService/-/compare/integ...Feature-TRB-16996?from_project_id=&straight=false"
+                },
+                "merge": {
+                  "iid": 7604,
+                  "state": "opened",
+                  "mergeable": true,
+                  "conflicts": [],
+                  "detail": "Fast-forward / clean merge",
+                  "source_branch": "Feature-TRB-16996",
+                  "target_branch": "integ"
+                },
+                "ai_insight": null
+              },
+              {
+                "service_key": "build:portal:ecommerce",
+                "label": "Ecommerce",
+                "sub_type": "portal",
+                "status": "pass",
+                "checks": [
+                  {
+                    "name": "Mergeability",
+                    "status": "pass",
+                    "detail": "Clean merge Feature-TRB-16996 \u2192 integ (MR !6075)."
+                  }
+                ],
+                "urls": {
+                  "merge_request": "https://gitspace.foreverliving.com/ForeverLiving/titan-ecommerce/-/merge_requests/6075",
+                  "compare": "https://gitspace.foreverliving.com/ForeverLiving/titan-ecommerce/-/compare/integ...Feature-TRB-16996?from_project_id=&straight=false"
+                },
+                "merge": {
+                  "iid": 6075,
+                  "state": "opened",
+                  "mergeable": true,
+                  "conflicts": [],
+                  "detail": "Fast-forward / clean merge",
+                  "source_branch": "Feature-TRB-16996",
+                  "target_branch": "integ"
+                },
+                "ai_insight": null
+              }
+            ],
+            "status": "pass"
+          }
+        ],
+        "steps": [
+          "Fix [DB / Liquibase \u00b7 CustomLinkGeneratorService] \u2014 AI new vs old: Duplicate Liquibase changeset ID detected. Duplicate changeset ID 'titan:2026-07-w1' found in the new artifact. This will cause a conflict during deployment.",
+          "Resolve the failures above and re-run validation before approving."
+        ],
+        "ai_used": true,
+        "ai_model": "qwen2.5-coder:7b",
+        "summary_markdown": "## Verdict\n**BLOCKED**: The deployment request contains a critical failure that must be resolved before proceeding.\n\n## What this deploys\nThis deployment request targets the INTEG environment for the TRB-16996 Jira issue, involving changes to the CustomLinkGeneratorService.\n\n## Findings\n- **Blocking Issue**:\n  - **DB / Liquibase \\u00b7 CustomLinkGeneratorService**: Duplicate Liquibase changeset ID detected. The new artifact contains a duplicate changeset ID 'titan:2026-07-w1', which will cause a conflict during deployment.\n\n## Recommended next steps\n1. **Fix the Duplicate Changeset ID**:\n   - Locate and remove the duplicate changeset ID 'titan:2026-07-w1' from the new Liquibase artifact.\n   \n2. **Re-run Validation**:\n   - After making the necessary changes, re-run the validation to ensure all checks pass.\n\n3. **Review Deployment Documentation**:\n   - Ensure that the deployment documentation is up-to-date and includes any required steps for handling duplicate changeset IDs.\n\n4. **Notify Stakeholders**:\n   - Inform relevant stakeholders about the resolution of the blocking issue and the successful re-validation.\n\n5. **Commit Changes to Repository**:\n   - Commit the changes to the repository, ensuring that the new artifact is free from duplicate changeset IDs."
+      },
+      "created_at": "2026-07-06T09:54:29Z",
+      "updated_at": "2026-07-07T07:20:44Z",
+      "jobs": [
+        "JOB-25",
+        "JOB-26",
+        "JOB-27"
+      ],
+      "sub_tasks": [
+        "ST-28",
+        "ST-29",
+        "ST-30",
+        "ST-31"
+      ],
+      "orchestrator_plan": {
+        "phases": [
+          {
+            "phase": 1,
+            "label": "Database migrations",
+            "parallel": true,
+            "sub_task_ids": [
+              "ST-29"
+            ]
+          },
+          {
+            "phase": 2,
+            "label": "Config & phrases",
+            "parallel": true,
+            "sub_task_ids": [
+              "ST-28"
+            ]
+          },
+          {
+            "phase": 3,
+            "label": "Build & deploy",
+            "parallel": true,
+            "sub_task_ids": [
+              "ST-30",
+              "ST-31"
+            ]
+          }
+        ],
+        "total_sub_tasks": 4,
+        "estimated_minutes": 34
+      }
+    },
+    "TASK-20407": {
+      "task_id": "TASK-20407",
+      "environment": "INTEG",
+      "jira_id": "demo test 8",
+      "description": "demo test 8",
+      "branch_from": "Feature_TRB-17511",
+      "branch_to": "integ",
+      "branches": [
+        {
+          "from": "Feature_TRB-17511",
+          "to": "integ"
+        }
+      ],
+      "approver_key": "s-kumar",
+      "cc_emails": "",
+      "requested_by": "Devops Admin",
+      "status": "pending_approval",
+      "code_freeze_enabled": false,
+      "approval_chain": [
+        "dev_lead",
+        "devops"
+      ],
+      "approvals": {
+        "dev_lead": null,
+        "devops": null
+      },
+      "rejection_reason": null,
+      "validation_status": "ready",
+      "validation_report": {
+        "generated_at": "2026-07-07T09:44:04Z",
+        "environment": "INTEG",
+        "jira_id": "demo test 8",
+        "overall_status": "warnings",
+        "stats": {
+          "checked": 3,
+          "passed": 1,
+          "warnings": 2,
+          "failed": 0
+        },
+        "sections": [
+          {
+            "section": "db",
+            "title": "DB / Liquibase",
+            "items": [
+              {
+                "service_key": "db:microservice:account",
+                "label": "Account",
+                "sub_type": "microservice",
+                "status": "warn",
+                "checks": [
+                  {
+                    "name": "DB validation",
+                    "status": "warn",
+                    "detail": "Common.sql: 2 Approved (pganesan:1, svaradhan:2) \u2014 SQL in `Common.sql` at line 35 is commented out (svaradhan:2 Approved \u2014 no executable statements)."
+                  }
+                ],
+                "urls": {
+                  "Common.sql": "https://gitspace.foreverliving.com/Titan/flpi-titan-release/-/blob/R-2026-06-W4/Microservices/Account/R-2026-06-W4/DB/Common.sql?ref_type=heads"
+                },
+                "merge": null,
+                "ai_insight": {
+                  "summary": "The provided Liquibase SQL contains potential risks and malformed headers.",
+                  "issues": [
+                    "The `INSERT INTO LookupConfiguration` statement may fail if the JSON structure is not correctly formatted or if a duplicate entry already exists.",
+                    "The Liquibase header for the first changeset is missing a space after 'Changeset'.",
+                    "There are no labels:Approved on deployable changesets, which could lead to deployment issues."
+                  ],
+                  "verdict": "info",
+                  "confidence": 85,
+                  "validated_files": [
+                    "Common.sql"
+                  ],
+                  "approved_changesets": [
+                    "pganesan:1",
+                    "svaradhan:2"
+                  ]
+                },
+                "baseline": null,
+                "ai_ran": true
+              },
+              {
+                "service_key": "db:microservice:configuration",
+                "label": "Configuration",
+                "sub_type": "microservice",
+                "status": "warn",
+                "checks": [
+                  {
+                    "name": "DB validation",
+                    "status": "warn",
+                    "detail": "Common.sql: 6 Approved (pkumaran:1, tgopi:2, tgopi:3, svaradhan:4, pbalamurugan:1, vravi:5) \u00b7 INTEG.sql: 2 Approved (pganesan:1, phariharan:2) \u2014 SQL in `Common.sql` at line 111 is commented out (svaradhan:4 Approved \u2014 no executable statements)."
+                  }
+                ],
+                "urls": {
+                  "Common.sql": "https://gitspace.foreverliving.com/Titan/flpi-titan-release/-/blob/R-2026-06-W4/Microservices/Configuration/R-2026-06-W4/DB/Common.sql?ref_type=heads",
+                  "INTEG.sql": "https://gitspace.foreverliving.com/Titan/flpi-titan-release/-/blob/R-2026-06-W4/Microservices/Configuration/R-2026-06-W4/DB/INTEG.sql?ref_type=heads"
+                },
+                "merge": null,
+                "ai_insight": {
+                  "summary": "The provided Liquibase SQL contains several potential risks and issues that need to be addressed before deployment.",
+                  "issues": [
+                    "The `INSERT INTO` statements are not idempotent, which could lead to duplicate entries if the changeset is run multiple times. Consider using `ON DUPLICATE KEY UPDATE` or similar logic to avoid duplicates.",
+                    "There are no locking mechanisms in place for concurrent modifications during the migration. This could lead to data inconsistencies if multiple users attempt to modify the database simultaneously.",
+                    "The SQL statements do not include a space after `--` in the Liquibase header, which is a malformed usage and may cause issues with Liquibase parsing.",
+                    "There are no labels:Approved on deployable changesets, which means these changesets will be ignored during deployment. Ensure that all deployable changesets have the appropriate label.",
+                    "The SQL statements do not include a space after `--` in the Liquibase header, which is a malformed usage and may cause issues with Liquibase parsing."
+                  ],
+                  "verdict": "info",
+                  "confidence": 90,
+                  "validated_files": [
+                    "Common.sql",
+                    "INTEG.sql"
+                  ],
+                  "approved_changesets": [
+                    "pkumaran:1",
+                    "tgopi:2",
+                    "tgopi:3",
+                    "svaradhan:4",
+                    "pbalamurugan:1",
+                    "vravi:5",
+                    "pganesan:1",
+                    "phariharan:2"
+                  ]
+                },
+                "baseline": null,
+                "ai_ran": true
+              }
+            ],
+            "status": "warn"
+          },
+          {
+            "section": "build",
+            "title": "Build / Gitspace merge",
+            "items": [
+              {
+                "service_key": "build:portal:customercarev2",
+                "label": "Customercarev2",
+                "sub_type": "portal",
+                "status": "pass",
+                "checks": [
+                  {
+                    "name": "Branches exist",
+                    "status": "pass",
+                    "detail": "Both `Feature_TRB-17511` and `integ` exist. Merge request creation deferred (read-only mode)."
+                  }
+                ],
+                "urls": {
+                  "compare": "https://gitspace.foreverliving.com/ForeverLiving/Customer-Service-Portal/-/compare/integ...Feature_TRB-17511?from_project_id=&straight=false"
+                },
+                "merge": {
+                  "iid": 0,
+                  "state": "not_created",
+                  "mergeable": null,
+                  "conflicts": [],
+                  "detail": "MR creation disabled (read-only token); branch existence verified.",
+                  "source_branch": "Feature_TRB-17511",
+                  "target_branch": "integ"
+                },
+                "ai_insight": null
+              }
+            ],
+            "status": "pass"
+          }
+        ],
+        "steps": [
+          "Review [DB / Liquibase \u00b7 Account] \u2014 DB validation: Common.sql: 2 Approved (pganesan:1, svaradhan:2) \u2014 SQL in `Common.sql` at line 35 is commented out (svaradhan:2 Approved \u2014 no executable statements).",
+          "Review [DB / Liquibase \u00b7 Configuration] \u2014 DB validation: Common.sql: 6 Approved (pkumaran:1, tgopi:2, tgopi:3, svaradhan:4, pbalamurugan:1, vravi:5) \u00b7 INTEG.sql: 2 Approved (pganesan:1, phariharan:2) \u2014 SQL in `Common.sql` at line 111 is commented out (svaradhan:4 Approved \u2014 no executable statements).",
+          "Resolve the warnings above or acknowledge them, then approve."
+        ],
+        "ai_used": true,
+        "ai_model": "qwen2.5-coder:7b",
+        "summary_markdown": "## Verdict\nNEEDS ATTENTION\n\n## What this deploys\nThis deployment request includes changes to the database schema using Liquibase scripts.\n\n## Findings\n- **Advisory**: SQL in `Common.sql` at line 35 is commented out (svaradhan:2 Approved \u2014 no executable statements).\n- **Advisory**: SQL in `Common.sql` at line 111 is commented out (svaradhan:4 Approved \u2014 no executable statements).\n\n## Recommended next steps\n1. Review the commented-out SQL statements and determine if they are necessary.\n2. If the comments are intentional, ensure that this is documented for future reference.\n3. If the comments are not needed, remove them to avoid confusion during deployment.\n4. Re-run the validation to confirm that all issues have been addressed.\n5. Once resolved, re-submit the deployment request for approval."
+      },
+      "created_at": "2026-07-07T08:11:17Z",
+      "updated_at": "2026-07-07T09:44:16Z",
+      "jobs": [
+        "JOB-28",
+        "JOB-29"
+      ],
+      "sub_tasks": [
+        "ST-32",
+        "ST-33",
+        "ST-34"
+      ],
+      "orchestrator_plan": {
+        "phases": [
+          {
+            "phase": 1,
+            "label": "Database migrations",
+            "parallel": true,
+            "sub_task_ids": [
+              "ST-32",
+              "ST-33"
+            ]
+          },
+          {
+            "phase": 3,
+            "label": "Build & deploy",
+            "parallel": true,
+            "sub_task_ids": [
+              "ST-34"
+            ]
+          }
+        ],
+        "total_sub_tasks": 3,
+        "estimated_minutes": 28
+      }
+    },
+    "TASK-20408": {
+      "task_id": "TASK-20408",
+      "environment": "INTEG",
+      "jira_id": "asdfas",
+      "description": "",
+      "branch_from": "",
+      "branch_to": "",
+      "branches": [],
+      "approver_key": "a-sharma",
+      "cc_emails": "",
+      "requested_by": "Devops Admin",
+      "status": "pending_approval",
+      "code_freeze_enabled": false,
+      "approval_chain": [
+        "dev_lead",
+        "devops"
+      ],
+      "approvals": {
+        "dev_lead": null,
+        "devops": null
+      },
+      "rejection_reason": null,
+      "validation_status": "ready",
+      "validation_report": {
+        "generated_at": "2026-07-07T09:27:53Z",
+        "environment": "INTEG",
+        "jira_id": "asdfas",
+        "overall_status": "failed",
+        "stats": {
+          "checked": 1,
+          "passed": 0,
+          "warnings": 0,
+          "failed": 1
+        },
+        "sections": [
+          {
+            "section": "yaml",
+            "title": "YAML / Config",
+            "items": [
+              {
+                "service_key": "yaml:microservice:account",
+                "label": "Account",
+                "sub_type": "microservice",
+                "status": "fail",
+                "checks": [
+                  {
+                    "name": "Branch exists",
+                    "status": "fail",
+                    "detail": "Branch `fasdfdf` was not found in `Titan/flpi-titan-release`."
+                  }
+                ],
+                "urls": {
+                  "file": "https://gitspace.foreverliving.com/Titan/flpi-titan-release/-/blob/fasdfdf/Microservices/Account/fasdfdf/YML/parameters.yml?ref_type=heads"
+                },
+                "merge": null,
+                "ai_insight": null,
+                "baseline": null,
+                "ai_ran": false
+              }
+            ],
+            "status": "fail"
+          }
+        ],
+        "steps": [
+          "Fix [YAML / Config \u00b7 Account] \u2014 Branch exists: Branch `fasdfdf` was not found in `Titan/flpi-titan-release`.",
+          "Resolve the failures above and re-run validation before approving."
+        ],
+        "ai_used": true,
+        "ai_model": "qwen2.5-coder:7b",
+        "summary_markdown": "## Verdict\n**BLOCKED**: The deployment request contains a critical error that must be resolved before proceeding.\n\n## What this deploys\nThis deployment request is for the INTEG environment related to the `asdfas` Jira ticket, targeting the `Titan/flpi-titan-release` branch.\n\n## Findings\n- **Branch exists**: Branch `fasdfdf` was not found in `Titan/flpi-titan-release`. This is a critical error and blocks deployment.\n\n## Recommended next steps\n1. Verify that the correct branch name (`fasdfdf`) is intended for this deployment.\n2. Ensure that the branch `fasdfdf` exists in the repository `Titan/flpi-titan-release`.\n3. If the branch name is incorrect, update it to the correct branch and re-run validation.\n4. Once the branch issue is resolved, re-submit the deployment request for approval.\n5. Monitor the deployment process to ensure everything deploys successfully.\n\nPlease address these issues before proceeding with further steps."
+      },
+      "created_at": "2026-07-07T09:27:13Z",
+      "updated_at": "2026-07-07T09:28:01Z",
+      "jobs": [
+        "JOB-30"
+      ],
+      "sub_tasks": [
+        "ST-35"
+      ],
+      "orchestrator_plan": {
+        "phases": [
+          {
+            "phase": 2,
+            "label": "Config & phrases",
+            "parallel": true,
+            "sub_task_ids": [
+              "ST-35"
+            ]
+          }
+        ],
+        "total_sub_tasks": 1,
+        "estimated_minutes": 16
+      }
+    },
+    "TASK-20409": {
+      "task_id": "TASK-20409",
+      "environment": "DEV",
+      "jira_id": "sdfghn",
+      "description": "",
+      "branch_from": "",
+      "branch_to": "",
+      "branches": [],
+      "approver_key": "a-sharma",
+      "cc_emails": "",
+      "requested_by": "Devops Admin",
+      "status": "pending_approval",
+      "code_freeze_enabled": false,
+      "approval_chain": [
+        "dev_lead",
+        "devops"
+      ],
+      "approvals": {
+        "dev_lead": null,
+        "devops": null
+      },
+      "rejection_reason": null,
+      "validation_status": "ready",
+      "validation_report": {
+        "generated_at": "2026-07-07T11:20:50Z",
+        "environment": "DEV",
+        "jira_id": "sdfghn",
+        "overall_status": "warnings",
+        "stats": {
+          "checked": 2,
+          "passed": 0,
+          "warnings": 2,
+          "failed": 0
+        },
+        "sections": [
+          {
+            "section": "db",
+            "title": "DB / Liquibase",
+            "items": [
+              {
+                "service_key": "db:microservice:account",
+                "label": "Account",
+                "sub_type": "microservice",
+                "status": "warn",
+                "checks": [
+                  {
+                    "name": "DB validation",
+                    "status": "warn",
+                    "detail": "Common.sql: 2 Approved (pganesan:1, svaradhan:2)\n\nWarnings (by changeset):\n  \u25b8 svaradhan:2\n     Common.sql  \u00b7  `-- Changeset` at line 35\n     L35    all SQL is commented out \u2014 no executable statements"
+                  }
+                ],
+                "urls": {
+                  "Common.sql": "https://gitspace.foreverliving.com/Titan/flpi-titan-release/-/blob/R-2026-06-W4/Microservices/Account/R-2026-06-W4/DB/Common.sql?ref_type=heads"
+                },
+                "merge": null,
+                "ai_insight": {
+                  "summary": "The provided Liquibase SQL contains potential risks and issues that need to be addressed before deployment.",
+                  "issues": [
+                    "The script uses a variable (`@PermissionGroupId`) which may not work as expected in all database systems. Consider using a subquery instead for better compatibility.",
+                    "There is no label:Approved on the second changeset, which means it will be ignored during deployment. Ensure all deployable changesets have this label.",
+                    "The SQL script does not include rollback statements, which could lead to partial deployments if an error occurs."
+                  ],
+                  "verdict": "info",
+                  "confidence": 85,
+                  "validated_files": [
+                    "Common.sql"
+                  ],
+                  "approved_changesets": [
+                    "pganesan:1",
+                    "svaradhan:2"
+                  ]
+                },
+                "baseline": null,
+                "ai_ran": true
+              },
+              {
+                "service_key": "db:microservice:configuration",
+                "label": "Configuration",
+                "sub_type": "microservice",
+                "status": "warn",
+                "checks": [
+                  {
+                    "name": "DB validation",
+                    "status": "warn",
+                    "detail": "Common.sql: 6 Approved (pkumaran:1, tgopi:2, tgopi:3, svaradhan:4, pbalamurugan:1, vravi:5)\n\nWarnings (by changeset):\n  \u25b8 svaradhan:4\n     Common.sql  \u00b7  `-- Changeset` at line 111\n     L111   all SQL is commented out \u2014 no executable statements"
+                  }
+                ],
+                "urls": {
+                  "Common.sql": "https://gitspace.foreverliving.com/Titan/flpi-titan-release/-/blob/R-2026-06-W4/Microservices/Configuration/R-2026-06-W4/DB/Common.sql?ref_type=heads"
+                },
+                "merge": null,
+                "ai_insight": {
+                  "summary": "The provided Liquibase SQL contains potential risks and malformed headers.",
+                  "issues": [
+                    "Liquibase header format should include a space after `--` (e.g., `-- Changeset pkumaran:1 labels:Approved`).",
+                    "Missing `labels:Approved` on changesets tgopi:2 and tgopi:3, which are deployable."
+                  ],
+                  "verdict": "info",
+                  "confidence": 85,
+                  "validated_files": [
+                    "Common.sql"
+                  ],
+                  "approved_changesets": [
+                    "pkumaran:1",
+                    "tgopi:2",
+                    "tgopi:3",
+                    "svaradhan:4",
+                    "pbalamurugan:1",
+                    "vravi:5"
+                  ]
+                },
+                "baseline": null,
+                "ai_ran": true
+              }
+            ],
+            "status": "warn"
+          }
+        ],
+        "steps": [
+          "Review [DB / Liquibase \u00b7 Account] \u2014 DB validation: Common.sql: 2 Approved (pganesan:1, svaradhan:2)\n\nWarnings (by changeset):\n  \u25b8 svaradhan:2\n     Common.sql  \u00b7  `-- Changeset` at line 35\n     L35    all SQL is commented out \u2014 no executable statements",
+          "Review [DB / Liquibase \u00b7 Configuration] \u2014 DB validation: Common.sql: 6 Approved (pkumaran:1, tgopi:2, tgopi:3, svaradhan:4, pbalamurugan:1, vravi:5)\n\nWarnings (by changeset):\n  \u25b8 svaradhan:4\n     Common.sql  \u00b7  `-- Changeset` at line 111\n     L111   all SQL is commented out \u2014 no executable statements",
+          "Resolve the warnings above or acknowledge them, then approve."
+        ],
+        "ai_used": true,
+        "ai_model": "qwen2.5-coder:7b",
+        "summary_markdown": "## Verdict\nNEEDS ATTENTION\n\n## What this deploys\nThis deployment includes changes to the database schema via Liquibase scripts.\n\n## Findings\n- **Liquibase Changeset Warnings:**\n  - `svaradhan:2` in `Common.sql` at line 35: All SQL is commented out, no executable statements.\n  - `svaradhan:4` in `Common.sql` at line 111: All SQL is commented out, no executable statements.\n\n## Recommended Next Steps\n1. **Review and Uncomment SQL Statements:** Ensure that all changesets contain executable SQL statements instead of being commented out.\n2. **Acknowledge Warnings:** If the commented-out changesets are intentional, acknowledge them in the deployment request or documentation.\n3. **Verify Changeset Approvals:** Confirm that all changesets have been approved by the necessary team members.\n4. **Update Documentation:** Document any changes made to the Liquibase scripts for future reference.\n5. **Test Deployment:** Perform a test deployment to ensure that the changes do not introduce any issues."
+      },
+      "created_at": "2026-07-07T10:06:21Z",
+      "updated_at": "2026-07-07T11:20:59Z",
+      "jobs": [
+        "JOB-31"
+      ],
+      "sub_tasks": [
+        "ST-36",
+        "ST-37"
+      ],
+      "orchestrator_plan": {
+        "phases": [
+          {
+            "phase": 1,
+            "label": "Database migrations",
+            "parallel": true,
+            "sub_task_ids": [
+              "ST-36",
+              "ST-37"
+            ]
+          }
+        ],
+        "total_sub_tasks": 2,
+        "estimated_minutes": 22
+      }
+    },
+    "TASK-20410": {
+      "task_id": "TASK-20410",
+      "environment": "INTEG",
+      "jira_id": "Jira abc",
+      "description": "",
+      "branch_from": "",
+      "branch_to": "",
+      "branches": [],
+      "approver_key": "s-kumar",
+      "cc_emails": "",
+      "requested_by": "Devops Admin",
+      "status": "done",
+      "code_freeze_enabled": false,
+      "approval_chain": [
+        "dev_lead",
+        "devops"
+      ],
+      "approvals": {
+        "dev_lead": {
+          "decision": "approved",
+          "comment": null,
+          "by": "Shukumar",
+          "at": "2026-07-07T14:25:30Z"
+        },
+        "devops": {
+          "decision": "approved",
+          "comment": null,
+          "by": "Devops Admin",
+          "at": "2026-07-07T14:29:37Z"
+        }
+      },
+      "rejection_reason": null,
+      "validation_status": "ready",
+      "validation_report": {
+        "generated_at": "2026-07-07T14:24:25Z",
+        "environment": "INTEG",
+        "jira_id": "Jira abc",
+        "overall_status": "warnings",
+        "stats": {
+          "checked": 1,
+          "passed": 0,
+          "warnings": 1,
+          "failed": 0
+        },
+        "sections": [
+          {
+            "section": "db",
+            "title": "DB / Liquibase",
+            "items": [
+              {
+                "service_key": "db:microservice:configuration",
+                "label": "Configuration",
+                "sub_type": "microservice",
+                "status": "warn",
+                "checks": [
+                  {
+                    "name": "DB validation",
+                    "status": "warn",
+                    "detail": "Common.sql: 6 Approved (pkumaran:1, tgopi:2, tgopi:3, svaradhan:4, pbalamurugan:1, vravi:5) \u00b7 INTEG.sql: 2 Approved (pganesan:1, phariharan:2)\n\nWarnings (by changeset):\n  \u25b8 svaradhan:4\n     Common.sql  \u00b7  `-- Changeset` at line 111\n     L111   all SQL is commented out \u2014 no executable statements"
+                  }
+                ],
+                "urls": {
+                  "Common.sql": "https://gitspace.foreverliving.com/Titan/flpi-titan-release/-/blob/R-2026-06-W4/Microservices/Configuration/R-2026-06-W4/DB/Common.sql?ref_type=heads",
+                  "INTEG.sql": "https://gitspace.foreverliving.com/Titan/flpi-titan-release/-/blob/R-2026-06-W4/Microservices/Configuration/R-2026-06-W4/DB/INTEG.sql?ref_type=heads"
+                },
+                "merge": null,
+                "ai_insight": {
+                  "summary": "The Liquibase SQL contains several potential issues that could impact the migration process, including missing labels on deployable changesets and SQL syntax errors.",
+                  "issues": [
+                    "Changeset tgopi:3 is missing a label of 'Approved'.",
+                    "There are multiple changesets with the same author:id combination (tgopi:2 and tgopi:3). This could lead to conflicts during deployment.",
+                    "The SQL syntax for updating `showBonusInfoSection` and `enableSingleAndDirectDebit` in changeset tgopi:3 is incorrect. The backticks around the column names are unnecessary and may cause errors."
+                  ],
+                  "verdict": "info",
+                  "confidence": 85,
+                  "validated_files": [
+                    "Common.sql",
+                    "INTEG.sql"
+                  ],
+                  "approved_changesets": [
+                    "pkumaran:1",
+                    "tgopi:2",
+                    "tgopi:3",
+                    "svaradhan:4",
+                    "pbalamurugan:1",
+                    "vravi:5",
+                    "pganesan:1",
+                    "phariharan:2"
+                  ]
+                },
+                "baseline": null,
+                "ai_ran": true
+              }
+            ],
+            "status": "warn"
+          }
+        ],
+        "steps": [
+          "Review [DB / Liquibase \u00b7 Configuration] \u2014 DB validation: Common.sql: 6 Approved (pkumaran:1, tgopi:2, tgopi:3, svaradhan:4, pbalamurugan:1, vravi:5) \u00b7 INTEG.sql: 2 Approved (pganesan:1, phariharan:2)\n\nWarnings (by changeset):\n  \u25b8 svaradhan:4\n     Common.sql  \u00b7  `-- Changeset` at line 111\n     L111   all SQL is commented out \u2014 no executable statements",
+          "Resolve the warnings above or acknowledge them, then approve."
+        ],
+        "ai_used": true,
+        "ai_model": "qwen2.5-coder:7b",
+        "summary_markdown": "## Verdict\nNEEDS ATTENTION\n\n## What this deploys\nThis deployment includes changes to the database schema using Liquibase.\n\n## Findings\n- **DB / Liquibase Configuration**: \n  - Warnings:\n    - Changeset `svaradhan:4` in `Common.sql` has all SQL commented out, which is an advisory warning and does not block deployment.\n  \n## Recommended next steps\n1. Review the changeset `svaradhan:4` in `Common.sql`.\n2. Ensure that any necessary SQL statements are uncommented and executable.\n3. If the commented-out SQL is intentional, document the reason for it.\n4. Re-run the validation to ensure all issues are resolved.\n5. Once resolved, re-submit the deployment request for approval."
+      },
+      "created_at": "2026-07-07T14:24:08Z",
+      "updated_at": "2026-07-07T14:29:47Z",
+      "jobs": [
+        "JOB-32"
+      ],
+      "sub_tasks": [
+        "ST-38"
+      ],
+      "orchestrator_plan": {
+        "phases": [
+          {
+            "phase": 1,
+            "label": "Database migrations",
+            "parallel": true,
+            "sub_task_ids": [
+              "ST-38"
+            ]
+          }
+        ],
+        "total_sub_tasks": 1,
+        "estimated_minutes": 16
+      }
+    },
+    "TASK-20411": {
+      "task_id": "TASK-20411",
+      "environment": "INTEG",
+      "jira_id": "jira abc",
+      "description": "",
+      "branch_from": "Feature-TRB-17993",
+      "branch_to": "integ",
+      "branches": [
+        {
+          "from": "Feature-TRB-17993",
+          "to": "integ"
+        }
+      ],
+      "approver_key": "a-sharma",
+      "cc_emails": "",
+      "requested_by": "Devops Admin",
+      "status": "pending_approval",
+      "code_freeze_enabled": false,
+      "approval_chain": [
+        "dev_lead",
+        "devops"
+      ],
+      "approvals": {
+        "dev_lead": null,
+        "devops": null
+      },
+      "rejection_reason": null,
+      "validation_status": "ready",
+      "validation_report": {
+        "generated_at": "2026-07-07T14:32:03Z",
+        "environment": "INTEG",
+        "jira_id": "jira abc",
+        "overall_status": "passed",
+        "stats": {
+          "checked": 1,
+          "passed": 1,
+          "warnings": 0,
+          "failed": 0
+        },
+        "sections": [
+          {
+            "section": "build",
+            "title": "Build / Gitspace merge",
+            "items": [
+              {
+                "service_key": "build:portal:ecommerce",
+                "label": "Ecommerce",
+                "sub_type": "portal",
+                "status": "pass",
+                "checks": [
+                  {
+                    "name": "Branches exist",
+                    "status": "pass",
+                    "detail": "Both `Feature-TRB-17993` and `integ` exist. Merge request creation deferred (read-only mode)."
+                  }
+                ],
+                "urls": {
+                  "compare": "https://gitspace.foreverliving.com/ForeverLiving/titan-ecommerce/-/compare/integ...Feature-TRB-17993?from_project_id=&straight=false"
+                },
+                "merge": {
+                  "iid": 0,
+                  "state": "not_created",
+                  "mergeable": null,
+                  "conflicts": [],
+                  "detail": "MR creation disabled (read-only token); branch existence verified.",
+                  "source_branch": "Feature-TRB-17993",
+                  "target_branch": "integ"
+                },
+                "ai_insight": null
+              }
+            ],
+            "status": "pass"
+          }
+        ],
+        "steps": [
+          "All checks passed \u2014 Dev Lead can approve; orchestrator will proceed on approval."
+        ],
+        "ai_used": true,
+        "ai_model": "qwen2.5-coder:7b",
+        "summary_markdown": "## Verdict\nAPPROVE-READY\n\n## What this deploys\nThis deployment affects the Ecommerce service in the INTEG environment.\n\n## Findings\n- None\n\n## Recommended next steps\n1. Proceed with approval.\n2. Monitor the deployment for any unexpected issues."
+      },
+      "created_at": "2026-07-07T14:32:00Z",
+      "updated_at": "2026-07-07T14:32:05Z",
+      "jobs": [
+        "JOB-33"
+      ],
+      "sub_tasks": [
+        "ST-39"
+      ],
+      "orchestrator_plan": {
+        "phases": [
+          {
+            "phase": 3,
+            "label": "Build & deploy",
+            "parallel": true,
+            "sub_task_ids": [
+              "ST-39"
+            ]
+          }
+        ],
+        "total_sub_tasks": 1,
+        "estimated_minutes": 16
+      }
     }
   },
   "jobs": {
@@ -1658,6 +3609,929 @@
       ],
       "created_at": "2026-07-02T13:02:00Z",
       "updated_at": "2026-07-02T13:02:00Z"
+    },
+    "JOB-14": {
+      "job_id": "JOB-14",
+      "task_id": "TASK-20398",
+      "section": "yaml",
+      "release_branch": "asdfdfdf",
+      "agent": "yaml_automation_agent",
+      "status": "queued",
+      "order": 1,
+      "branch_from": "",
+      "branch_to": "",
+      "links": [
+        {
+          "sub_type": "microservice",
+          "service_key": "yaml:microservice:account",
+          "label": "Account"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Config fetched",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins config job running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Applied to environment",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-07-02T20:25:32Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-07-02T20:25:32Z",
+      "updated_at": "2026-07-02T20:25:32Z"
+    },
+    "JOB-15": {
+      "job_id": "JOB-15",
+      "task_id": "TASK-20398",
+      "section": "build",
+      "release_branch": "",
+      "agent": "build_agent",
+      "status": "queued",
+      "order": 2,
+      "branch_from": "asdfafd",
+      "branch_to": "master",
+      "links": [
+        {
+          "sub_type": "utility",
+          "service_key": "build:utility:kafkacontract",
+          "label": "KafkaContract"
+        },
+        {
+          "sub_type": "microservice",
+          "service_key": "build:microservice:auditlog",
+          "label": "Auditlog"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Merged into target branch",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins build running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Deployed",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-07-02T20:25:32Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-07-02T20:25:32Z",
+      "updated_at": "2026-07-02T20:25:32Z"
+    },
+    "JOB-16": {
+      "job_id": "JOB-16",
+      "task_id": "TASK-20399",
+      "section": "build",
+      "release_branch": "",
+      "agent": "build_agent",
+      "status": "running",
+      "order": 1,
+      "branch_from": "feature-parent-bom",
+      "branch_to": "integ",
+      "links": [
+        {
+          "sub_type": "microservice",
+          "service_key": "build:microservice:customer-service-v2",
+          "label": "customer-service-v2"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "running",
+          "ts": "2026-07-05T07:28:05Z"
+        },
+        {
+          "label": "Merged into target branch",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins build running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Deployed",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-07-03T09:24:33Z] Job created, awaiting approval before orchestrator starts",
+        "[2026-07-05T07:28:05Z] All approvals received \u2014 orchestrator dispatched to build_agent"
+      ],
+      "created_at": "2026-07-03T09:24:33Z",
+      "updated_at": "2026-07-05T07:28:05Z"
+    },
+    "JOB-17": {
+      "job_id": "JOB-17",
+      "task_id": "TASK-20399",
+      "section": "build",
+      "release_branch": "",
+      "agent": "build_agent",
+      "status": "queued",
+      "order": 2,
+      "branch_from": "Feature-TRB-18109",
+      "branch_to": "integ",
+      "links": [
+        {
+          "sub_type": "microservice",
+          "service_key": "build:microservice:address",
+          "label": "Address"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Merged into target branch",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins build running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Deployed",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-07-03T09:24:33Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-07-03T09:24:33Z",
+      "updated_at": "2026-07-03T09:24:33Z"
+    },
+    "JOB-18": {
+      "job_id": "JOB-18",
+      "task_id": "TASK-20400",
+      "section": "build",
+      "release_branch": "",
+      "agent": "build_agent",
+      "status": "queued",
+      "order": 1,
+      "branch_from": "Feature-TRB-18109",
+      "branch_to": "integ",
+      "links": [
+        {
+          "sub_type": "microservice",
+          "service_key": "build:microservice:address",
+          "label": "Address"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Merged into target branch",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins build running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Deployed",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-07-05T07:52:36Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-07-05T07:52:36Z",
+      "updated_at": "2026-07-05T07:52:36Z"
+    },
+    "JOB-19": {
+      "job_id": "JOB-19",
+      "task_id": "TASK-20401",
+      "section": "build",
+      "release_branch": "",
+      "agent": "build_agent",
+      "status": "queued",
+      "order": 1,
+      "branch_from": "Feature-TRB-18109",
+      "branch_to": "integ",
+      "links": [
+        {
+          "sub_type": "microservice",
+          "service_key": "build:microservice:address",
+          "label": "Address"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Merged into target branch",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins build running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Deployed",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-07-05T07:57:19Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-07-05T07:57:19Z",
+      "updated_at": "2026-07-05T07:57:19Z"
+    },
+    "JOB-20": {
+      "job_id": "JOB-20",
+      "task_id": "TASK-20402",
+      "section": "build",
+      "release_branch": "",
+      "agent": "build_agent",
+      "status": "queued",
+      "order": 1,
+      "branch_from": "feature-parent-bom",
+      "branch_to": "integ",
+      "links": [
+        {
+          "sub_type": "microservice",
+          "service_key": "build:microservice:customercarev2",
+          "label": "Customercarev2"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Merged into target branch",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins build running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Deployed",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-07-05T20:31:29Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-07-05T20:31:29Z",
+      "updated_at": "2026-07-05T20:31:29Z"
+    },
+    "JOB-21": {
+      "job_id": "JOB-21",
+      "task_id": "TASK-20402",
+      "section": "build",
+      "release_branch": "",
+      "agent": "build_agent",
+      "status": "queued",
+      "order": 2,
+      "branch_from": "Feature-TRB-18109",
+      "branch_to": "integ",
+      "links": [
+        {
+          "sub_type": "microservice",
+          "service_key": "build:microservice:address",
+          "label": "Address"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Merged into target branch",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins build running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Deployed",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-07-05T20:31:29Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-07-05T20:31:29Z",
+      "updated_at": "2026-07-05T20:31:29Z"
+    },
+    "JOB-22": {
+      "job_id": "JOB-22",
+      "task_id": "TASK-20403",
+      "section": "build",
+      "release_branch": "",
+      "agent": "build_agent",
+      "status": "queued",
+      "order": 1,
+      "branch_from": "Feature-TRB-18109",
+      "branch_to": "integ",
+      "links": [
+        {
+          "sub_type": "microservice",
+          "service_key": "build:microservice:address",
+          "label": "Address"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Merged into target branch",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins build running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Deployed",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-07-06T08:54:52Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-07-06T08:54:52Z",
+      "updated_at": "2026-07-06T08:54:52Z"
+    },
+    "JOB-23": {
+      "job_id": "JOB-23",
+      "task_id": "TASK-20404",
+      "section": "build",
+      "release_branch": "",
+      "agent": "build_agent",
+      "status": "queued",
+      "order": 1,
+      "branch_from": "Feature-TRB-18109",
+      "branch_to": "integ",
+      "links": [
+        {
+          "sub_type": "microservice",
+          "service_key": "build:microservice:address",
+          "label": "Address"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Merged into target branch",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins build running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Deployed",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-07-06T08:59:16Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-07-06T08:59:16Z",
+      "updated_at": "2026-07-06T08:59:16Z"
+    },
+    "JOB-24": {
+      "job_id": "JOB-24",
+      "task_id": "TASK-20405",
+      "section": "build",
+      "release_branch": "",
+      "agent": "build_agent",
+      "status": "queued",
+      "order": 1,
+      "branch_from": "Feature-TRB-18109",
+      "branch_to": "integ",
+      "links": [
+        {
+          "sub_type": "microservice",
+          "service_key": "build:microservice:address",
+          "label": "Address"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Merged into target branch",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins build running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Deployed",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-07-06T09:27:19Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-07-06T09:27:19Z",
+      "updated_at": "2026-07-06T09:27:19Z"
+    },
+    "JOB-25": {
+      "job_id": "JOB-25",
+      "task_id": "TASK-20406",
+      "section": "yaml",
+      "release_branch": "R-2026-06-W4",
+      "agent": "yaml_automation_agent",
+      "status": "running",
+      "order": 1,
+      "branch_from": "",
+      "branch_to": "",
+      "links": [
+        {
+          "sub_type": "microservice",
+          "service_key": "yaml:microservice:customlinkgeneratorservice",
+          "label": "CustomLinkGeneratorService"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "running",
+          "ts": "2026-07-06T09:59:06Z"
+        },
+        {
+          "label": "Config fetched",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins config job running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Applied to environment",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-07-06T09:54:29Z] Job created, awaiting approval before orchestrator starts",
+        "[2026-07-06T09:59:06Z] All approvals received \u2014 orchestrator dispatched to yaml_automation_agent"
+      ],
+      "created_at": "2026-07-06T09:54:29Z",
+      "updated_at": "2026-07-06T09:59:06Z"
+    },
+    "JOB-26": {
+      "job_id": "JOB-26",
+      "task_id": "TASK-20406",
+      "section": "db",
+      "release_branch": "R-2026-06-W4",
+      "agent": "liquibase_agent",
+      "status": "queued",
+      "order": 2,
+      "branch_from": "",
+      "branch_to": "",
+      "links": [
+        {
+          "sub_type": "microservice",
+          "service_key": "db:microservice:customlinkgeneratorservice",
+          "label": "CustomLinkGeneratorService"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Liquibase changeset fetched",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Liquibase update running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Migration applied",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-07-06T09:54:29Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-07-06T09:54:29Z",
+      "updated_at": "2026-07-06T09:54:29Z"
+    },
+    "JOB-27": {
+      "job_id": "JOB-27",
+      "task_id": "TASK-20406",
+      "section": "build",
+      "release_branch": "",
+      "agent": "build_agent",
+      "status": "queued",
+      "order": 3,
+      "branch_from": "Feature-TRB-16996",
+      "branch_to": "integ",
+      "links": [
+        {
+          "sub_type": "microservice",
+          "service_key": "build:microservice:account",
+          "label": "Account"
+        },
+        {
+          "sub_type": "portal",
+          "service_key": "build:portal:ecommerce",
+          "label": "Ecommerce"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Merged into target branch",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins build running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Deployed",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-07-06T09:54:29Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-07-06T09:54:29Z",
+      "updated_at": "2026-07-06T09:54:29Z"
+    },
+    "JOB-28": {
+      "job_id": "JOB-28",
+      "task_id": "TASK-20407",
+      "section": "db",
+      "release_branch": "R-2026-06-W4",
+      "agent": "liquibase_agent",
+      "status": "queued",
+      "order": 1,
+      "branch_from": "",
+      "branch_to": "",
+      "links": [
+        {
+          "sub_type": "microservice",
+          "service_key": "db:microservice:account",
+          "label": "Account"
+        },
+        {
+          "sub_type": "microservice",
+          "service_key": "db:microservice:configuration",
+          "label": "Configuration"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Liquibase changeset fetched",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Liquibase update running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Migration applied",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-07-07T08:11:17Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-07-07T08:11:17Z",
+      "updated_at": "2026-07-07T08:11:17Z"
+    },
+    "JOB-29": {
+      "job_id": "JOB-29",
+      "task_id": "TASK-20407",
+      "section": "build",
+      "release_branch": "",
+      "agent": "build_agent",
+      "status": "queued",
+      "order": 2,
+      "branch_from": "Feature_TRB-17511",
+      "branch_to": "integ",
+      "links": [
+        {
+          "sub_type": "portal",
+          "service_key": "build:portal:customercarev2",
+          "label": "Customercarev2"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Merged into target branch",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins build running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Deployed",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-07-07T08:11:17Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-07-07T08:11:17Z",
+      "updated_at": "2026-07-07T08:11:17Z"
+    },
+    "JOB-30": {
+      "job_id": "JOB-30",
+      "task_id": "TASK-20408",
+      "section": "yaml",
+      "release_branch": "fasdfdf",
+      "agent": "yaml_automation_agent",
+      "status": "queued",
+      "order": 1,
+      "branch_from": "",
+      "branch_to": "",
+      "links": [
+        {
+          "sub_type": "microservice",
+          "service_key": "yaml:microservice:account",
+          "label": "Account"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Config fetched",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins config job running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Applied to environment",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-07-07T09:27:13Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-07-07T09:27:13Z",
+      "updated_at": "2026-07-07T09:27:13Z"
+    },
+    "JOB-31": {
+      "job_id": "JOB-31",
+      "task_id": "TASK-20409",
+      "section": "db",
+      "release_branch": "R-2026-06-W4",
+      "agent": "liquibase_agent",
+      "status": "queued",
+      "order": 1,
+      "branch_from": "",
+      "branch_to": "",
+      "links": [
+        {
+          "sub_type": "microservice",
+          "service_key": "db:microservice:account",
+          "label": "Account"
+        },
+        {
+          "sub_type": "microservice",
+          "service_key": "db:microservice:configuration",
+          "label": "Configuration"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Liquibase changeset fetched",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Liquibase update running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Migration applied",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-07-07T10:06:21Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-07-07T10:06:21Z",
+      "updated_at": "2026-07-07T10:06:21Z"
+    },
+    "JOB-32": {
+      "job_id": "JOB-32",
+      "task_id": "TASK-20410",
+      "section": "db",
+      "release_branch": "R-2026-06-W4",
+      "agent": "liquibase_agent",
+      "status": "running",
+      "order": 1,
+      "branch_from": "",
+      "branch_to": "",
+      "links": [
+        {
+          "sub_type": "microservice",
+          "service_key": "db:microservice:configuration",
+          "label": "Configuration"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "running",
+          "ts": "2026-07-07T14:29:37Z"
+        },
+        {
+          "label": "Liquibase changeset fetched",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Liquibase update running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Migration applied",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-07-07T14:24:08Z] Job created, awaiting approval before orchestrator starts",
+        "[2026-07-07T14:29:37Z] All approvals received \u2014 orchestrator dispatched to liquibase_agent"
+      ],
+      "created_at": "2026-07-07T14:24:08Z",
+      "updated_at": "2026-07-07T14:29:37Z"
+    },
+    "JOB-33": {
+      "job_id": "JOB-33",
+      "task_id": "TASK-20411",
+      "section": "build",
+      "release_branch": "",
+      "agent": "build_agent",
+      "status": "queued",
+      "order": 1,
+      "branch_from": "Feature-TRB-17993",
+      "branch_to": "integ",
+      "links": [
+        {
+          "sub_type": "portal",
+          "service_key": "build:portal:ecommerce",
+          "label": "Ecommerce"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Links validated",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Merged into target branch",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Jenkins build running",
+          "status": "queued",
+          "ts": null
+        },
+        {
+          "label": "Deployed",
+          "status": "queued",
+          "ts": null
+        }
+      ],
+      "logs": [
+        "[2026-07-07T14:32:00Z] Job created, awaiting approval before orchestrator starts"
+      ],
+      "created_at": "2026-07-07T14:32:00Z",
+      "updated_at": "2026-07-07T14:32:00Z"
     }
   },
   "sub_tasks": {
@@ -2643,11 +5517,1579 @@
       "mock_build_number": 1325,
       "created_at": "2026-07-02T13:02:00Z",
       "updated_at": "2026-07-02T13:02:00Z"
+    },
+    "ST-16": {
+      "sub_task_id": "ST-16",
+      "job_id": "JOB-14",
+      "task_id": "TASK-20398",
+      "section": "yaml",
+      "sub_type": "microservice",
+      "service_key": "yaml:microservice:account",
+      "label": "Account",
+      "release_branch": "asdfdfdf",
+      "order": 1,
+      "status": "queued",
+      "agent": "yaml_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate YAML syntax (parse check)",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s2",
+          "label": "Validate config file against schema",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s3",
+          "label": "Trigger Jenkins job: yml_automation_2.0",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s4",
+          "label": "Waiting for Jenkins build #1371 to complete",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s5",
+          "label": "Verify config applied: GET https://config.titan.internal/yaml:microservice:account",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s6",
+          "label": "Mark config propagated",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        }
+      ],
+      "logs": [],
+      "jenkins_job": "yml_automation_2.0",
+      "jenkins_params": {
+        "ConfigFile": "Account",
+        "Environment": "auto"
+      },
+      "mock_build_number": 1371,
+      "created_at": "2026-07-02T20:25:32Z",
+      "updated_at": "2026-07-02T20:25:32Z"
+    },
+    "ST-17": {
+      "sub_task_id": "ST-17",
+      "job_id": "JOB-15",
+      "task_id": "TASK-20398",
+      "section": "build",
+      "sub_type": "utility",
+      "service_key": "build:utility:kafkacontract",
+      "label": "KafkaContract",
+      "release_branch": "master",
+      "order": 2,
+      "status": "queued",
+      "agent": "merge_build_agent",
+      "steps": [],
+      "logs": [],
+      "jenkins_job": "Titan-Utilities",
+      "jenkins_params": {
+        "Service": "KafkaContract",
+        "MergeID": "!2804",
+        "ReleaseBranch": "master"
+      },
+      "mock_build_number": 1284,
+      "created_at": "2026-07-02T20:25:32Z",
+      "updated_at": "2026-07-02T20:25:32Z"
+    },
+    "ST-18": {
+      "sub_task_id": "ST-18",
+      "job_id": "JOB-15",
+      "task_id": "TASK-20398",
+      "section": "build",
+      "sub_type": "microservice",
+      "service_key": "build:microservice:auditlog",
+      "label": "Auditlog",
+      "release_branch": "master",
+      "order": 3,
+      "status": "queued",
+      "agent": "merge_build_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate MR is mergeable (GitSpace check)",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s2",
+          "label": "Merge !2992 into master",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s3",
+          "label": "Trigger Jenkins job: Titan-Microservices",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s4",
+          "label": "Waiting for Jenkins build #1372 to complete",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s5",
+          "label": "Poll API gateway: GET https://api.titan.internal/build:microservice:auditlog/health every 5 min",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s6",
+          "label": "AI verification: Ollama reads Jenkins logs, confirms success",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        }
+      ],
+      "logs": [],
+      "jenkins_job": "Titan-Microservices",
+      "jenkins_params": {
+        "Service": "Auditlog",
+        "MergeID": "!2992",
+        "ReleaseBranch": "master"
+      },
+      "mock_build_number": 1372,
+      "created_at": "2026-07-02T20:25:32Z",
+      "updated_at": "2026-07-02T20:25:32Z"
+    },
+    "ST-19": {
+      "sub_task_id": "ST-19",
+      "job_id": "JOB-16",
+      "task_id": "TASK-20399",
+      "section": "build",
+      "sub_type": "microservice",
+      "service_key": "build:microservice:customer-service-v2",
+      "label": "customer-service-v2",
+      "release_branch": "integ",
+      "order": 1,
+      "status": "done",
+      "agent": "merge_build_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate MR is mergeable (GitSpace check)",
+          "status": "done",
+          "detail": "GitSpace API: MR is approved and pipeline green",
+          "ts": "2026-07-05T07:28:07Z"
+        },
+        {
+          "step_id": "s2",
+          "label": "Merge !2828 into integ",
+          "status": "done",
+          "detail": "Merged into integ \u2014 commit sha: a3f0ef4",
+          "ts": "2026-07-05T07:28:10Z"
+        },
+        {
+          "step_id": "s3",
+          "label": "Trigger Jenkins job: Titan-Microservices",
+          "status": "done",
+          "detail": "Jenkins #1308 triggered \u2014 job: Titan-Microservices",
+          "ts": "2026-07-05T07:28:13Z"
+        },
+        {
+          "step_id": "s4",
+          "label": "Waiting for Jenkins build #1308 to complete",
+          "status": "done",
+          "detail": "Jenkins #1308: tests passed (142/142), Docker image built, pushed to ECR",
+          "ts": "2026-07-05T07:28:16Z"
+        },
+        {
+          "step_id": "s5",
+          "label": "Poll API gateway: GET https://api.titan.internal/build:microservice:customer-service-v2/health every 5 min",
+          "status": "done",
+          "detail": "API gateway /health \u2192 HTTP 200 \u2014 service responding (attempt 3/3)",
+          "ts": "2026-07-05T07:28:19Z"
+        },
+        {
+          "step_id": "s6",
+          "label": "AI verification: Ollama reads Jenkins logs, confirms success",
+          "status": "done",
+          "detail": "Ollama verified: 'Build #1308 succeeded. No errors in deployment logs. Service healthy.'",
+          "ts": "2026-07-05T07:28:22Z"
+        }
+      ],
+      "logs": [
+        "[2026-07-05T07:28:05Z] Orchestrator dispatched to merge_build_agent",
+        "[2026-07-05T07:28:07Z] GitSpace API: MR is approved and pipeline green",
+        "[2026-07-05T07:28:10Z] Merged into integ \u2014 commit sha: a3f0ef4",
+        "[2026-07-05T07:28:13Z] Jenkins #1308 triggered \u2014 job: Titan-Microservices",
+        "[2026-07-05T07:28:16Z] Jenkins #1308: tests passed (142/142), Docker image built, pushed to ECR",
+        "[2026-07-05T07:28:19Z] API gateway /health \u2192 HTTP 200 \u2014 service responding (attempt 3/3)",
+        "[2026-07-05T07:28:22Z] Sub-task complete"
+      ],
+      "jenkins_job": "Titan-Microservices",
+      "jenkins_params": {
+        "Service": "customer-service-v2",
+        "MergeID": "!2828",
+        "ReleaseBranch": "integ"
+      },
+      "mock_build_number": 1308,
+      "created_at": "2026-07-03T09:24:33Z",
+      "updated_at": "2026-07-05T07:28:22Z"
+    },
+    "ST-20": {
+      "sub_task_id": "ST-20",
+      "job_id": "JOB-17",
+      "task_id": "TASK-20399",
+      "section": "build",
+      "sub_type": "microservice",
+      "service_key": "build:microservice:address",
+      "label": "Address",
+      "release_branch": "integ",
+      "order": 2,
+      "status": "done",
+      "agent": "merge_build_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate MR is mergeable (GitSpace check)",
+          "status": "done",
+          "detail": "GitSpace API: MR is approved and pipeline green",
+          "ts": "2026-07-05T07:28:07Z"
+        },
+        {
+          "step_id": "s2",
+          "label": "Merge !2877 into integ",
+          "status": "done",
+          "detail": "Merged into integ \u2014 commit sha: a3f0a75",
+          "ts": "2026-07-05T07:28:10Z"
+        },
+        {
+          "step_id": "s3",
+          "label": "Trigger Jenkins job: Titan-Microservices",
+          "status": "done",
+          "detail": "Jenkins #1357 triggered \u2014 job: Titan-Microservices",
+          "ts": "2026-07-05T07:28:13Z"
+        },
+        {
+          "step_id": "s4",
+          "label": "Waiting for Jenkins build #1357 to complete",
+          "status": "done",
+          "detail": "Jenkins #1357: tests passed (142/142), Docker image built, pushed to ECR",
+          "ts": "2026-07-05T07:28:16Z"
+        },
+        {
+          "step_id": "s5",
+          "label": "Poll API gateway: GET https://api.titan.internal/build:microservice:address/health every 5 min",
+          "status": "done",
+          "detail": "API gateway /health \u2192 HTTP 200 \u2014 service responding (attempt 3/3)",
+          "ts": "2026-07-05T07:28:19Z"
+        },
+        {
+          "step_id": "s6",
+          "label": "AI verification: Ollama reads Jenkins logs, confirms success",
+          "status": "done",
+          "detail": "Ollama verified: 'Build #1357 succeeded. No errors in deployment logs. Service healthy.'",
+          "ts": "2026-07-05T07:28:22Z"
+        }
+      ],
+      "logs": [
+        "[2026-07-05T07:28:05Z] Orchestrator dispatched to merge_build_agent",
+        "[2026-07-05T07:28:07Z] GitSpace API: MR is approved and pipeline green",
+        "[2026-07-05T07:28:10Z] Merged into integ \u2014 commit sha: a3f0a75",
+        "[2026-07-05T07:28:13Z] Jenkins #1357 triggered \u2014 job: Titan-Microservices",
+        "[2026-07-05T07:28:16Z] Jenkins #1357: tests passed (142/142), Docker image built, pushed to ECR",
+        "[2026-07-05T07:28:19Z] API gateway /health \u2192 HTTP 200 \u2014 service responding (attempt 3/3)",
+        "[2026-07-05T07:28:22Z] Sub-task complete"
+      ],
+      "jenkins_job": "Titan-Microservices",
+      "jenkins_params": {
+        "Service": "Address",
+        "MergeID": "!2877",
+        "ReleaseBranch": "integ"
+      },
+      "mock_build_number": 1357,
+      "created_at": "2026-07-03T09:24:33Z",
+      "updated_at": "2026-07-05T07:28:22Z"
+    },
+    "ST-21": {
+      "sub_task_id": "ST-21",
+      "job_id": "JOB-18",
+      "task_id": "TASK-20400",
+      "section": "build",
+      "sub_type": "microservice",
+      "service_key": "build:microservice:address",
+      "label": "Address",
+      "release_branch": "integ",
+      "order": 1,
+      "status": "queued",
+      "agent": "merge_build_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate MR is mergeable (GitSpace check)",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s2",
+          "label": "Merge !2877 into integ",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s3",
+          "label": "Trigger Jenkins job: Titan-Microservices",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s4",
+          "label": "Waiting for Jenkins build #1357 to complete",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s5",
+          "label": "Poll API gateway: GET https://api.titan.internal/build:microservice:address/health every 5 min",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s6",
+          "label": "AI verification: Ollama reads Jenkins logs, confirms success",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        }
+      ],
+      "logs": [],
+      "jenkins_job": "Titan-Microservices",
+      "jenkins_params": {
+        "Service": "Address",
+        "MergeID": "!2877",
+        "ReleaseBranch": "integ"
+      },
+      "mock_build_number": 1357,
+      "created_at": "2026-07-05T07:52:36Z",
+      "updated_at": "2026-07-05T07:52:36Z"
+    },
+    "ST-22": {
+      "sub_task_id": "ST-22",
+      "job_id": "JOB-19",
+      "task_id": "TASK-20401",
+      "section": "build",
+      "sub_type": "microservice",
+      "service_key": "build:microservice:address",
+      "label": "Address",
+      "release_branch": "integ",
+      "order": 1,
+      "status": "queued",
+      "agent": "merge_build_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate MR is mergeable (GitSpace check)",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s2",
+          "label": "Merge !2877 into integ",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s3",
+          "label": "Trigger Jenkins job: Titan-Microservices",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s4",
+          "label": "Waiting for Jenkins build #1357 to complete",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s5",
+          "label": "Poll API gateway: GET https://api.titan.internal/build:microservice:address/health every 5 min",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s6",
+          "label": "AI verification: Ollama reads Jenkins logs, confirms success",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        }
+      ],
+      "logs": [],
+      "jenkins_job": "Titan-Microservices",
+      "jenkins_params": {
+        "Service": "Address",
+        "MergeID": "!2877",
+        "ReleaseBranch": "integ"
+      },
+      "mock_build_number": 1357,
+      "created_at": "2026-07-05T07:57:19Z",
+      "updated_at": "2026-07-05T07:57:19Z"
+    },
+    "ST-23": {
+      "sub_task_id": "ST-23",
+      "job_id": "JOB-20",
+      "task_id": "TASK-20402",
+      "section": "build",
+      "sub_type": "microservice",
+      "service_key": "build:microservice:customercarev2",
+      "label": "Customercarev2",
+      "release_branch": "integ",
+      "order": 1,
+      "status": "queued",
+      "agent": "merge_build_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate MR is mergeable (GitSpace check)",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s2",
+          "label": "Merge !2996 into integ",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s3",
+          "label": "Trigger Jenkins job: Titan-Microservices",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s4",
+          "label": "Waiting for Jenkins build #1376 to complete",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s5",
+          "label": "Poll API gateway: GET https://api.titan.internal/build:microservice:customercarev2/health every 5 min",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s6",
+          "label": "AI verification: Ollama reads Jenkins logs, confirms success",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        }
+      ],
+      "logs": [],
+      "jenkins_job": "Titan-Microservices",
+      "jenkins_params": {
+        "Service": "Customercarev2",
+        "MergeID": "!2996",
+        "ReleaseBranch": "integ"
+      },
+      "mock_build_number": 1376,
+      "created_at": "2026-07-05T20:31:29Z",
+      "updated_at": "2026-07-05T20:31:29Z"
+    },
+    "ST-24": {
+      "sub_task_id": "ST-24",
+      "job_id": "JOB-21",
+      "task_id": "TASK-20402",
+      "section": "build",
+      "sub_type": "microservice",
+      "service_key": "build:microservice:address",
+      "label": "Address",
+      "release_branch": "integ",
+      "order": 2,
+      "status": "queued",
+      "agent": "merge_build_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate MR is mergeable (GitSpace check)",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s2",
+          "label": "Merge !2877 into integ",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s3",
+          "label": "Trigger Jenkins job: Titan-Microservices",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s4",
+          "label": "Waiting for Jenkins build #1357 to complete",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s5",
+          "label": "Poll API gateway: GET https://api.titan.internal/build:microservice:address/health every 5 min",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s6",
+          "label": "AI verification: Ollama reads Jenkins logs, confirms success",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        }
+      ],
+      "logs": [],
+      "jenkins_job": "Titan-Microservices",
+      "jenkins_params": {
+        "Service": "Address",
+        "MergeID": "!2877",
+        "ReleaseBranch": "integ"
+      },
+      "mock_build_number": 1357,
+      "created_at": "2026-07-05T20:31:29Z",
+      "updated_at": "2026-07-05T20:31:29Z"
+    },
+    "ST-25": {
+      "sub_task_id": "ST-25",
+      "job_id": "JOB-22",
+      "task_id": "TASK-20403",
+      "section": "build",
+      "sub_type": "microservice",
+      "service_key": "build:microservice:address",
+      "label": "Address",
+      "release_branch": "integ",
+      "order": 1,
+      "status": "queued",
+      "agent": "merge_build_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate MR is mergeable (GitSpace check)",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s2",
+          "label": "Merge !2877 into integ",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s3",
+          "label": "Trigger Jenkins job: Titan-Microservices",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s4",
+          "label": "Waiting for Jenkins build #1357 to complete",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s5",
+          "label": "Poll API gateway: GET https://api.titan.internal/build:microservice:address/health every 5 min",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s6",
+          "label": "AI verification: Ollama reads Jenkins logs, confirms success",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        }
+      ],
+      "logs": [],
+      "jenkins_job": "Titan-Microservices",
+      "jenkins_params": {
+        "Service": "Address",
+        "MergeID": "!2877",
+        "ReleaseBranch": "integ"
+      },
+      "mock_build_number": 1357,
+      "created_at": "2026-07-06T08:54:52Z",
+      "updated_at": "2026-07-06T08:54:52Z"
+    },
+    "ST-26": {
+      "sub_task_id": "ST-26",
+      "job_id": "JOB-23",
+      "task_id": "TASK-20404",
+      "section": "build",
+      "sub_type": "microservice",
+      "service_key": "build:microservice:address",
+      "label": "Address",
+      "release_branch": "integ",
+      "order": 1,
+      "status": "queued",
+      "agent": "merge_build_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate MR is mergeable (GitSpace check)",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s2",
+          "label": "Merge !2877 into integ",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s3",
+          "label": "Trigger Jenkins job: Titan-Microservices",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s4",
+          "label": "Waiting for Jenkins build #1357 to complete",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s5",
+          "label": "Poll API gateway: GET https://api.titan.internal/build:microservice:address/health every 5 min",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s6",
+          "label": "AI verification: Ollama reads Jenkins logs, confirms success",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        }
+      ],
+      "logs": [],
+      "jenkins_job": "Titan-Microservices",
+      "jenkins_params": {
+        "Service": "Address",
+        "MergeID": "!2877",
+        "ReleaseBranch": "integ"
+      },
+      "mock_build_number": 1357,
+      "created_at": "2026-07-06T08:59:16Z",
+      "updated_at": "2026-07-06T08:59:16Z"
+    },
+    "ST-27": {
+      "sub_task_id": "ST-27",
+      "job_id": "JOB-24",
+      "task_id": "TASK-20405",
+      "section": "build",
+      "sub_type": "microservice",
+      "service_key": "build:microservice:address",
+      "label": "Address",
+      "release_branch": "integ",
+      "order": 1,
+      "status": "queued",
+      "agent": "merge_build_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate MR is mergeable (GitSpace check)",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s2",
+          "label": "Merge !2877 into integ",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s3",
+          "label": "Trigger Jenkins job: Titan-Microservices",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s4",
+          "label": "Waiting for Jenkins build #1357 to complete",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s5",
+          "label": "Poll API gateway: GET https://api.titan.internal/build:microservice:address/health every 5 min",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s6",
+          "label": "AI verification: Ollama reads Jenkins logs, confirms success",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        }
+      ],
+      "logs": [],
+      "jenkins_job": "Titan-Microservices",
+      "jenkins_params": {
+        "Service": "Address",
+        "MergeID": "!2877",
+        "ReleaseBranch": "integ"
+      },
+      "mock_build_number": 1357,
+      "created_at": "2026-07-06T09:27:19Z",
+      "updated_at": "2026-07-06T09:27:19Z"
+    },
+    "ST-28": {
+      "sub_task_id": "ST-28",
+      "job_id": "JOB-25",
+      "task_id": "TASK-20406",
+      "section": "yaml",
+      "sub_type": "microservice",
+      "service_key": "yaml:microservice:customlinkgeneratorservice",
+      "label": "CustomLinkGeneratorService",
+      "release_branch": "R-2026-06-W4",
+      "order": 2,
+      "status": "done",
+      "agent": "yaml_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate YAML syntax (parse check)",
+          "status": "done",
+          "detail": "YAML syntax valid \u2014 no parse errors in CustomLinkGeneratorService",
+          "ts": "2026-07-06T09:59:25Z"
+        },
+        {
+          "step_id": "s2",
+          "label": "Validate config file against schema",
+          "status": "done",
+          "detail": "Schema validation passed \u2014 all required keys present",
+          "ts": "2026-07-06T09:59:28Z"
+        },
+        {
+          "step_id": "s3",
+          "label": "Trigger Jenkins job: yml_automation_2.0",
+          "status": "done",
+          "detail": "Jenkins yml_automation_2.0 #1339 triggered",
+          "ts": "2026-07-06T09:59:31Z"
+        },
+        {
+          "step_id": "s4",
+          "label": "Waiting for Jenkins build #1339 to complete",
+          "status": "done",
+          "detail": "Build #1339 complete \u2014 config applied",
+          "ts": "2026-07-06T09:59:34Z"
+        },
+        {
+          "step_id": "s5",
+          "label": "Verify config applied: GET https://config.titan.internal/yaml:microservice:customlinkgeneratorservice",
+          "status": "done",
+          "detail": "Config endpoint returned expected values",
+          "ts": "2026-07-06T09:59:37Z"
+        },
+        {
+          "step_id": "s6",
+          "label": "Mark config propagated",
+          "status": "done",
+          "detail": "Config propagation confirmed across all instances",
+          "ts": "2026-07-06T09:59:40Z"
+        }
+      ],
+      "logs": [
+        "[2026-07-06T09:59:22Z] Orchestrator dispatched to yaml_agent",
+        "[2026-07-06T09:59:25Z] YAML syntax valid \u2014 no parse errors in CustomLinkGeneratorService",
+        "[2026-07-06T09:59:28Z] Schema validation passed \u2014 all required keys present",
+        "[2026-07-06T09:59:31Z] Jenkins yml_automation_2.0 #1339 triggered",
+        "[2026-07-06T09:59:34Z] Build #1339 complete \u2014 config applied",
+        "[2026-07-06T09:59:37Z] Config endpoint returned expected values",
+        "[2026-07-06T09:59:40Z] Sub-task complete"
+      ],
+      "jenkins_job": "yml_automation_2.0",
+      "jenkins_params": {
+        "ConfigFile": "CustomLinkGeneratorService",
+        "Environment": "auto"
+      },
+      "mock_build_number": 1339,
+      "created_at": "2026-07-06T09:54:29Z",
+      "updated_at": "2026-07-06T09:59:40Z"
+    },
+    "ST-29": {
+      "sub_task_id": "ST-29",
+      "job_id": "JOB-26",
+      "task_id": "TASK-20406",
+      "section": "db",
+      "sub_type": "microservice",
+      "service_key": "db:microservice:customlinkgeneratorservice",
+      "label": "CustomLinkGeneratorService",
+      "release_branch": "R-2026-06-W4",
+      "order": 1,
+      "status": "done",
+      "agent": "db_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate SQL syntax (no DROP/TRUNCATE/DELETE without WHERE)",
+          "status": "done",
+          "detail": "SQL syntax valid \u2014 no DROP/TRUNCATE/DELETE without WHERE detected",
+          "ts": "2026-07-06T09:59:10Z"
+        },
+        {
+          "step_id": "s2",
+          "label": "Validate Liquibase changeset format",
+          "status": "done",
+          "detail": "Liquibase changeset format valid \u2014 3 changesets found",
+          "ts": "2026-07-06T09:59:13Z"
+        },
+        {
+          "step_id": "s3",
+          "label": "Run Liquibase update",
+          "status": "done",
+          "detail": "Liquibase update: 3/3 changesets applied successfully",
+          "ts": "2026-07-06T09:59:16Z"
+        },
+        {
+          "step_id": "s4",
+          "label": "Verify DB migration applied",
+          "status": "done",
+          "detail": "DB migration verified \u2014 schema matches expected state",
+          "ts": "2026-07-06T09:59:19Z"
+        },
+        {
+          "step_id": "s5",
+          "label": "Run smoke test query",
+          "status": "done",
+          "detail": "Smoke query returned expected result set",
+          "ts": "2026-07-06T09:59:22Z"
+        }
+      ],
+      "logs": [
+        "[2026-07-06T09:59:06Z] Orchestrator dispatched to db_agent",
+        "[2026-07-06T09:59:10Z] SQL syntax valid \u2014 no DROP/TRUNCATE/DELETE without WHERE detected",
+        "[2026-07-06T09:59:13Z] Liquibase changeset format valid \u2014 3 changesets found",
+        "[2026-07-06T09:59:16Z] Liquibase update: 3/3 changesets applied successfully",
+        "[2026-07-06T09:59:19Z] DB migration verified \u2014 schema matches expected state",
+        "[2026-07-06T09:59:22Z] Sub-task complete"
+      ],
+      "jenkins_job": "liquibase-runner",
+      "jenkins_params": {
+        "Changelog": "db:microservice:customlinkgeneratorservice",
+        "Mode": "update"
+      },
+      "mock_build_number": 1302,
+      "created_at": "2026-07-06T09:54:29Z",
+      "updated_at": "2026-07-06T09:59:22Z"
+    },
+    "ST-30": {
+      "sub_task_id": "ST-30",
+      "job_id": "JOB-27",
+      "task_id": "TASK-20406",
+      "section": "build",
+      "sub_type": "microservice",
+      "service_key": "build:microservice:account",
+      "label": "Account",
+      "release_branch": "integ",
+      "order": 3,
+      "status": "done",
+      "agent": "merge_build_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate MR is mergeable (GitSpace check)",
+          "status": "done",
+          "detail": "GitSpace API: MR is approved and pipeline green",
+          "ts": "2026-07-06T09:59:43Z"
+        },
+        {
+          "step_id": "s2",
+          "label": "Merge !2884 into integ",
+          "status": "done",
+          "detail": "Merged into integ \u2014 commit sha: a3f0a7c",
+          "ts": "2026-07-06T09:59:46Z"
+        },
+        {
+          "step_id": "s3",
+          "label": "Trigger Jenkins job: Titan-Microservices",
+          "status": "done",
+          "detail": "Jenkins #1364 triggered \u2014 job: Titan-Microservices",
+          "ts": "2026-07-06T09:59:49Z"
+        },
+        {
+          "step_id": "s4",
+          "label": "Waiting for Jenkins build #1364 to complete",
+          "status": "done",
+          "detail": "Jenkins #1364: tests passed (142/142), Docker image built, pushed to ECR",
+          "ts": "2026-07-06T09:59:52Z"
+        },
+        {
+          "step_id": "s5",
+          "label": "Poll API gateway: GET https://api.titan.internal/build:microservice:account/health every 5 min",
+          "status": "done",
+          "detail": "API gateway /health \u2192 HTTP 200 \u2014 service responding (attempt 3/3)",
+          "ts": "2026-07-06T09:59:55Z"
+        },
+        {
+          "step_id": "s6",
+          "label": "AI verification: Ollama reads Jenkins logs, confirms success",
+          "status": "done",
+          "detail": "Ollama verified: 'Build #1364 succeeded. No errors in deployment logs. Service healthy.'",
+          "ts": "2026-07-06T09:59:58Z"
+        }
+      ],
+      "logs": [
+        "[2026-07-06T09:59:40Z] Orchestrator dispatched to merge_build_agent",
+        "[2026-07-06T09:59:43Z] GitSpace API: MR is approved and pipeline green",
+        "[2026-07-06T09:59:46Z] Merged into integ \u2014 commit sha: a3f0a7c",
+        "[2026-07-06T09:59:49Z] Jenkins #1364 triggered \u2014 job: Titan-Microservices",
+        "[2026-07-06T09:59:52Z] Jenkins #1364: tests passed (142/142), Docker image built, pushed to ECR",
+        "[2026-07-06T09:59:55Z] API gateway /health \u2192 HTTP 200 \u2014 service responding (attempt 3/3)",
+        "[2026-07-06T09:59:58Z] Sub-task complete"
+      ],
+      "jenkins_job": "Titan-Microservices",
+      "jenkins_params": {
+        "Service": "Account",
+        "MergeID": "!2884",
+        "ReleaseBranch": "integ"
+      },
+      "mock_build_number": 1364,
+      "created_at": "2026-07-06T09:54:29Z",
+      "updated_at": "2026-07-06T09:59:58Z"
+    },
+    "ST-31": {
+      "sub_task_id": "ST-31",
+      "job_id": "JOB-27",
+      "task_id": "TASK-20406",
+      "section": "build",
+      "sub_type": "portal",
+      "service_key": "build:portal:ecommerce",
+      "label": "Ecommerce",
+      "release_branch": "integ",
+      "order": 4,
+      "status": "done",
+      "agent": "merge_build_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate MR is mergeable (GitSpace check)",
+          "status": "done",
+          "detail": "GitSpace API: MR is approved and pipeline green",
+          "ts": "2026-07-06T09:59:43Z"
+        },
+        {
+          "step_id": "s2",
+          "label": "Merge !2846 into integ",
+          "status": "done",
+          "detail": "Merged into integ \u2014 commit sha: a3f08c6",
+          "ts": "2026-07-06T09:59:46Z"
+        },
+        {
+          "step_id": "s3",
+          "label": "Trigger Jenkins job: Titan-Portals",
+          "status": "done",
+          "detail": "Jenkins #1326 triggered \u2014 job: Titan-Portals",
+          "ts": "2026-07-06T09:59:49Z"
+        },
+        {
+          "step_id": "s4",
+          "label": "Waiting for Jenkins build #1326 to complete",
+          "status": "done",
+          "detail": "Jenkins #1326: tests passed (142/142), Docker image built, pushed to ECR",
+          "ts": "2026-07-06T09:59:52Z"
+        },
+        {
+          "step_id": "s5",
+          "label": "Poll portal URL for HTTP 200 every 5 min",
+          "status": "done",
+          "detail": "API gateway /health \u2192 HTTP 200 \u2014 service responding (attempt 3/3)",
+          "ts": "2026-07-06T09:59:55Z"
+        },
+        {
+          "step_id": "s6",
+          "label": "AI verification: Ollama reads Jenkins logs, confirms success",
+          "status": "done",
+          "detail": "Ollama verified: 'Build #1326 succeeded. No errors in deployment logs. Service healthy.'",
+          "ts": "2026-07-06T09:59:58Z"
+        }
+      ],
+      "logs": [
+        "[2026-07-06T09:59:40Z] Orchestrator dispatched to merge_build_agent",
+        "[2026-07-06T09:59:43Z] GitSpace API: MR is approved and pipeline green",
+        "[2026-07-06T09:59:46Z] Merged into integ \u2014 commit sha: a3f08c6",
+        "[2026-07-06T09:59:49Z] Jenkins #1326 triggered \u2014 job: Titan-Portals",
+        "[2026-07-06T09:59:52Z] Jenkins #1326: tests passed (142/142), Docker image built, pushed to ECR",
+        "[2026-07-06T09:59:55Z] API gateway /health \u2192 HTTP 200 \u2014 service responding (attempt 3/3)",
+        "[2026-07-06T09:59:58Z] Sub-task complete"
+      ],
+      "jenkins_job": "Titan-Portals",
+      "jenkins_params": {
+        "Service": "Ecommerce",
+        "MergeID": "!2846",
+        "ReleaseBranch": "integ"
+      },
+      "mock_build_number": 1326,
+      "created_at": "2026-07-06T09:54:29Z",
+      "updated_at": "2026-07-06T09:59:58Z"
+    },
+    "ST-32": {
+      "sub_task_id": "ST-32",
+      "job_id": "JOB-28",
+      "task_id": "TASK-20407",
+      "section": "db",
+      "sub_type": "microservice",
+      "service_key": "db:microservice:account",
+      "label": "Account",
+      "release_branch": "R-2026-06-W4",
+      "order": 1,
+      "status": "queued",
+      "agent": "db_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate SQL syntax (no DROP/TRUNCATE/DELETE without WHERE)",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s2",
+          "label": "Validate Liquibase changeset format",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s3",
+          "label": "Run Liquibase update",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s4",
+          "label": "Verify DB migration applied",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s5",
+          "label": "Run smoke test query",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        }
+      ],
+      "logs": [],
+      "jenkins_job": "liquibase-runner",
+      "jenkins_params": {
+        "Changelog": "db:microservice:account",
+        "Mode": "update"
+      },
+      "mock_build_number": 1334,
+      "created_at": "2026-07-07T08:11:17Z",
+      "updated_at": "2026-07-07T08:11:17Z"
+    },
+    "ST-33": {
+      "sub_task_id": "ST-33",
+      "job_id": "JOB-28",
+      "task_id": "TASK-20407",
+      "section": "db",
+      "sub_type": "microservice",
+      "service_key": "db:microservice:configuration",
+      "label": "Configuration",
+      "release_branch": "R-2026-06-W4",
+      "order": 2,
+      "status": "queued",
+      "agent": "db_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate SQL syntax (no DROP/TRUNCATE/DELETE without WHERE)",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s2",
+          "label": "Validate Liquibase changeset format",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s3",
+          "label": "Run Liquibase update",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s4",
+          "label": "Verify DB migration applied",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s5",
+          "label": "Run smoke test query",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        }
+      ],
+      "logs": [],
+      "jenkins_job": "liquibase-runner",
+      "jenkins_params": {
+        "Changelog": "db:microservice:configuration",
+        "Mode": "update"
+      },
+      "mock_build_number": 1285,
+      "created_at": "2026-07-07T08:11:17Z",
+      "updated_at": "2026-07-07T08:11:17Z"
+    },
+    "ST-34": {
+      "sub_task_id": "ST-34",
+      "job_id": "JOB-29",
+      "task_id": "TASK-20407",
+      "section": "build",
+      "sub_type": "portal",
+      "service_key": "build:portal:customercarev2",
+      "label": "Customercarev2",
+      "release_branch": "integ",
+      "order": 3,
+      "status": "queued",
+      "agent": "merge_build_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate MR is mergeable (GitSpace check)",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s2",
+          "label": "Merge !2963 into integ",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s3",
+          "label": "Trigger Jenkins job: Titan-Portals",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s4",
+          "label": "Waiting for Jenkins build #1343 to complete",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s5",
+          "label": "Poll portal URL for HTTP 200 every 5 min",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s6",
+          "label": "AI verification: Ollama reads Jenkins logs, confirms success",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        }
+      ],
+      "logs": [],
+      "jenkins_job": "Titan-Portals",
+      "jenkins_params": {
+        "Service": "Customercarev2",
+        "MergeID": "!2963",
+        "ReleaseBranch": "integ"
+      },
+      "mock_build_number": 1343,
+      "created_at": "2026-07-07T08:11:17Z",
+      "updated_at": "2026-07-07T08:11:17Z"
+    },
+    "ST-35": {
+      "sub_task_id": "ST-35",
+      "job_id": "JOB-30",
+      "task_id": "TASK-20408",
+      "section": "yaml",
+      "sub_type": "microservice",
+      "service_key": "yaml:microservice:account",
+      "label": "Account",
+      "release_branch": "fasdfdf",
+      "order": 1,
+      "status": "queued",
+      "agent": "yaml_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate YAML syntax (parse check)",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s2",
+          "label": "Validate config file against schema",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s3",
+          "label": "Trigger Jenkins job: yml_automation_2.0",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s4",
+          "label": "Waiting for Jenkins build #1371 to complete",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s5",
+          "label": "Verify config applied: GET https://config.titan.internal/yaml:microservice:account",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s6",
+          "label": "Mark config propagated",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        }
+      ],
+      "logs": [],
+      "jenkins_job": "yml_automation_2.0",
+      "jenkins_params": {
+        "ConfigFile": "Account",
+        "Environment": "auto"
+      },
+      "mock_build_number": 1371,
+      "created_at": "2026-07-07T09:27:13Z",
+      "updated_at": "2026-07-07T09:27:13Z"
+    },
+    "ST-36": {
+      "sub_task_id": "ST-36",
+      "job_id": "JOB-31",
+      "task_id": "TASK-20409",
+      "section": "db",
+      "sub_type": "microservice",
+      "service_key": "db:microservice:account",
+      "label": "Account",
+      "release_branch": "R-2026-06-W4",
+      "order": 1,
+      "status": "queued",
+      "agent": "db_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate SQL syntax (no DROP/TRUNCATE/DELETE without WHERE)",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s2",
+          "label": "Validate Liquibase changeset format",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s3",
+          "label": "Run Liquibase update",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s4",
+          "label": "Verify DB migration applied",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s5",
+          "label": "Run smoke test query",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        }
+      ],
+      "logs": [],
+      "jenkins_job": "liquibase-runner",
+      "jenkins_params": {
+        "Changelog": "db:microservice:account",
+        "Mode": "update"
+      },
+      "mock_build_number": 1334,
+      "created_at": "2026-07-07T10:06:21Z",
+      "updated_at": "2026-07-07T10:06:21Z"
+    },
+    "ST-37": {
+      "sub_task_id": "ST-37",
+      "job_id": "JOB-31",
+      "task_id": "TASK-20409",
+      "section": "db",
+      "sub_type": "microservice",
+      "service_key": "db:microservice:configuration",
+      "label": "Configuration",
+      "release_branch": "R-2026-06-W4",
+      "order": 2,
+      "status": "queued",
+      "agent": "db_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate SQL syntax (no DROP/TRUNCATE/DELETE without WHERE)",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s2",
+          "label": "Validate Liquibase changeset format",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s3",
+          "label": "Run Liquibase update",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s4",
+          "label": "Verify DB migration applied",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s5",
+          "label": "Run smoke test query",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        }
+      ],
+      "logs": [],
+      "jenkins_job": "liquibase-runner",
+      "jenkins_params": {
+        "Changelog": "db:microservice:configuration",
+        "Mode": "update"
+      },
+      "mock_build_number": 1285,
+      "created_at": "2026-07-07T10:06:21Z",
+      "updated_at": "2026-07-07T10:06:21Z"
+    },
+    "ST-38": {
+      "sub_task_id": "ST-38",
+      "job_id": "JOB-32",
+      "task_id": "TASK-20410",
+      "section": "db",
+      "sub_type": "microservice",
+      "service_key": "db:microservice:configuration",
+      "label": "Configuration",
+      "release_branch": "R-2026-06-W4",
+      "order": 1,
+      "status": "done",
+      "agent": "db_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate SQL syntax (no DROP/TRUNCATE/DELETE without WHERE)",
+          "status": "done",
+          "detail": "SQL syntax valid \u2014 no DROP/TRUNCATE/DELETE without WHERE detected",
+          "ts": "2026-07-07T14:29:41Z"
+        },
+        {
+          "step_id": "s2",
+          "label": "Validate Liquibase changeset format",
+          "status": "done",
+          "detail": "Liquibase changeset format valid \u2014 3 changesets found",
+          "ts": "2026-07-07T14:29:41Z"
+        },
+        {
+          "step_id": "s3",
+          "label": "Run Liquibase update",
+          "status": "done",
+          "detail": "Liquibase update: 3/3 changesets applied successfully",
+          "ts": "2026-07-07T14:29:44Z"
+        },
+        {
+          "step_id": "s4",
+          "label": "Verify DB migration applied",
+          "status": "done",
+          "detail": "DB migration verified \u2014 schema matches expected state",
+          "ts": "2026-07-07T14:29:44Z"
+        },
+        {
+          "step_id": "s5",
+          "label": "Run smoke test query",
+          "status": "done",
+          "detail": "Smoke query returned expected result set",
+          "ts": "2026-07-07T14:29:47Z"
+        }
+      ],
+      "logs": [
+        "[2026-07-07T14:29:37Z] Orchestrator dispatched to db_agent",
+        "[2026-07-07T14:29:41Z] SQL syntax valid \u2014 no DROP/TRUNCATE/DELETE without WHERE detected",
+        "[2026-07-07T14:29:41Z] Liquibase changeset format valid \u2014 3 changesets found",
+        "[2026-07-07T14:29:44Z] Liquibase update: 3/3 changesets applied successfully",
+        "[2026-07-07T14:29:44Z] DB migration verified \u2014 schema matches expected state",
+        "[2026-07-07T14:29:47Z] Sub-task complete"
+      ],
+      "jenkins_job": "liquibase-runner",
+      "jenkins_params": {
+        "Changelog": "db:microservice:configuration",
+        "Mode": "update"
+      },
+      "mock_build_number": 1285,
+      "created_at": "2026-07-07T14:24:08Z",
+      "updated_at": "2026-07-07T14:29:47Z"
+    },
+    "ST-39": {
+      "sub_task_id": "ST-39",
+      "job_id": "JOB-33",
+      "task_id": "TASK-20411",
+      "section": "build",
+      "sub_type": "portal",
+      "service_key": "build:portal:ecommerce",
+      "label": "Ecommerce",
+      "release_branch": "integ",
+      "order": 1,
+      "status": "queued",
+      "agent": "merge_build_agent",
+      "steps": [
+        {
+          "step_id": "s1",
+          "label": "Validate MR is mergeable (GitSpace check)",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s2",
+          "label": "Merge !2846 into integ",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s3",
+          "label": "Trigger Jenkins job: Titan-Portals",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s4",
+          "label": "Waiting for Jenkins build #1326 to complete",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s5",
+          "label": "Poll portal URL for HTTP 200 every 5 min",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        },
+        {
+          "step_id": "s6",
+          "label": "AI verification: Ollama reads Jenkins logs, confirms success",
+          "status": "queued",
+          "detail": null,
+          "ts": null
+        }
+      ],
+      "logs": [],
+      "jenkins_job": "Titan-Portals",
+      "jenkins_params": {
+        "Service": "Ecommerce",
+        "MergeID": "!2846",
+        "ReleaseBranch": "integ"
+      },
+      "mock_build_number": 1326,
+      "created_at": "2026-07-07T14:32:00Z",
+      "updated_at": "2026-07-07T14:32:00Z"
     }
   },
   "counters": {
-    "task": 20397,
-    "job": 13,
-    "sub_task": 15
+    "task": 20411,
+    "job": 33,
+    "sub_task": 39
   }
 }

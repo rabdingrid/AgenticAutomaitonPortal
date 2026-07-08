@@ -1,0 +1,16 @@
+{
+  "_doc": "Maps catalog service_key → GitSpace repo path for build/MR branch checks. Add one row per dropdown option that needs a non-obvious repo name. Keys match catalog (section:type:slug), e.g. build:microservice:account.",
+  "repos": {
+    "build:microservice:account": "Titan/AccountService",
+    "build:microservice:address": "Titan/AddressService",
+    "build:microservice:reporttitan": "Titan/ReportingService",
+    "build:microservice:tdmreports": "Titan/DataMartReportingService",
+    "build:microservice:customercarev2": "Titan/customer-service-v2",
+    "build:microservice:customerservicev2": "Titan/customer-service-v2",
+    "build:microservice:customer-service-v2": "Titan/customer-service-v2",
+    "yaml:microservice:customerservicev2": "Titan/customer-service-v2",
+    "build:portal:customercarev2": "ForeverLiving/Customer-Service-Portal",
+    "build:portal:customercare": "Titan/Customer-care",
+    "build:portal:ecommerce": "ForeverLiving/titan-ecommerce"
+  }
+}

@@ -78,8 +78,10 @@ def get_approver(key: str) -> dict[str, Any] | None:
 
 
 # Service catalog is section-aware: each section has its own service lists per
-# sub-type. Edit these names to update the dropdowns — keys/paths are derived.
-_SECTION_SERVICE_NAMES: dict[str, dict[str, list[str]]] = {
+# sub-type. This is the fixed portal catalog (dropdown options). Validation
+# checks whether the selected services have YML/DB/Phrases on the release branch.
+# Edit config/catalog_services.json to add/remove services — not per release.
+_DEFAULT_SECTION_SERVICE_NAMES: dict[str, dict[str, list[str]]] = {
     "build": {
         "microservice": [
             "Account", "Address", "Auditlog", "Dataintegration", "Communication",
@@ -128,6 +130,15 @@ _SECTION_SERVICE_NAMES: dict[str, dict[str, list[str]]] = {
 }
 
 
+def _load_section_service_names() -> dict[str, dict[str, list[str]]]:
+    """Load catalog from config/catalog_services.json; seed from defaults if missing."""
+    return _load_json("catalog_services.json", default=_DEFAULT_SECTION_SERVICE_NAMES)
+
+
+def section_service_names() -> dict[str, dict[str, list[str]]]:
+    return _load_section_service_names()
+
+
 def _slug(name: str) -> str:
     return name.strip().lower().replace(" ", "-")
 
@@ -144,13 +155,14 @@ def _mk_service(section: str, stype: str, name: str) -> dict[str, Any]:
 
 def load_section_services(section: str) -> dict[str, list[dict[str, Any]]]:
     """Returns {sub_type: [services]} for one section."""
-    names = _SECTION_SERVICE_NAMES.get(section, {})
+    names = _load_section_service_names().get(section, {})
     return {stype: [_mk_service(section, stype, n) for n in lst] for stype, lst in names.items()}
 
 
 def load_services(section: str | None = None, type: str | None = None) -> list[dict[str, Any]]:
     """Flat list, optionally filtered by section and/or type."""
-    sections = [section] if section else list(_SECTION_SERVICE_NAMES.keys())
+    all_sections = _load_section_service_names()
+    sections = [section] if section else list(all_sections.keys())
     out: list[dict[str, Any]] = []
     for sec in sections:
         for stype, items in load_section_services(sec).items():

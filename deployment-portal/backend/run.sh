@@ -14,7 +14,14 @@ if [[ ! -d .venv ]]; then
 fi
 
 PORT="${PORT:-9002}"
-# Use any installed Ollama model; override with OLLAMA_MODEL if you prefer another.
-export OLLAMA_MODEL="${OLLAMA_MODEL:-llama3:latest}"
+# Load .env if present (Graph mail, GitSpace token, etc.)
+if [[ -f .env ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source .env
+  set +a
+fi
+# Default model only when not set in .env (avoid overriding qwen2.5-coder:7b).
+export OLLAMA_MODEL="${OLLAMA_MODEL:-qwen2.5-coder:7b}"
 
 exec .venv/bin/uvicorn main:app --reload --host 0.0.0.0 --port "$PORT"

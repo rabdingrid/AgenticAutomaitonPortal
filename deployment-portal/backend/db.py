@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import json
 import threading
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Literal
 
@@ -155,6 +155,23 @@ ApprovalRole = Literal["dev_lead", "qa", "devops"]
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+_PERIOD_DAYS: dict[str, int] = {"daily": 1, "weekly": 7, "monthly": 30}
+
+
+def _parse_ts(ts: str) -> datetime:
+    return datetime.fromisoformat(ts.replace("Z", "+00:00"))
+
+
+def _task_within_period(task: dict[str, Any], period: str | None) -> bool:
+    if not period:
+        return True
+    days = _PERIOD_DAYS.get(period)
+    if days is None:
+        return True
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    return _parse_ts(task["created_at"]) >= cutoff
 
 
 def _read() -> dict[str, Any]:
@@ -645,9 +662,12 @@ def list_tasks(
     status: str | None = None,
     requested_by: str | None = None,
     limit: int | None = None,
+    period: str | None = None,
 ) -> list[dict[str, Any]]:
     db = _read()
     tasks = list(db["tasks"].values())
+    if period:
+        tasks = [t for t in tasks if _task_within_period(t, period)]
     if status:
         tasks = [t for t in tasks if t["status"] == status]
     if requested_by:
@@ -694,6 +714,24 @@ def set_validation_report(task_id: str, report: dict[str, Any]) -> dict[str, Any
         task["updated_at"] = _now()
         _write(db)
         return _expand_task(db, task_id)
+
+
+def recover_stuck_validation_status() -> int:
+    """After a server reload, in-flight validation threads die but status stays `running`.
+
+    If a report already exists, mark ready so the UI can show it. Returns count fixed.
+    """
+    with _LOCK:
+        db = _read()
+        fixed = 0
+        for task in db["tasks"].values():
+            if task.get("validation_status") == "running" and task.get("validation_report"):
+                task["validation_status"] = "ready"
+                task["updated_at"] = _now()
+                fixed += 1
+        if fixed:
+            _write(db)
+        return fixed
 
 
 def get_job(job_id: str) -> dict[str, Any] | None:
@@ -765,7 +803,7 @@ def _default_steps(section: str, queued: bool = False) -> list[dict[str, Any]]:
 
 def get_stats(period: str = "weekly") -> dict[str, Any]:
     db = _read()
-    tasks = list(db["tasks"].values())
+    tasks = [t for t in db["tasks"].values() if _task_within_period(t, period)]
     total = len(tasks)
     resolved = sum(1 for t in tasks if t["status"] == "done")
     pending = sum(1 for t in tasks if t["status"] == "pending_approval")
@@ -782,8 +820,8 @@ def get_stats(period: str = "weekly") -> dict[str, Any]:
     }
 
 
-def get_recent_activity(limit: int = 6) -> list[dict[str, Any]]:
-    tasks = list_tasks(limit=limit)
+def get_recent_activity(limit: int = 6, period: str | None = None) -> list[dict[str, Any]]:
+    tasks = list_tasks(limit=limit, period=period)
     out = []
     for t in tasks:
         out.append({

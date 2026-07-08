@@ -8,16 +8,26 @@ Run:
 
 from __future__ import annotations
 
+import os
 import threading
+from pathlib import Path
 from typing import Any, Literal
+
+from dotenv import load_dotenv
+
+# Load deployment-portal/backend/.env before any module reads os.getenv(...)
+load_dotenv(Path(__file__).resolve().parent / ".env")
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, Field
 
+import ai_client
 import catalog
 import db
+import graph_mail
 import mock_executor
 import mock_gitlab
 import notifications
@@ -31,12 +41,41 @@ from auth import (
 
 app = FastAPI(title="Deployment Portal API", version="0.3.0")
 
+
+def _validation_use_ai() -> bool:
+    """AI review is optional; off by default until Ollama/VPN is stable."""
+    return os.getenv("VALIDATION_USE_AI", "").lower() in ("1", "true", "yes")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+def _warm_up_ai() -> None:
+    """Load the Ollama model in the background so the first validation is fast
+    and the AI is reliably ready. Never blocks startup or raises."""
+    if _validation_use_ai():
+        if ai_client.is_available():
+            print(f"[ai] Ollama ready — model {ai_client.active_model()}")
+            threading.Thread(target=ai_client.warm_up, daemon=True).start()
+        else:
+            print("[ai] VALIDATION_USE_AI=true but Ollama unreachable at "
+                  f"{os.getenv('OLLAMA_BASE_URL', 'http://localhost:11434')} — "
+                  "validation will use deterministic fallback")
+    else:
+        print("[ai] VALIDATION_USE_AI not enabled — deterministic reports only "
+              "(set VALIDATION_USE_AI=true in .env)")
+    n = db.recover_stuck_validation_status()
+    if n:
+        print(f"[validation] recovered {n} task(s) stuck in 'running' (interrupted by reload)")
+    if graph_mail.is_configured():
+        print("[mail] Microsoft Graph enabled — delegated OAuth (/me/sendMail)")
+    else:
+        print("[mail] Microsoft Graph NOT configured — run scripts/graph_oauth_login.py or emails log to notifications.log")
 
 SectionKey = Literal["build", "yaml", "db", "phrases"]
 SubType = Literal["microservice", "portal", "utility"]
@@ -296,9 +335,10 @@ def create_task(
 def list_tasks(
     status: str | None = None,
     requested_by: str | None = None,
+    period: Literal["daily", "weekly", "monthly"] | None = None,
     current_user: dict = Depends(get_current_user),
 ) -> list[dict[str, Any]]:
-    return [_decorate(t) for t in db.list_tasks(status=status, requested_by=requested_by)]
+    return [_decorate(t) for t in db.list_tasks(status=status, requested_by=requested_by, period=period)]
 
 
 @app.get("/tasks/{task_id}")
@@ -345,6 +385,53 @@ def approve_task(
     return _decorate(task)
 
 
+def _mail_result_page(title: str, message: str, *, ok: bool = True) -> HTMLResponse:
+    color = "#107c10" if ok else "#a4262c"
+    return HTMLResponse(f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>{title}</title></head>
+<body style="font-family:Segoe UI,Arial,sans-serif;max-width:520px;margin:48px auto;padding:24px;">
+  <h2 style="color:{color};">{title}</h2>
+  <p>{message}</p>
+  <p><a href="{os.getenv('PORTAL_BASE_URL', 'http://localhost:5173').rstrip('/')}/history">Open deployment portal</a></p>
+</body></html>""")
+
+
+@app.get("/mail/approve", response_class=HTMLResponse)
+def mail_approve(token: str) -> HTMLResponse:
+    """One-click approve from the email link (signed token, no login required)."""
+    try:
+        data = notifications.verify_mail_action_token(token)
+    except ValueError as e:
+        return _mail_result_page("Approval failed", str(e), ok=False)
+
+    if data.get("action") != "approve":
+        return _mail_result_page("Approval failed", "Invalid action.", ok=False)
+
+    task_id = data["task_id"]
+    task = db.get_task(task_id)
+    if not task:
+        return _mail_result_page("Approval failed", f"Task {task_id} not found.", ok=False)
+
+    approver = catalog.get_approver(task.get("approver_key", ""))
+    if not approver or approver.get("email", "").lower() != str(data.get("email", "")).lower():
+        return _mail_result_page("Approval failed", "This link is not valid for this request.", ok=False)
+
+    role = data.get("role", "dev_lead")
+    try:
+        task = db.apply_approval_decision(
+            task_id, role, "approved", approver.get("name", "Dev Lead"), None,
+        )
+    except db.ApprovalError as e:
+        return _mail_result_page("Approval failed", str(e), ok=False)
+
+    notifications.notify_approved_stage(task, role, task.get("current_stage"))
+    return _mail_result_page(
+        "Approved",
+        f"Request <strong>{task.get('jira_id', '')}</strong> ({task_id}) was approved. "
+        f"The orchestrator will proceed when all required approvals are complete.",
+    )
+
+
 def _sections_from_task(task: dict[str, Any]) -> list[dict[str, Any]]:
     """Reconstruct the validation sections payload from a stored task's jobs."""
     sections = []
@@ -375,13 +462,16 @@ def revalidate_task(
 @app.post("/validate/preview")
 def validate_preview(
     payload: ValidateRequest,
-    use_ai: bool = True,
+    use_ai: bool | None = None,
     current_user: dict = Depends(get_current_user),
 ) -> dict[str, Any]:
     """Synchronous deep validation that does NOT need a saved task — used by the
     request form's "deep validate" and by scripts/run_validation.py."""
     sections = [s.model_dump() for s in payload.sections]
-    return validation.run_validation(payload.environment, payload.jira_id, sections, use_ai=use_ai)
+    return validation.run_validation(
+        payload.environment, payload.jira_id, sections,
+        use_ai=_validation_use_ai() if use_ai is None else use_ai,
+    )
 
 
 @app.post("/webhooks/gitspace")
@@ -489,9 +579,10 @@ def get_stats(
 @app.get("/activity")
 def get_activity(
     limit: int = 6,
+    period: Literal["daily", "weekly", "monthly"] | None = None,
     current_user: dict = Depends(get_current_user),
 ) -> list[dict[str, Any]]:
-    return db.get_recent_activity(limit=limit)
+    return db.get_recent_activity(limit=limit, period=period)
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -501,7 +592,9 @@ def get_activity(
 def _run_validation_bg(task_id: str, environment: str, jira_id: str, sections_payload: list[dict[str, Any]]) -> None:
     db.set_validation_status(task_id, "running")
     try:
-        report = validation.run_validation(environment, jira_id, sections_payload, use_ai=True)
+        report = validation.run_validation(
+            environment, jira_id, sections_payload, use_ai=_validation_use_ai(),
+        )
         db.set_validation_report(task_id, report)
     except Exception as e:  # never let a validation crash strand the task
         db.set_validation_report(task_id, {
@@ -516,6 +609,11 @@ def _run_validation_bg(task_id: str, environment: str, jira_id: str, sections_pa
             "ai_model": "",
             "summary_markdown": f"## Verdict — BLOCKED\nValidation could not run: `{e}`",
         })
+    finally:
+        # Belt-and-suspenders: if report write failed, never leave status as running.
+        task = db.get_task(task_id)
+        if task and task.get("validation_status") == "running":
+            db.set_validation_status(task_id, "ready")
 
 
 def _kick_off_validation(task_id: str, environment: str, jira_id: str, sections_payload: list[dict[str, Any]]) -> None:

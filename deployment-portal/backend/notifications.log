@@ -295,3 +295,75 @@ Environment: INTEG
 Description: 
 Please review and approve/reject.
 ------------------------------------------------------------
+[2026-07-02T20:25:32+00:00] TO: a.sharma@company.com
+SUBJECT: Approval needed: dsaffas (TASK-20398)
+Environment: UAT
+Description: asdfdsfasd
+Please review and approve/reject.
+------------------------------------------------------------
+[2026-07-03T09:24:33+00:00] TO: a.sharma@company.com
+SUBJECT: Approval needed: dfsaf (TASK-20399)
+Environment: INTEG
+Description: 
+Please review and approve/reject.
+------------------------------------------------------------
+[2026-07-05T07:23:21+00:00] TO: devops@company.com
+SUBJECT: Approval needed: dfsaf (TASK-20399)
+dev_lead has approved. Your approval is now required.
+------------------------------------------------------------
+[2026-07-05T07:28:05+00:00] TO: requester@company.com
+SUBJECT: Request approved and running: dfsaf
+All approvals complete. Orchestrator has started.
+------------------------------------------------------------
+[2026-07-05T07:52:36+00:00] TO: a.sharma@company.com
+CC: shukumar@nextsphere.com
+SUBJECT: Approval needed: asdfa (TASK-20400)
+Request ID: TASK-20400
+Jira: asdfa
+Environment: INTEG
+Requested by: Devops Admin
+Build branch 1: Feature-TRB-18109 → integ
+  • build: Address (Feature-TRB-18109 → integ)
+
+Approve: http://localhost:9002/mail/approve?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0YXNrX2lkIjoiVEFTSy0yMDQwMCIsImFjdGlvbiI6ImFwcHJvdmUiLCJlbWFpbCI6ImEuc2hhcm1hQGNvbXBhbnkuY29tIiwicm9sZSI6ImRldl9sZWFkIiwiZXhwIjoxNzgzNDk3MTU2fQ.7MkjD1sywmN50GKzH7RJ442j1KEMpFAuFYxis26lc_w
+Portal: http://localhost:5173/tasks/TASK-20400
+------------------------------------------------------------
+[2026-07-05T07:57:19+00:00] TO: shukumar@nextsphere.com
+SUBJECT: Approval needed: Email testing (TASK-20401)
+Request ID: TASK-20401
+Jira: Email testing
+Environment: INTEG
+Requested by: Devops Admin
+Build branch 1: Feature-TRB-18109 → integ
+  • build: Address (Feature-TRB-18109 → integ)
+
+Approve: http://localhost:9002/mail/approve?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0YXNrX2lkIjoiVEFTSy0yMDQwMSIsImFjdGlvbiI6ImFwcHJvdmUiLCJlbWFpbCI6InNodWt1bWFyQG5leHRzcGhlcmUuY29tIiwicm9sZSI6ImRldl9sZWFkIiwiZXhwIjoxNzgzNDk3NDM5fQ.PM7VjN2f79105qGsqolMNIZSpWugbb4nxQpx4HJZCNA
+Portal: http://localhost:5173/tasks/TASK-20401
+------------------------------------------------------------
+[2026-07-05T20:31:30+00:00] TO: a.sharma@company.com
+SUBJECT: Approval needed: gsdfg (TASK-20402)
+Request ID: TASK-20402
+Jira: gsdfg
+Environment: INTEG
+Requested by: Devops Admin
+Build branch 1: feature-parent-bom → integ
+Build branch 2: Feature-TRB-18109 → integ
+  • build: Customercarev2 (feature-parent-bom → integ)
+  • build: Address (Feature-TRB-18109 → integ)
+
+Approve: http://localhost:9002/mail/approve?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0YXNrX2lkIjoiVEFTSy0yMDQwMiIsImFjdGlvbiI6ImFwcHJvdmUiLCJlbWFpbCI6ImEuc2hhcm1hQGNvbXBhbnkuY29tIiwicm9sZSI6ImRldl9sZWFkIiwiZXhwIjoxNzgzNTQyNjg5fQ.anEf8tH_79kBKzAC4EmfDohB6VMyQ1Vp8-m2lvjMVgw
+Portal: http://localhost:5173/tasks/TASK-20402
+------------------------------------------------------------
+[2026-07-06T08:54:52+00:00] TO: shukumar@nextsphere.com
+CC: msreddy@nextsphere.com
+SUBJECT: Approval needed: email verification (TASK-20403)
+Request ID: TASK-20403
+Jira: email verification
+Environment: INTEG
+Requested by: Devops Admin
+Build branch 1: Feature-TRB-18109 → integ
+  • build: Address (Feature-TRB-18109 → integ)
+
+Approve: http://localhost:9002/mail/approve?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0YXNrX2lkIjoiVEFTSy0yMDQwMyIsImFjdGlvbiI6ImFwcHJvdmUiLCJlbWFpbCI6InNodWt1bWFyQG5leHRzcGhlcmUuY29tIiwicm9sZSI6ImRldl9sZWFkIiwiZXhwIjoxNzgzNTg3MjkyfQ.SwbWjkg0iuZF3eEvnv1Qidb3TXslPDvW4xOeFXfLEgc
+Portal: http://localhost:5173/tasks/TASK-20403
+------------------------------------------------------------

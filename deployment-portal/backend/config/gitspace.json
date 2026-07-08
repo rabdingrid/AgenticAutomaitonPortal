@@ -6,14 +6,29 @@
     "blob": "{base}/{project}/-/blob/{ref}/{path}?ref_type=heads",
     "merge_request": "{base}/{project}/-/merge_requests/{iid}",
     "merge_requests_index": "{base}/{project}/-/merge_requests",
-    "compare": "{base}/{project}/-/compare/{from}...{to}?from_project_id=&straight=false",
+    "compare": "{base}/{project}/-/compare/{target}...{source}?from_project_id=&straight=false",
     "tree": "{base}/{project}/-/tree/{ref}?ref_type=heads",
     "new_merge_request": "{base}/{project}/-/merge_requests/new?merge_request%5Bsource_branch%5D={from}&merge_request%5Btarget_branch%5D={to}"
   },
+  "category_by_type": {
+    "microservice": "Microservices",
+    "portal": "Portals",
+    "utility": "Utilities"
+  },
   "section_file_paths": {
-    "phrases": "Portals/{service}/{release}/Phrases/Phrases.json",
-    "yaml": "{service}/{release}/parameters.yml",
-    "db": "{service}/{release}/changelog.sql"
+    "yaml": "{category}/{service}/{release}/YML/parameters.yml",
+    "db": "{category}/{service}/{release}/DB/Common.sql",
+    "phrases": "{category}/{service}/{release}/Phrases/Phrases.json"
+  },
+  "section_dirs": {
+    "yaml": "{category}/{service}/{release}/YML",
+    "db": "{category}/{service}/{release}/DB",
+    "phrases": "{category}/{service}/{release}/Phrases"
+  },
+  "section_file_ext": {
+    "yaml": [".yml", ".yaml"],
+    "db": [".sql"],
+    "phrases": [".json"]
   },
   "section_repo": {
     "phrases": "release_repo",
@@ -21,10 +36,6 @@
     "db": "release_repo",
     "build": "service_repo"
   },
-  "service_path_overrides": {
-    "build:portal:customercarev2": "Titan/CustomerCarePortalV2",
-    "build:microservice:reporttitan": "Titan/ReportingService",
-    "build:microservice:tdmreports": "Titan/DataMartReportingService",
-    "build:portal:customercare": "ForeverLiving/Customer-Service-Portal"
-  }
+  "microservice_repo_suffix": "Service",
+  "service_path_overrides": {}
 }

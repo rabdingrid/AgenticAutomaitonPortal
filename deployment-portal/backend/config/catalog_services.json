@@ -1,0 +1,127 @@
+{
+  "build": {
+    "microservice": [
+      "Account",
+      "Address",
+      "Auditlog",
+      "Dataintegration",
+      "Communication",
+      "Customercare",
+      "CustomLinkGenerator",
+      "Configuration",
+      "Content",
+      "ManageAccount",
+      "Order",
+      "Productcatalog",
+      "TDMReports",
+      "Payment",
+      "Shipping",
+      "Scheduler",
+      "Tax",
+      "BatchProcessing",
+      "ReportTitan",
+      "Customercarev2",
+      "IdGenService",
+      "Sftpsync",
+      "Enrollment",
+      "FLP360"
+    ],
+    "portal": [
+      "Account",
+      "Admin",
+      "Customercare",
+      "Corporate",
+      "Customercarev2",
+      "Ecommerce",
+      "FLP360PWA",
+      "Join",
+      "Reports",
+      "Shop"
+    ],
+    "utility": [
+      "AccountCoreUtils",
+      "FLP360Utils",
+      "KafkaContract",
+      "PortalUtils",
+      "TitanUtils",
+      "NextiveoUtility"
+    ]
+  },
+  "yaml": {
+    "microservice": [
+      "Account",
+      "Address",
+      "Auditlog",
+      "BatchProcessing",
+      "Dataintegration",
+      "Communication",
+      "Customercare",
+      "CustomLinkGeneratorService",
+      "Configuration",
+      "Content",
+      "ManageAccount",
+      "Order",
+      "Productcatalog",
+      "Reportingtitan",
+      "Payment",
+      "Shipping",
+      "Scheduler",
+      "Tax",
+      "CustomerServiceV2",
+      "TDMReports",
+      "IdGenService",
+      "Sftpsync",
+      "Enrollment",
+      "flp360"
+    ],
+    "portal": [
+      "Admin",
+      "Customercare",
+      "Customercarev2",
+      "Ecommerce",
+      "FLP360PWA"
+    ]
+  },
+  "db": {
+    "microservice": [
+      "Account",
+      "Address",
+      "Auditlog",
+      "BatchProcessing",
+      "Dataintegration",
+      "Communication",
+      "Customercare",
+      "CustomLinkGeneratorService",
+      "Configuration",
+      "Content",
+      "Order",
+      "Product",
+      "ReportTitan",
+      "Payment",
+      "Shipping",
+      "Scheduler",
+      "Tax",
+      "Customercarev2",
+      "IdGenService",
+      "Sftpsync",
+      "Enrollment",
+      "flp360"
+    ]
+  },
+  "phrases": {
+    "portal": [
+      "Account",
+      "Admin",
+      "Corporate",
+      "Customercare",
+      "CustomerCarePortalV2",
+      "Titan-Ecommerce",
+      "Join",
+      "Reports",
+      "Shop",
+      "SSO",
+      "flp360pwa",
+      "CMS"
+    ]
+  }
+}
