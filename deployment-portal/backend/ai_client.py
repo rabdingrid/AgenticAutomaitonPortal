@@ -19,6 +19,8 @@ from __future__ import annotations
 import json
 import os
 import re
+import time
+from dataclasses import dataclass
 from typing import Any
 
 import httpx
@@ -333,11 +335,285 @@ def review_db_changelog(
     }
 
 
-_DB_EXPLAIN_SYSTEM = (
-    "You are a Liquibase/MySQL SQL reviewer. Given deterministic syntax errors with "
-    "source snippets, write one short fix sentence per changeset. Be specific (mention "
-    "line, typo, or missing semicolon). Respond ONLY with JSON."
+_DB_SQL_REVIEW_SYSTEM = (
+    "You are an expert MySQL SQL syntax reviewer for Liquibase migration scripts.\n"
+    "You receive one or more Approved changesets, each shown as numbered SQL lines and\n"
+    "delimited by a `### Changeset author:id` header.\n\n"
+    "IGNORE (never report as errors):\n"
+    "- `--liquibase formatted sql` and `-- Changeset author:id labels:...` header lines\n"
+    "- Block/line comments starting with `--` (author notes, jira refs, dates, commented-out SQL)\n"
+    "- Business logic / data correctness\n\n"
+    "DO report EVERY real syntax error in executable (non-comment) SQL:\n"
+    "- Misspelled keywords: SELEC→SELECT, ISERT/INSET→INSERT, WHRE→WHERE, ELECT→SELECT\n"
+    "- Missing `=` in predicates: `Key` 'value' must be `Key` = 'value'\n"
+    "- Missing comma between column names: (`ColA` `ColB`) must be (`ColA`, `ColB`)\n"
+    "- Unbalanced parentheses, broken quotes, missing semicolons, invalid INSERT…SELECT shape\n\n"
+    "Critical rules:\n"
+    "- Review EVERY changeset independently. Do not stop after the first one.\n"
+    "- Report each changeset that has an error; omit changesets that are fully valid.\n"
+    "- If INSERT/UPDATE/SELECT/DELETE statements appear, the changeset is NOT empty\n"
+    "- Never say 'empty changeset' when SQL statements are present\n"
+    "- Never suggest removing `--` comment lines\n"
+    "- Use the exact line number prefix from each changeset's snippet (e.g. `18:` → line 18)\n"
+    "- message: one concise error description\n"
+    "- hint: one specific fix sentence (what to add/change) — do NOT paste the whole SQL line\n"
+    "- If all changesets are valid, return {\"findings\":{}}\n"
+    "Respond ONLY with JSON."
 )
+
+
+def db_sql_review_enabled() -> bool:
+    """Ollama SQL syntax review for Approved Liquibase changesets (default on with AI)."""
+    return os.getenv("VALIDATION_DB_SQL_AI", "true").lower() in ("1", "true", "yes")
+
+
+def db_typo_ai_enabled() -> bool:
+    """Backward-compatible alias for ``db_sql_review_enabled``."""
+    return db_sql_review_enabled()
+
+
+def _line_from_snippet(snippet: str, line_no: int) -> str:
+    """Extract one source line from a numbered snippet."""
+    prefix = f"{line_no}:"
+    for row in (snippet or "").splitlines():
+        if row.strip().startswith(prefix):
+            return row.split(":", 1)[-1].strip()
+    return ""
+
+
+def _deterministic_hint_from_message(message: str, line: int = 0) -> str:
+    """Build a fix hint from a typo-style or missing-operator message."""
+    m = re.match(r"typo `([^`]+)` — did you mean `([^`]+)`\?", message.strip())
+    if m:
+        return f"Change `{m.group(1)}` to `{m.group(2)}`."
+    if "missing" in message.lower() and "=" in message.lower():
+        return "Add `=` between the column name and the string literal."
+    return ""
+
+
+def _polish_sql_finding(item: dict[str, Any], *, snippet: str = "") -> dict[str, Any]:
+    """Normalize Ollama message/hint for the UI (clarity, no SQL dumps, no line prefixes)."""
+    line = int(item.get("line") or 0)
+    msg = str(item.get("message") or "").strip()
+    hint = str(item.get("hint") or "").strip()
+    wrong = str(item.get("wrong") or "").strip()
+    correct = str(item.get("correct") or "").strip()
+
+    low_msg = msg.lower()
+    if wrong and correct and "typo" not in low_msg:
+        msg = f"typo `{wrong}` — did you mean `{correct}`?"
+
+    src_line = _line_from_snippet(snippet, line) if line else ""
+
+    if hint and re.match(r"^\d+:\s*(INSERT|UPDATE|SELECT|DELETE)\b", hint, re.I):
+        hint = ""
+
+    if ("missing" in low_msg and "=" in low_msg) or re.search(r"`Key`\s+'", src_line):
+        if not msg or "missing" in low_msg:
+            msg = (
+                f"Missing `=` operator in `{src_line}`"
+                if src_line else "Missing `=` operator in WHERE predicate"
+            )
+        if not hint or len(hint) < 24:
+            hint = "Add `=` between `Key` and the string literal."
+
+    if "misspelled" in low_msg or "typo" in low_msg or "keyword" in low_msg:
+        if not (wrong and correct):
+            m = (
+                re.search(r"'(\w+)'\s+instead of\s+'(\w+)'", msg, re.I)
+                or re.search(r"change\s+['\"`]?(\w+)['\"`]?\s+to\s+['\"`]?(\w+)['\"`]?", hint, re.I)
+            )
+            if m:
+                wrong, correct = m.group(1), m.group(2)
+        if wrong and correct:
+            # Name the keyword in both the message and the hint (backticks, not quotes).
+            if "`" not in msg:
+                msg = f"Misspelled keyword `{wrong}` — did you mean `{correct}`?"
+            hint = f"Change `{wrong}` to `{correct}`."
+
+    if "comma" in low_msg and not hint:
+        hint = "Add a missing comma between column names."
+
+    if not hint:
+        hint = _deterministic_hint_from_message(msg, line)
+
+    # Strip any "on/near line N" the model may have added — header shows location.
+    hint = re.sub(r"\s+(?:on|near)\s+line\s+\d+\.?\s*$", "", hint, flags=re.I).rstrip(".")
+    if hint and hint[0].islower():
+        hint = hint[0].upper() + hint[1:]
+    if hint and not hint.endswith("."):
+        hint += "."
+
+    item["line"] = line
+    item["message"] = msg
+    item["hint"] = hint
+    return item
+
+
+def _parse_sql_review_findings(
+    data: Any,
+    *,
+    snippet: str = "",
+    snippet_by_cs: dict[str, str] | None = None,
+) -> dict[str, list[dict[str, Any]]]:
+    """Normalize Ollama JSON into changeset → list of {line, message, hint}.
+
+    ``snippet_by_cs`` supplies the numbered SQL per changeset for batched reviews so
+    each finding is polished against its own source line; ``snippet`` is the
+    single-changeset fallback.
+    """
+    raw = data.get("findings") if isinstance(data, dict) else data
+    if not isinstance(raw, dict):
+        return {}
+
+    out: dict[str, list[dict[str, Any]]] = {}
+    for cs_key, item in raw.items():
+        if not cs_key:
+            continue
+        cs_snippet = (snippet_by_cs or {}).get(str(cs_key), snippet)
+        rows: list[Any] = item if isinstance(item, list) else ([item] if isinstance(item, dict) else [])
+        parsed: list[dict[str, Any]] = []
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            wrong = str(row.get("wrong") or "").strip()
+            correct = str(row.get("correct") or "").strip()
+            msg = str(row.get("message") or "").strip()
+            if not msg and wrong and correct:
+                msg = f"typo `{wrong}` — did you mean `{correct}`?"
+            if not msg:
+                continue
+            # Contexts only ever contain changesets with executable SQL, so any
+            # "empty changeset/statement" finding is a hallucination — drop it.
+            if re.search(r"\bempty\b.*\b(change ?set|statement)\b", msg, re.I):
+                continue
+            line = int(row.get("line") or 0)
+            hint = str(row.get("hint") or "").strip()
+            parsed.append(_polish_sql_finding(
+                {"line": line, "message": msg, "hint": hint, "wrong": wrong, "correct": correct},
+                snippet=cs_snippet,
+            ))
+        if parsed:
+            out[str(cs_key)] = parsed
+    return out
+
+
+def _review_one_changeset(
+    label: str,
+    ctx: dict[str, Any],
+    *,
+    environment: str,
+    dialect: str,
+    predict: int,
+) -> list[dict[str, Any]] | None:
+    prompt = (
+        f"Service: {label}\n"
+        f"Changeset: {ctx['changeset']}\n"
+        f"File: {ctx.get('file', '')}\n"
+        f"Environment: {environment}  |  Dialect: {dialect}\n\n"
+        "Numbered SQL (use these line numbers in your response):\n"
+        f"{(ctx.get('sql_snippet') or '').strip()}\n\n"
+        "Report EVERY real syntax error in executable SQL (typos, missing commas, "
+        "missing semicolons, bad quotes). Do NOT stop after the first error.\n"
+        "If the SQL is fully valid, return empty findings.\n"
+        'JSON: {"findings":{"'
+        + str(ctx["changeset"]).replace('"', '\\"')
+        + '":[{"line":N,"message":"...","hint":"..."},...]}}  or {"findings":{}} if valid.'
+    )
+    raw = _generate(prompt, system=_DB_SQL_REVIEW_SYSTEM, fmt_json=True, num_predict=predict)
+    if not raw:
+        return None
+    try:
+        parsed = _parse_sql_review_findings(json.loads(raw), snippet=ctx.get("sql_snippet") or "")
+        cs = ctx["changeset"]
+        if cs in parsed:
+            return parsed[cs]
+        for items in parsed.values():
+            if items:
+                return items
+        return []
+    except json.JSONDecodeError:
+        return None
+
+
+def review_one_db_changeset(
+    label: str,
+    ctx: dict[str, Any],
+    *,
+    environment: str = "INTEG",
+    dialect: str = "mysql",
+) -> list[dict[str, Any]] | None:
+    """Review a single changeset (used for safety re-review)."""
+    predict = int(os.getenv("VALIDATION_DB_SQL_NUM_PREDICT", "1024"))
+    return _review_one_changeset(
+        label, ctx, environment=environment, dialect=dialect, predict=predict,
+    )
+
+
+@dataclass
+class DbSqlReviewResult:
+    findings: dict[str, list[dict[str, Any]]]
+    ollama_failed: set[str]
+
+
+def review_db_sql_syntax(
+    label: str,
+    contexts: list[dict[str, Any]],
+    *,
+    environment: str = "INTEG",
+    dialect: str = "mysql",
+) -> DbSqlReviewResult | None:
+    """Review flagged changesets with one Ollama call each, within a time budget.
+
+    Calls are per-changeset (never batched) so line numbers can never leak between
+    changesets. A wall-clock budget (``VALIDATION_DB_SQL_BUDGET_S``, default 12s) keeps
+    the whole step fast: once it is exhausted, any remaining changeset is returned in
+    ``ollama_failed`` so the caller reports it deterministically (changeset + line).
+    """
+    if not contexts or not db_sql_review_enabled():
+        return DbSqlReviewResult(findings={}, ollama_failed=set())
+
+    predict = int(os.getenv("VALIDATION_DB_SQL_NUM_PREDICT", "320"))
+    budget = float(os.getenv("VALIDATION_DB_SQL_BUDGET_S", "10"))
+    out: dict[str, list[dict[str, Any]]] = {}
+    failed: set[str] = set()
+    start = time.monotonic()
+    for ctx in contexts[:12]:
+        cs = ctx["changeset"]
+        if time.monotonic() - start > budget:
+            failed.add(cs)  # out of time -> deterministic fallback keeps it fast
+            continue
+        items = _review_one_changeset(
+            label, ctx, environment=environment, dialect=dialect, predict=predict,
+        )
+        if items is None:
+            failed.add(cs)
+            continue
+        if items:
+            out[cs] = items
+    return DbSqlReviewResult(findings=out, ollama_failed=failed)
+
+
+_DB_EXPLAIN_SYSTEM = (
+    "You are a Liquibase/MySQL SQL reviewer. Given SQL syntax errors with source snippets, "
+    "write one short fix sentence per changeset. Be specific. Do NOT suggest removing comments. "
+    "Respond ONLY with JSON."
+)
+
+
+def detect_db_sql_typos(
+    label: str,
+    contexts: list[dict[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    """Deprecated — use ``review_db_sql_syntax``. Kept for compatibility."""
+    flat: dict[str, dict[str, Any]] = {}
+    result = review_db_sql_syntax(label, contexts)
+    if not result:
+        return flat
+    for cs, items in result.findings.items():
+        if items:
+            flat[cs] = items[0]
+    return flat
 
 
 def explain_db_syntax_findings(
@@ -372,6 +648,161 @@ def explain_db_syntax_findings(
         return {str(k): str(v).strip() for k, v in hints.items() if v}
     except json.JSONDecodeError:
         return {}
+
+
+_YAML_REVIEW_SYSTEM = (
+    "You are an expert reviewer for Forever Living deployment YAML (parameters.yml).\n\n"
+    "File structure:\n"
+    "- Root env blocks: INTEG-ADD, UAT-ADD, UATH-ADD, SUPPORT-ADD, PROD-ADD, COMMON-ADD, COMMON-REMOVEKEY\n"
+    "- Header comment blocks starting with # or ## are never errors\n\n"
+    "Your job: write clear REMEDIATION hints for issues the deterministic validator already found.\n"
+    "Rules:\n"
+    "- Use the EXACT line numbers from the numbered snippet and from DETERMINISTIC ISSUES — never invent lines\n"
+    "- Each hint: one concrete fix (what to type/change), max 140 chars, no full-line paste\n"
+    "- For indent errors: say how many spaces to use and reference a sibling block that is correct\n"
+    "- For colon errors: show corrected `key: value` form\n"
+    "- Missing S3/AWS/secrets/empty placeholders → never blocking; omit unless asked\n"
+    "- Do NOT contradict deterministic findings; do NOT add new blocking issues unless deterministic missed "
+    "a true parse break\n"
+    "- If no issues, return empty hints list\n"
+    "Respond ONLY with JSON."
+)
+
+
+def yaml_review_enabled() -> bool:
+    """Ollama remediation hints for YAML validation failures (default on with AI)."""
+    return os.getenv("VALIDATION_YAML_AI", "true").lower() in ("1", "true", "yes")
+
+
+def _parse_yaml_review_hints(data: Any) -> list[dict[str, Any]]:
+    """Normalize Ollama YAML hint JSON."""
+    if not isinstance(data, dict):
+        return []
+    raw = data.get("hints") or data.get("remediation") or []
+    if isinstance(raw, dict):
+        rows: list[dict[str, Any]] = []
+        for key, val in raw.items():
+            if isinstance(val, dict):
+                rows.append(val)
+            elif val:
+                m = re.match(r"^(\d+)", str(key))
+                rows.append({"line": int(m.group(1)) if m else 0, "fix": str(val).strip()})
+        raw = rows
+    if not isinstance(raw, list):
+        return []
+    out: list[dict[str, Any]] = []
+    for row in raw[:12]:
+        if not isinstance(row, dict):
+            continue
+        line = int(row.get("line") or 0)
+        fix = str(row.get("fix") or row.get("hint") or row.get("remediation") or "").strip()
+        if not fix:
+            continue
+        fix = re.sub(r"\s+(?:on|near)\s+line\s+\d+\.?\s*$", "", fix, flags=re.I).rstrip(".")
+        if fix and not fix.endswith("."):
+            fix += "."
+        out.append({
+            "line": line,
+            "block": str(row.get("block") or "").strip(),
+            "message": str(row.get("message") or "").strip(),
+            "fix": fix,
+        })
+    return out
+
+
+def review_yaml_file(
+    label: str,
+    filename: str,
+    content: str,
+    *,
+    environment: str = "",
+    deterministic_issues: list[dict[str, Any]] | None = None,
+    numbered_snippet: str = "",
+) -> dict[str, Any]:
+    """Return remediation hints for deterministic YAML issues (never changes pass/fail)."""
+    empty: dict[str, Any] = {
+        "available": False,
+        "summary": "AI YAML review unavailable.",
+        "hints": [],
+        "confidence": 0,
+    }
+    if not content or not content.strip():
+        return {**empty, "summary": "No YAML content to review."}
+    if not yaml_review_enabled():
+        return empty
+
+    det = deterministic_issues or []
+    det_json = json.dumps(det[:12], indent=2) if det else "none"
+    snippet = numbered_snippet or content[:3500]
+    env = (environment or "INTEG").strip().upper()
+
+    prompt = (
+        f"Service: {label}\n"
+        f"File: {filename}\n"
+        f"Target deploy environment: {env}\n"
+        f"Expected root block: {env}-* or COMMON-*\n\n"
+        f"DETERMINISTIC ISSUES (must explain these — same line numbers):\n{det_json}\n\n"
+        "Numbered YAML (line numbers for your response):\n"
+        f"{snippet}\n\n"
+        "For EACH deterministic issue, return one remediation hint with the same line number.\n"
+        "JSON exactly:\n"
+        '{"summary":"one sentence overview","hints":[{"line":N,"block":"INTEG-ADD",'
+        '"message":"short restatement","fix":"specific fix sentence"}],"confidence":0-100}'
+    )
+    predict = int(os.getenv("VALIDATION_YAML_NUM_PREDICT", "512"))
+    raw = _generate(prompt, system=_YAML_REVIEW_SYSTEM, fmt_json=True, num_predict=predict)
+    if raw is None:
+        return empty
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return {
+            "available": True,
+            "summary": raw[:200] if raw else "Unparseable AI YAML review.",
+            "hints": [],
+            "confidence": 0,
+        }
+    hints = _parse_yaml_review_hints(data)
+    return {
+        "available": True,
+        "summary": str(data.get("summary", "")).strip(),
+        "hints": hints,
+        "confidence": int(data.get("confidence", 0) or 0),
+    }
+
+
+def merge_yaml_hints(
+    issues: list[dict[str, Any]],
+    ai_hints: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Overlay AI fix sentences onto deterministic issue rows (match by line number)."""
+    if not issues:
+        return issues
+    by_line: dict[int, str] = {}
+    for h in ai_hints:
+        line = int(h.get("line") or 0)
+        fix = str(h.get("fix") or "").strip()
+        if line and fix and not _yaml_hint_is_generic(fix):
+            by_line[line] = fix
+    merged: list[dict[str, Any]] = []
+    for row in issues:
+        line = int(row.get("line") or 0)
+        det_hint = str(row.get("hint") or "").strip()
+        ai_hint = by_line.get(line, "")
+        hint = ai_hint or det_hint
+        merged.append({**row, "hint": hint})
+    return merged
+
+
+def _yaml_hint_is_generic(fix: str) -> bool:
+    """Reject vague AI hints that repeat the same text for every line."""
+    text = fix.strip()
+    low = text.lower()
+    if re.match(r"^use\s+`?key:\s*value`?\s*format\.?$", low):
+        return True
+    if len(text) < 40 and "key: value" in low and "change" not in low:
+        return True
+    return False
 
 
 _ANALYZE_SYSTEM = (
@@ -520,3 +951,149 @@ def summarize_report(facts: dict[str, Any]) -> dict[str, Any]:
     if raw is None:
         return {"available": False, "markdown": ""}
     return {"available": True, "markdown": raw}
+
+
+_JENKINS_LOG_SYSTEM = (
+    "You are a senior release/build engineer triaging a FAILED Jenkins build. "
+    "You receive build parameters, the Jenkins result field, optional rule-based "
+    "pre-classification, and the console log.\n\n"
+    "STRICT DECISION RULES (follow in order):\n"
+    "1. user_aborted — ONLY when Jenkins UI stopped the build: lines like "
+    "'Aborted by <person name>', 'Build was aborted', 'Finished: ABORTED', or "
+    "jenkins_result=ABORTED. NEVER retry. "
+    "Gradle daemon text 'user interrupt' is NOT a Jenkins abort.\n"
+    "2. build_error — compile errors, test failures, lint, 'BUILD FAILURE', "
+    "'cannot find symbol', 'Task :... FAILED'. Code must be fixed. NEVER retry.\n"
+    "3. dependency_error / config_error — artifact/registry/parameter issues. NEVER retry.\n"
+    "4. heap_oom — OutOfMemoryError, Java heap space, Gradle daemon disappeared, "
+    "HeapDumpOnOutOfMemoryError with daemon shutdown, Node heap exceeded. RETRYABLE.\n"
+    "5. transient_infra — network timeout, agent offline, HTTP 5xx. RETRYABLE.\n"
+    "6. unknown — if unclear. NEVER retry.\n\n"
+    "Set retryable=true ONLY for heap_oom or transient_infra. "
+    "If rules pre-classified with confidence >= 90, agree unless log clearly contradicts. "
+    "Respond ONLY with JSON."
+)
+
+# Failure categories the orchestrator understands. `retryable` categories are the
+# only ones the graph will loop back and re-run automatically (capped by max_retries).
+FAILURE_CATEGORIES = (
+    "user_aborted",     # manual stop in Jenkins — NOT retryable
+    "heap_oom",         # OutOfMemoryError / Java heap space / GC overhead — retryable
+    "transient_infra",  # network reset, timeout, agent offline, 5xx — retryable
+    "build_error",      # compile/test/lint failure — needs a code fix, NOT retryable
+    "config_error",     # bad param, missing RELEASE_TAG, wrong env — needs fix, NOT retryable
+    "dependency_error", # artifact/registry/dependency resolution — usually NOT retryable
+    "unknown",          # could not classify — do not auto-retry
+)
+
+
+def analyze_jenkins_log(
+    service_label: str,
+    jenkins_params: dict[str, Any],
+    console_tail: str,
+    build_number: int | None = None,
+    jenkins_result: str | None = None,
+    rule_hint: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Ollama triage of a failed Jenkins build.
+
+    Returns a structured report:
+        {
+          "available": bool,
+          "category": one of FAILURE_CATEGORIES,
+          "retryable": bool,          # AI's opinion; orchestrator still applies its own policy
+          "confidence": 0-100,
+          "summary": str,             # one-line human summary
+          "root_cause": str,
+          "remediation_steps": [str, ...],
+        }
+
+    Best-effort: if Ollama is unavailable the caller still gets a deterministic
+    fallback (see orchestrator failure rules) so the pipeline never hard-depends on AI.
+    """
+    fallback = {
+        "available": False,
+        "category": "unknown",
+        "retryable": False,
+        "confidence": 0,
+        "summary": "AI log analysis unavailable — using deterministic classification.",
+        "root_cause": "",
+        "remediation_steps": [],
+    }
+    if not console_tail or not console_tail.strip():
+        return {**fallback, "summary": "No console output captured to analyze."}
+
+    if (jenkins_result or "").upper() == "ABORTED":
+        return {
+            "available": False,
+            "category": "user_aborted",
+            "retryable": False,
+            "confidence": 100,
+            "summary": "Build manually stopped in Jenkins (result=ABORTED).",
+            "root_cause": "Manual abort — not a code or infrastructure failure.",
+            "remediation_steps": [
+                "Re-run the deployment when ready; no automatic retry.",
+            ],
+        }
+
+    # High-confidence rule hit — skip Ollama for category; rules already decided retry.
+    if rule_hint and rule_hint.get("matched") and int(rule_hint.get("confidence", 0)) >= 90:
+        cat = rule_hint.get("category", "unknown")
+        return {
+            "available": False,
+            "category": cat,
+            "retryable": bool(rule_hint.get("retryable")),
+            "confidence": int(rule_hint.get("confidence", 0)),
+            "summary": "",
+            "root_cause": "",
+            "remediation_steps": [],
+        }
+
+    tail = console_tail[-8000:]
+    params_line = ", ".join(f"{k}={v}" for k, v in (jenkins_params or {}).items())
+    result_line = f"Jenkins result field: {jenkins_result or 'unknown'}\n"
+    rule_line = ""
+    if rule_hint and rule_hint.get("matched"):
+        rule_line = (
+            f"Rule pre-classification: {rule_hint.get('category')} "
+            f"(confidence {rule_hint.get('confidence')}, evidence: {rule_hint.get('evidence', '')[:80]})\n"
+        )
+    prompt = (
+        f"Service: {service_label}\n"
+        f"Jenkins build: #{build_number if build_number is not None else '?'}\n"
+        f"Build parameters: {params_line}\n"
+        f"{result_line}"
+        f"{rule_line}\n"
+        f"--- CONSOLE LOG (tail) ---\n{tail}\n--- END LOG ---\n\n"
+        "Classify using the STRICT DECISION RULES in your system prompt.\n"
+        "retryable=true ONLY for heap_oom or transient_infra.\n"
+        "build_error / user_aborted / config / dependency → retryable=false.\n"
+        "remediation_steps: 2-4 short, actionable steps for a developer or DevOps.\n"
+        'Respond with JSON exactly: {"category":"...","retryable":true|false,'
+        '"confidence":0-100,"summary":"one line","root_cause":"one sentence",'
+        '"remediation_steps":["step",...]}'
+    )
+    raw = _generate(prompt, system=_JENKINS_LOG_SYSTEM, fmt_json=True)
+    if raw is None:
+        return fallback
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return {**fallback, "available": True, "summary": raw[:200]}
+
+    category = str(data.get("category", "unknown")).lower().strip()
+    if category not in FAILURE_CATEGORIES:
+        category = "unknown"
+    retryable = bool(data.get("retryable", False)) and category in ("heap_oom", "transient_infra")
+    steps = data.get("remediation_steps") or []
+    if isinstance(steps, str):
+        steps = [steps]
+    return {
+        "available": True,
+        "category": category,
+        "retryable": retryable,
+        "confidence": int(data.get("confidence", 0) or 0),
+        "summary": str(data.get("summary", "")).strip(),
+        "root_cause": str(data.get("root_cause", "")).strip(),
+        "remediation_steps": [str(s).strip() for s in steps if str(s).strip()][:5],
+    }

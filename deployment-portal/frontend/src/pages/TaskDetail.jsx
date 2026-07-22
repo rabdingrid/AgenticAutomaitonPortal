@@ -22,7 +22,7 @@ const SECTION_META = {
   build: { icon: '🔀', label: 'Build / Gitspace merge' },
   yaml: { icon: '📄', label: 'YAML / Config' },
   db: { icon: '🗄️', label: 'DB / Liquibase' },
-  phrases: { icon: '💬', label: 'Phrases' },
+  phrases: { icon: '💬', label: 'Json & SchemaForms' },
 }
 
 function Badge({ status }) {
@@ -99,6 +99,16 @@ export default function TaskDetail() {
     load()
   }
 
+  async function handleRetrySubTask(subTaskId) {
+    try {
+      await api.retrySubTask(subTaskId)
+      await load()
+    } catch (e) {
+      setError(e.message)
+      throw e
+    }
+  }
+
   return (
     <div>
       <div className="page-header">
@@ -143,6 +153,7 @@ export default function TaskDetail() {
             subTasks={subTasks}
             role={role}
             preview={planPreview}
+            onRetry={role === 'devops' && !planPreview ? handleRetrySubTask : undefined}
           />
         </div>
       )}

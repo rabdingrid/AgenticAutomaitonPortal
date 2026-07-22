@@ -76,6 +76,7 @@ export const api = {
   getOrchestratorPlan: (taskId) => request(`/tasks/${taskId}/orchestrator-plan`),
   getSubTask: (subTaskId) => request(`/sub-tasks/${subTaskId}`),
   tickSubTask: (subTaskId) => request(`/sub-tasks/${subTaskId}/tick`, { method: 'POST' }),
+  retrySubTask: (subTaskId) => request(`/sub-tasks/${subTaskId}/retry`, { method: 'POST' }),
 
   getJob: (jobId) => request(`/jobs/${jobId}`),
 

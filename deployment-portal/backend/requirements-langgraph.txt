@@ -1,0 +1,7 @@
+# Portal runtime (./run.sh)
+-r requirements.txt
+
+# LangGraph Studio — install only when you need the graph UI:
+#   pip install -r requirements-langgraph.txt
+langgraph-cli[inmem]>=0.4.30
+langgraph>=1.2.0

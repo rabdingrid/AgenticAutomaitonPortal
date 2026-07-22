@@ -9,8 +9,10 @@
     "build:microservice:customerservicev2": "Titan/customer-service-v2",
     "build:microservice:customer-service-v2": "Titan/customer-service-v2",
     "yaml:microservice:customerservicev2": "Titan/customer-service-v2",
+    "yaml:microservice:tdmreports": "Titan/DataMartReportingService",
     "build:portal:customercarev2": "ForeverLiving/Customer-Service-Portal",
     "build:portal:customercare": "Titan/Customer-care",
     "build:portal:ecommerce": "ForeverLiving/titan-ecommerce"
+
   }
 }

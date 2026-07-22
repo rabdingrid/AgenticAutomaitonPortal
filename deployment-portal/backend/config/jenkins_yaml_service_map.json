@@ -1,0 +1,13 @@
+{
+  "_doc": "Portal catalog label → Jenkins YML_Automation_V3 SERVICE param. Unlisted names pass through unchanged.",
+  "microservice": {
+    "CustomLinkGenerator": "CustomLinkGeneratorService",
+    "ReportTitan": "Reportingtitan",
+    "FLP360": "flp360",
+    "Customercarev2": "CustomerServiceV2"
+  },
+  "portal": {
+    "Customercarev2": "CustomerServiceV2",
+    "FLP360PWA": "flp360"
+  }
+}

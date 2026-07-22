@@ -5,6 +5,9 @@ const SUBTYPE_LABELS = {
   microservice: 'Microservice',
   portal: 'Portal',
   utility: 'Utilities',
+  phrases: 'Phrases',
+  schemaforms: 'SchemaForms',
+  newschemaforms: 'NewSchemaForms',
 }
 
 function validationForLink(linkValidation, sectionKey, serviceKey, branchPair) {
@@ -38,6 +41,9 @@ export default function LinkSectionEditor({
   onBranchChange,
   onAddGroup,
   linkValidation,
+  showBuildOnlyToggle = false,
+  buildOnly = false,
+  onBuildOnlyChange,
 }) {
   const [activeTab, setActiveTab] = useState(allowedSubTypes[0])
   const [services, setServices] = useState({})
@@ -49,7 +55,7 @@ export default function LinkSectionEditor({
         api.getServices(sectionKey, st).then((list) => [st, list]).catch(() => [st, []]),
       ),
     ).then((pairs) => setServices(Object.fromEntries(pairs)))
-  }, [enabled, sectionKey])
+  }, [enabled, sectionKey, allowedSubTypes.join(',')])
 
   function addService(serviceKey) {
     if (!serviceKey) return
@@ -114,6 +120,35 @@ export default function LinkSectionEditor({
 
       {enabled && (
         <>
+          {showBuildOnlyToggle && (
+            <div className="build-only-row">
+              <div className="build-only-text">
+                <span className="build-only-label">Only build (no merge)</span>
+                <span className="build-only-hint">
+                  Trigger the Jenkins build directly with a blank MergeID — no merge, no branch required.
+                </span>
+              </div>
+              <button
+                type="button"
+                className={`toggle-switch ${buildOnly ? 'on' : ''}`}
+                onClick={() => onBuildOnlyChange?.(!buildOnly)}
+                aria-label="Toggle build-only mode"
+              >
+                <span className="toggle-knob" />
+              </button>
+              {buildOnly && onAddGroup && (
+                <button
+                  type="button"
+                  className="branch-add-btn"
+                  onClick={onAddGroup}
+                  title="Add another Build card"
+                >
+                  +
+                </button>
+              )}
+            </div>
+          )}
+
           {needsReleaseBranch && (
             <div className="field-group">
               <label className="field-label">Release branch</label>
@@ -187,7 +222,7 @@ export default function LinkSectionEditor({
             </div>
           </div>
 
-          {showBranches && branchPair && (
+          {showBranches && branchPair && !buildOnly && (
             <div className="build-branches">
               <div className="branch-pair">
                 <div className="branch-pair-fields">

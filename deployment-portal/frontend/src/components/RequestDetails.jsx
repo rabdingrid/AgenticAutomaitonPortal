@@ -4,7 +4,7 @@ const SECTION_META = {
   build: { icon: '🔀', label: 'Gitspace merge — Build' },
   yaml: { icon: '📄', label: 'YAML / Config' },
   db: { icon: '🗄️', label: 'DB / Liquibase' },
-  phrases: { icon: '💬', label: 'Phrases' },
+  phrases: { icon: '💬', label: 'Json & SchemaForms' },
 }
 
 const SUBTYPE_LABELS = {

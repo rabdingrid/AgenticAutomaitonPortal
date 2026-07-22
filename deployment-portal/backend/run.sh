@@ -14,12 +14,19 @@ if [[ ! -d .venv ]]; then
 fi
 
 PORT="${PORT:-9002}"
-# Load .env if present (Graph mail, GitSpace token, etc.)
+# Load .env (GITSPACE_TOKEN, MS_*, OLLAMA_*, etc.) — see .env.example
 if [[ -f .env ]]; then
   set -a
   # shellcheck disable=SC1091
   source .env
   set +a
+fi
+if [[ "${GITSPACE_MODE:-}" == "live" ]]; then
+  if [[ -z "${GITSPACE_TOKEN:-}" ]]; then
+    echo "[run.sh] WARNING: GITSPACE_MODE=live but GITSPACE_TOKEN is empty in .env — using mock GitSpace." >&2
+  else
+    echo "[run.sh] GitSpace: live mode (token from .env)" >&2
+  fi
 fi
 # Default model only when not set in .env (avoid overriding qwen2.5-coder:7b).
 export OLLAMA_MODEL="${OLLAMA_MODEL:-qwen2.5-coder:7b}"

@@ -1,0 +1,56 @@
+{
+  "titan_microservices": {
+    "job_path": "Titan-Microservices",
+    "environment": "integ",
+    "branch": "integ",
+    "merge_id_default": "",
+    "user_id_default": "ID",
+    "defaults": {
+      "ReleaseType": "RegularRelease",
+      "IsReverseMerge": "no",
+      "Utilities": "",
+      "IsYMLUpdate": "no",
+      "FeatureRelease": "no"
+    }
+  },
+  "titan_portals": {
+    "job_path": "Titan-Portals",
+    "environment": "integ",
+    "branch": "integ",
+    "merge_id_default": "",
+    "defaults": {
+      "ReleaseType": "RegularRelease",
+      "IsReverseMerge": "no",
+      "FeatureRelease": "no",
+      "JSON": "",
+      "IsTaskDefUpdate": "",
+      "TaskDefParam": ""
+    }
+  },
+  "yml_automation_v3": {
+    "job_path": "YML_Automation_V3",
+    "defaults": {
+      "RESTART": "NO",
+      "ACTION": "Update"
+    },
+    "type_of_service": {
+      "microservice": "Microservices",
+      "portal": "Portals"
+    }
+  },
+  "db_script_automation_liquibase": {
+    "job_path": "DB-Script-Automation-Liquibase",
+    "defaults": {
+      "ACTION": "Update",
+      "Branch": ""
+    }
+  },
+  "json_automation_v2": {
+    "job_path": "Json_Automation_V2",
+    "environment": "integ",
+    "defaults": {
+      "Update": "Json",
+      "Action": "Add"
+    }
+  }
+}

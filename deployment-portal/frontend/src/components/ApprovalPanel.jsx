@@ -43,12 +43,16 @@ function ApprovalStepper({ task, currentStage }) {
 export default function ApprovalPanel({ task, onDecided }) {
   const { user } = useAuth()
   const [comment, setComment] = useState('')
+  const [releaseTag, setReleaseTag] = useState(task.release_tag || '')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
 
   const currentStage = task.current_stage || task.approval_chain.find((role) => !task.approvals[role])
   const userStage = user?.approval_stage ?? roleToStage(user?.role)
   const canAct = !!userStage && userStage === currentStage && task.status === 'pending_approval'
+  const needsReleaseTag =
+    currentStage === 'devops' &&
+    (task.jobs || []).some((j) => ['build', 'yaml', 'db', 'phrases'].includes(j.section))
 
   if (task.status === 'rejected') {
     const rejectedRole = task.approval_chain.find((r) => task.approvals[r]?.decision === 'rejected')
@@ -73,12 +77,17 @@ export default function ApprovalPanel({ task, onDecided }) {
       setError('A comment is required to reject.')
       return
     }
+    if (decision === 'approved' && needsReleaseTag && !releaseTag.trim()) {
+      setError('Release tag (RELEASE_TAG) is required — e.g. T11-FR1')
+      return
+    }
     setBusy(true)
     try {
       await api.approveTask(task.task_id, {
         role: currentStage,
         decision,
         comment: comment.trim() || null,
+        release_tag: needsReleaseTag && decision === 'approved' ? releaseTag.trim() : null,
       })
       setComment('')
       onDecided()
@@ -115,6 +124,25 @@ export default function ApprovalPanel({ task, onDecided }) {
       )}
 
       <ApprovalStepper task={task} currentStage={currentStage} />
+
+      {needsReleaseTag && (
+        <div style={{ marginBottom: 10 }}>
+          <label className="form-label" htmlFor="release-tag">
+            Release tag (RELEASE_TAG) <span style={{ color: 'var(--red)' }}>*</span>
+          </label>
+          <input
+            id="release-tag"
+            type="text"
+            placeholder="e.g. T11-FR1"
+            value={releaseTag}
+            onChange={(e) => setReleaseTag(e.target.value)}
+            style={{ width: '100%' }}
+          />
+          <p className="card-sub" style={{ marginTop: 4 }}>
+            Passed to Jenkins as <code>RELEASE_TAG</code> / <code>Release_Version</code> for build, YAML, DB, and Json & SchemaForms jobs.
+          </p>
+        </div>
+      )}
 
       <textarea
         placeholder="Comment (required only when rejecting)"

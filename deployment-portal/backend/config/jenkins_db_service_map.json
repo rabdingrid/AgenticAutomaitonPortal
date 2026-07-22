@@ -1,0 +1,11 @@
+{
+  "_doc": "Portal catalog label → Jenkins DB-Script-Automation-Liquibase MICROSERVICE param.",
+  "microservice": {
+    "CustomLinkGenerator": "CustomLinkGenerator",
+    "ReportTitan": "ReportTitan",
+    "FLP360": "flp360",
+    "Customercarev2": "Customercarev2",
+    "Sftpsync": "Sftpsync"
+  },
+  "portal": {}
+}

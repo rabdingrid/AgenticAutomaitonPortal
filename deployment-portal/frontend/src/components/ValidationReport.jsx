@@ -130,8 +130,7 @@ export default function ValidationReport({ task, onRevalidate, revalidating }) {
             🤖 AI validation report <span className={`badge ${overall.cls}`}>{overall.icon} {overall.label}</span>
           </p>
           <p className="card-sub" style={{ marginBottom: 0 }}>
-            {s.passed} passed · {s.warnings} warning(s) · {s.failed} failed of {s.checked} ·{' '}
-            {report.ai_used ? `AI: ${report.ai_model}` : 'AI offline (deterministic report)'}
+            {s.passed} passed · {s.warnings} warning(s) · {s.failed} failed of {s.checked}
           </p>
         </div>
         <button type="button" className="btn" onClick={onRevalidate} disabled={revalidating}>
@@ -163,7 +162,7 @@ export default function ValidationReport({ task, onRevalidate, revalidating }) {
               <ul className="validation-checks">
                 {it.checks.map((c, ci) => (
                   <li key={ci} style={{ color: CHECK_COLOR[c.status] || 'inherit', whiteSpace: 'pre-line' }}>
-                    {g.section === 'db' ? (
+                    {g.section === 'db' || g.section === 'phrases' ? (
                       <span style={{ color: 'var(--text-secondary)' }}>{c.detail}</span>
                     ) : (
                       <>
@@ -175,11 +174,34 @@ export default function ValidationReport({ task, onRevalidate, revalidating }) {
                 ))}
               </ul>
               {it.merge && (
-                <p className="validation-meta">
-                  Merge request !{it.merge.iid} · {it.merge.source_branch} → {it.merge.target_branch}
-                  {it.merge.mergeable === false && it.merge.conflicts?.length
-                    ? ` · conflicts: ${it.merge.conflicts.join(', ')}` : ''}
-                </p>
+                <div className={`validation-mr-card ${it.merge.has_conflicts ? 'has-conflict' : ''}`}>
+                  <div className="validation-mr-head">
+                    <strong>
+                      {it.merge.iid ? `Merge request !${it.merge.iid}` : 'Merge preview'}
+                    </strong>
+                    <span className="validation-meta">
+                      {it.merge.source_branch} → {it.merge.target_branch}
+                      {it.merge.state === 'merged' ? ' · merged' : it.merge.created ? ' · open' : ''}
+                    </span>
+                  </div>
+                  {it.merge.changes_summary && (
+                    <div className="validation-mr-summary">
+                      {it.merge.changes_summary.split('\n').map((line, li) => (
+                        <p key={li}>{line.replace(/\*\*/g, '')}</p>
+                      ))}
+                    </div>
+                  )}
+                  {(it.urls?.gitspace || it.urls?.merge_request) && (
+                    <a
+                      href={it.urls.gitspace || it.urls.merge_request}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn validation-mr-btn"
+                    >
+                      View in GitSpace ↗
+                    </a>
+                  )}
+                </div>
               )}
               <div className="validation-links">
                 {it.baseline?.release && (
@@ -188,11 +210,12 @@ export default function ValidationReport({ task, onRevalidate, revalidating }) {
                   </span>
                 )}
                 {Object.entries(it.urls || {}).map(([k, url]) => {
-                  if (!url || k === 'file' || k === 'baseline_file') return null
+                  if (!url || k === 'file' || k === 'baseline_file' || k === 'gitspace') return null
                   const label = k.endsWith('.sql') ? k
                     : k === 'merge_request' ? 'Merge request'
                     : k === 'compare' ? 'Compare'
-                    : k.replace(/_/g, '.')
+                    : k === 'folder' ? 'Folder in GitSpace'
+                    : k.replace(/_/g, ' ')
                   return (
                     <a key={k} href={url} target="_blank" rel="noreferrer" className="validation-link">
                       {label} ↗

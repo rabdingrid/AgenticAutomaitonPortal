@@ -14,7 +14,7 @@ const STATUS_BADGE = {
   blocked: { cls: 'badge-blocked', label: 'Blocked' },
 }
 
-const SECTION_LABEL = { build: 'Build', yaml: 'YAML', db: 'DB', phrases: 'Phrases' }
+const SECTION_LABEL = { build: 'Build', yaml: 'YAML', db: 'DB', phrases: 'Json & SchemaForms' }
 
 export default function Home() {
   const navigate = useNavigate()

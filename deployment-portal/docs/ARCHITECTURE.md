@@ -325,7 +325,7 @@ flowchart TB
 
 | File | Role |
 |------|------|
-| `backend/validation.py` | Orchestrates all checks; new-vs-old for YAML/DB |
+| `backend/validators/validation.py` | Orchestrates all checks; new-vs-old for YAML/DB |
 | `backend/ai_client.py` | `compare_artifacts()`, `analyze_artifact()`, `summarize_report()` |
 | `backend/gitspace.py` | Baseline resolution, GitSpace client, URL builders |
 | `backend/main.py` | API routes, `VALIDATION_USE_AI` gate |

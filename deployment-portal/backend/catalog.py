@@ -122,7 +122,15 @@ _DEFAULT_SECTION_SERVICE_NAMES: dict[str, dict[str, list[str]]] = {
         ],
     },
     "phrases": {
-        "portal": [
+        "phrases": [
+            "Account", "Admin", "Corporate", "Customercare", "CustomerCarePortalV2",
+            "Titan-Ecommerce", "Join", "Reports", "Shop", "SSO", "flp360pwa", "CMS",
+        ],
+        "schemaforms": [
+            "Account", "Admin", "Corporate", "Customercare", "CustomerCarePortalV2",
+            "Titan-Ecommerce", "Join", "Reports", "Shop", "SSO", "flp360pwa", "CMS",
+        ],
+        "newschemaforms": [
             "Account", "Admin", "Corporate", "Customercare", "CustomerCarePortalV2",
             "Titan-Ecommerce", "Join", "Reports", "Shop", "SSO", "flp360pwa", "CMS",
         ],
@@ -145,12 +153,15 @@ def _slug(name: str) -> str:
 
 def _mk_service(section: str, stype: str, name: str) -> dict[str, Any]:
     slug = _slug(name)
-    return {
+    service_type = "portal" if section == "phrases" else stype
+    entry: dict[str, Any] = {
         "key": f"{section}:{stype}:{slug}",
         "label": name,
-        "type": stype,
-        "gitlab_project_path": f"titan/{stype}/{slug}",
+        "type": service_type,
     }
+    if section == "phrases":
+        entry["phrases_kind"] = stype
+    return entry
 
 
 def load_section_services(section: str) -> dict[str, list[dict[str, Any]]]:

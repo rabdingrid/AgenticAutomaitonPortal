@@ -1,0 +1,20 @@
+{
+  "_doc": "Portal catalog label → Jenkins Json_Automation_V2 Portals param. Omit entries when names match.",
+  "portal": {
+    "Customercarev2": "CustomerCarePortalV2",
+    "FLP360PWA": "flp360pwa",
+    "Admin": "Admin",
+    "Account": "Account",
+    "Corporate": "Corporate",
+    "Customercare": "Customercare",
+    "CustomerCarePortalV2": "CustomerCarePortalV2",
+    "Titan-Ecommerce": "Titan-Ecommerce",
+    "Join": "Join",
+    "Reports": "Reports",
+    "Shop": "Shop",
+    "SSO": "SSO",
+    "flp360pwa": "flp360pwa",
+    "CMS": "CMS"
+  },
+  "microservice": {}
+}

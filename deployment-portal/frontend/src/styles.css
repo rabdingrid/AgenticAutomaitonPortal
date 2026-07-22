@@ -273,6 +273,7 @@ input:disabled {
 .badge-done { background: var(--green-light); color: var(--green); }
 .badge-failed { background: var(--red-light); color: var(--red); }
 .badge-blocked { background: var(--red-light); color: var(--red); }
+.badge-aborted { background: var(--slate-light); color: var(--text-secondary); box-shadow: inset 0 0 0 1px var(--border); }
 
 .pill {
   font-size: 10.5px;
@@ -515,6 +516,60 @@ input:disabled {
   border-radius: var(--radius-md);
   white-space: pre-wrap;
   max-height: 220px;
+  overflow-y: auto;
+}
+
+.op-console {
+  border: 1px solid #1E293B;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.op-console-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #1E293B;
+  color: #CBD5E1;
+  font-size: 11.5px;
+}
+
+.op-console-title { font-weight: 600; }
+
+.op-console-live {
+  color: #34D399;
+  font-weight: 700;
+  margin-right: 6px;
+  animation: op-console-blink 1.2s ease-in-out infinite;
+}
+
+@keyframes op-console-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.op-console-link {
+  color: #60A5FA;
+  text-decoration: none;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.op-console-link:hover { text-decoration: underline; }
+
+.op-console-body {
+  margin: 0;
+  background: #0F172A;
+  color: #94A3B8;
+  font-family: 'SF Mono', Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  padding: 10px 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 260px;
   overflow-y: auto;
 }
 
@@ -992,6 +1047,15 @@ input:disabled {
 .chip-utility { border-color: #5EEAD4; background: #F7FEFC; }
 .chip-utility .chip-type { background: var(--teal); color: var(--white); }
 
+.chip-phrases { border-color: #FCD34D; background: #FFFBEB; }
+.chip-phrases .chip-type { background: var(--amber); color: var(--white); }
+
+.chip-schemaforms { border-color: #93C5FD; background: #EFF6FF; }
+.chip-schemaforms .chip-type { background: #2563EB; color: var(--white); }
+
+.chip-newschemaforms { border-color: #6EE7B7; background: #ECFDF5; }
+.chip-newschemaforms .chip-type { background: #059669; color: var(--white); }
+
 .chip-x {
   border: none;
   background: transparent;
@@ -1011,6 +1075,36 @@ input:disabled {
 .chip-x:hover { background: var(--red-light); color: var(--red); }
 
 /* Branch fields inside the Build card */
+.build-only-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--blue-light);
+  background: var(--blue-light);
+  border-radius: 8px;
+}
+
+.build-only-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.build-only-label {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--blue);
+}
+
+.build-only-hint {
+  font-size: 11.5px;
+  color: var(--text-tertiary);
+}
+
 .build-branches {
   margin-top: 14px;
   padding-top: 14px;
@@ -1908,6 +2002,33 @@ input:disabled {
 .validation-warning-list { margin: 8px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.5; color: var(--amber, #b45309); }
 .validation-warning-list li { white-space: pre-line; }
 .validation-error-hint { margin: 10px 0 0; font-size: 12px; color: var(--text-secondary); }
+
+.merge-preview-card { margin-bottom: 16px; }
+.merge-preview-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  background: var(--white);
+}
+.merge-preview-item.has-conflict { border-color: var(--red); background: var(--red-light); }
+.merge-preview-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.merge-preview-branches { font-size: 12px; color: var(--text-secondary); margin: 0 0 8px; }
+.merge-preview-summary p { margin: 0 0 4px; font-size: 12.5px; color: var(--text-secondary); line-height: 1.45; }
+.merge-preview-conflicts { font-size: 12px; color: var(--red); margin: 8px 0; }
+.merge-preview-link { margin-top: 8px; font-size: 12px; padding: 6px 12px; display: inline-block; }
+
+.validation-mr-card {
+  margin: 10px 0 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--slate-light);
+}
+.validation-mr-card.has-conflict { border-color: var(--red); background: var(--red-light); }
+.validation-mr-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.validation-mr-summary p { margin: 0 0 4px; font-size: 12.5px; color: var(--text-secondary); line-height: 1.45; }
+.validation-mr-btn { margin-top: 8px; font-size: 12px; padding: 6px 12px; display: inline-block; }
 .chip-validation { display: inline-flex; align-items: center; gap: 6px; }
 .chip-badge { font-size: 12px; font-weight: 700; }
 .chip-badge.valid { color: var(--green); }
@@ -1969,19 +2090,21 @@ input:disabled {
 .op-sub-task.op-status-running { border-color: var(--blue); background: var(--blue-light); }
 .op-sub-task.op-status-done { border-color: var(--green); background: var(--green-light); }
 .op-sub-task.op-status-failed { border-color: var(--red); background: var(--red-light); }
+/* A manual abort is neutral, not a failure — override the red failed styling. */
+.op-sub-task.op-status-aborted { border-color: var(--slate); background: var(--slate-light); }
 
-.op-st-header { display: flex; align-items: center; gap: 10px; }
+.op-st-header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .op-st-icon { font-size: 16px; flex-shrink: 0; }
-.op-st-info { flex: 1; min-width: 0; }
+.op-st-info { flex: 1 1 140px; min-width: 0; }
 .op-st-id { font-size: 10.5px; color: var(--text-tertiary); display: block; }
 .op-st-label {
   font-size: 13px; font-weight: 500; display: block;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.op-st-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.op-st-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
 .op-st-agent {
   font-size: 10.5px; color: var(--text-tertiary);
-  max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .op-expand-toggle { font-size: 10px; color: var(--text-tertiary); }
 
@@ -1998,6 +2121,10 @@ input:disabled {
 .op-step.op-step-done .op-step-icon { color: var(--green); }
 .op-step.op-step-running .op-step-icon { color: var(--blue); }
 .op-step.op-step-failed .op-step-icon { color: var(--red); }
+.op-step.op-step-aborted .op-step-icon { color: var(--slate); }
+.op-step.op-step-skipped { opacity: 0.55; }
+.op-step.op-step-skipped .op-step-icon { color: var(--text-tertiary); }
+.op-step.op-step-skipped .op-step-label { color: var(--text-tertiary); }
 .op-step.op-step-queued { opacity: 0.5; }
 
 .op-jenkins-params { margin-top: 8px; }
@@ -2020,6 +2147,13 @@ input:disabled {
 .op-card-row > span:first-child { color: var(--text-tertiary); }
 .op-card-row > span:last-child { color: var(--text-primary); font-weight: 500; text-align: right; word-break: break-word; }
 .op-card-params { margin-top: 8px; }
+.op-deploy-run {
+  margin-top: 8px; padding-top: 8px;
+  border-top: 1px dashed var(--border);
+}
+.op-deploy-run:first-of-type { margin-top: 4px; padding-top: 0; border-top: none; }
+.op-card-row-nested > span:first-child { padding-left: 12px; font-size: 11px; }
+.op-card-row-nested > span:last-child { font-size: 11px; font-weight: 500; }
 .op-card-params-label {
   display: block; font-size: 10.5px; font-weight: 700; color: var(--purple);
   background: var(--purple-light); padding: 2px 8px; border-radius: 4px;
@@ -2029,6 +2163,110 @@ input:disabled {
   font-size: 11px; font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.04em; color: var(--text-secondary); margin-bottom: 4px;
 }
+
+/* Retry button on a failed sub-task */
+.op-retry-btn {
+  font-size: 11px; font-weight: 600;
+  color: var(--blue); background: var(--white);
+  border: 1px solid var(--blue); border-radius: 6px;
+  padding: 3px 10px; white-space: nowrap; line-height: 1.5;
+  flex-shrink: 0; transition: background 0.15s, color 0.15s;
+}
+.op-retry-btn:hover:not(:disabled) { background: var(--blue); color: var(--white); }
+.op-retry-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Build history — one chip per attempt (previous vs current outcome) */
+.op-builds { margin-top: 14px; }
+.op-builds-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+.op-build-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-family: inherit; font-weight: 500;
+  padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--white); color: var(--text-secondary);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.op-build-chip:hover { border-color: var(--slate); }
+.op-build-chip.is-selected { box-shadow: inset 0 0 0 1px currentColor; }
+.op-build-chip-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.op-build-chip-num { color: var(--text-primary); font-weight: 600; }
+.op-build-chip-state { text-transform: capitalize; opacity: 0.9; }
+.op-build-success { color: var(--green); }
+.op-build-success.is-selected { background: var(--green-light); }
+.op-build-error { color: var(--red); }
+.op-build-error.is-selected { background: var(--red-light); }
+.op-build-aborted { color: var(--slate); }
+.op-build-aborted.is-selected { background: var(--slate-light); }
+.op-build-running { color: var(--blue); }
+.op-build-running.is-selected { background: var(--blue-light); }
+
+.op-console-empty {
+  margin-top: 8px; font-size: 11.5px; color: var(--text-tertiary);
+  font-style: italic; padding: 8px 10px; background: var(--slate-light);
+  border: 1px dashed var(--border); border-radius: var(--radius-sm);
+}
+
+/* AI verification / failure-analysis card */
+.op-ai-report {
+  margin-top: 12px; padding: 10px 12px;
+  border-left: 3px solid var(--slate);
+  background: var(--white); border-radius: 6px;
+  border: 1px solid var(--border); border-left-width: 3px;
+}
+.op-ai-success { border-left-color: var(--green); }
+.op-ai-error { border-left-color: var(--red); }
+.op-ai-retry { border-left-color: var(--amber); }
+.op-ai-aborted { border-left-color: var(--slate); }
+.op-ai-title {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  font-weight: 600; font-size: 13px; margin-bottom: 6px;
+}
+.op-ai-icon { font-size: 14px; }
+.op-ai-tag {
+  font-weight: 500; font-size: 10.5px; color: var(--text-tertiary);
+  background: var(--slate-light); padding: 1px 7px; border-radius: 999px;
+}
+.op-ai-summary { font-size: 12.5px; margin-bottom: 5px; color: var(--text-primary); }
+.op-ai-cause { font-size: 12px; color: var(--text-secondary); margin-bottom: 5px; }
+.op-ai-remediation { font-size: 12px; color: var(--text-secondary); }
+.op-ai-remediation ol { margin: 4px 0 0 18px; padding: 0; }
+.op-ai-remediation li { margin-bottom: 3px; }
+.op-ai-meta { font-size: 11px; color: var(--text-tertiary); margin-top: 8px; }
+
+/* Orchestrator activity feed — deliberately light + colour-coded so it reads
+   as a structured event log, distinct from the dark Jenkins console. */
+.op-activity { margin-top: 12px; }
+.op-activity-log {
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  background: var(--white); max-height: 220px; overflow-y: auto;
+  padding: 4px 0;
+}
+.op-log-line {
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 3px 12px; font-size: 11.5px; line-height: 1.5;
+  border-left: 3px solid transparent;
+}
+.op-log-line + .op-log-line { border-top: 1px solid var(--slate-light); }
+.op-log-icon { flex-shrink: 0; width: 12px; text-align: center; font-weight: 700; }
+.op-log-ts {
+  flex-shrink: 0; font-family: 'SF Mono', Consolas, monospace;
+  font-size: 10.5px; color: var(--text-tertiary);
+}
+.op-log-msg { flex: 1; min-width: 0; overflow-wrap: anywhere; color: var(--text-secondary); }
+
+.op-log-error { border-left-color: var(--red); background: var(--red-light); }
+.op-log-error .op-log-icon, .op-log-error .op-log-msg { color: var(--red); }
+.op-log-aborted { border-left-color: var(--slate); background: var(--slate-light); }
+.op-log-aborted .op-log-icon, .op-log-aborted .op-log-msg { color: var(--text-secondary); }
+.op-log-success { border-left-color: var(--green); }
+.op-log-success .op-log-icon { color: var(--green); }
+.op-log-success .op-log-msg { color: #166534; }
+.op-log-info { border-left-color: var(--blue); }
+.op-log-info .op-log-icon { color: var(--blue); }
+.op-log-queued { border-left-color: var(--amber); background: var(--amber-light); }
+.op-log-queued .op-log-icon, .op-log-queued .op-log-msg { color: #92400E; }
+.op-log-retry { border-left-color: var(--purple); background: var(--purple-light); }
+.op-log-retry .op-log-icon, .op-log-retry .op-log-msg { color: var(--purple); font-weight: 600; }
+.op-log-default .op-log-icon { color: var(--text-tertiary); }
 
 /* ── Compact plan summary (History rows) ───────────────────────────────── */
 .history-plan-summary { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }

@@ -37,12 +37,12 @@ const SECTION_DEFS = [
   },
   {
     key: 'phrases',
-    title: 'Phrases',
-    subtitle: 'Release branch + Portal',
+    title: 'Json & SchemaForms',
+    subtitle: 'Release branch + Portal — Phrases, SchemaForms, or NewSchemaForms',
     icon: '💬',
     iconBg: 'var(--amber-light)',
     order: 3,
-    subTypes: ['portal'],
+    subTypes: ['phrases', 'schemaforms', 'newschemaforms'],
     needsReleaseBranch: true,
   },
 ]
@@ -58,7 +58,7 @@ const SECTION_SHORT = {
   build: 'Build',
   yaml: 'YAML',
   db: 'DB',
-  phrases: 'Phrases',
+  phrases: 'Json & SchemaForms',
 }
 
 function formatPreviewIssues(sections) {
@@ -68,19 +68,60 @@ function formatPreviewIssues(sections) {
     const title = sec.title || SECTION_SHORT[sec.section] || sec.section
     for (const item of sec.items || []) {
       if (item.status !== 'fail' && item.status !== 'warn') continue
-      const check = (item.checks || []).find((c) => c.status === item.status)
-        || (item.checks || []).find((c) => c.status === 'fail' || c.status === 'warn')
-      const detail = check?.detail || 'Issue detected'
       const branchHint = item.merge?.source_branch
         ? ` (${item.merge.source_branch} → ${item.merge.target_branch})`
         : ''
       const prefix = `${title} · ${item.label}${branchHint}`
-      const line = detail.includes('\n') ? `${prefix}:\n${detail}` : `${prefix}: ${detail}`
-      if (item.status === 'fail') blocking.push(`✕ ${line}`)
-      else warnings.push(`⚠ ${line}`)
+      const checks = item.checks || []
+      const failChecks = checks.filter((c) => c.status === 'fail')
+      const warnChecks = checks.filter((c) => c.status === 'warn')
+
+      // List every failing check (YAML often has several line-level issues).
+      if (failChecks.length > 0) {
+        for (const check of failChecks) {
+          const detail = check.detail || check.name || 'Issue detected'
+          const line = detail.includes('\n') ? `${prefix}:\n${detail}` : `${prefix}: ${detail}`
+          blocking.push(`✕ ${line}`)
+        }
+      } else if (item.status === 'fail') {
+        blocking.push(`✕ ${prefix}: Issue detected`)
+      }
+
+      for (const check of warnChecks) {
+        const detail = check.detail || check.name || 'Issue detected'
+        const line = detail.includes('\n') ? `${prefix}:\n${detail}` : `${prefix}: ${detail}`
+        warnings.push(`⚠ ${line}`)
+      }
+      if (item.status === 'warn' && warnChecks.length === 0 && failChecks.length === 0) {
+        warnings.push(`⚠ ${prefix}: Issue detected`)
+      }
     }
   }
   return { blocking, warnings }
+}
+
+function buildMergePreviewRows(sections) {
+  const rows = []
+  for (const sec of sections || []) {
+    if (sec.section !== 'build') continue
+    for (const item of sec.items || []) {
+      const m = item.merge
+      if (!m) continue
+      rows.push({
+        label: item.label,
+        status: item.status,
+        hasConflicts: Boolean(m.has_conflicts || m.mergeable === false),
+        source: m.source_branch,
+        target: m.target_branch,
+        summary: m.changes_summary || '',
+        conflicts: m.conflicts || [],
+        filesChanged: m.files_changed || [],
+        iid: m.iid,
+        url: item.urls?.gitspace || item.urls?.merge_request || item.urls?.compare || '',
+      })
+    }
+  }
+  return rows
 }
 
 export default function NewRequest() {
@@ -103,7 +144,7 @@ export default function NewRequest() {
   // Build is a list of independent groups — each its own services + a single
   // source → destination branch pair. The "+" spawns a whole new Build card.
   const [buildGroups, setBuildGroups] = useState([
-    { links: [], branch: { from: '', to: ENV_TO_BRANCH.INTEG || '' } },
+    { links: [], branch: { from: '', to: ENV_TO_BRANCH.INTEG || '' }, buildOnly: false },
   ])
 
   const [enabledSections, setEnabledSections] = useState({
@@ -137,7 +178,7 @@ export default function NewRequest() {
   function addBuildGroup() {
     setBuildGroups((prev) => [
       ...prev,
-      { links: [], branch: { from: '', to: ENV_TO_BRANCH[form.environment] || '' } },
+      { links: [], branch: { from: '', to: ENV_TO_BRANCH[form.environment] || '' }, buildOnly: false },
     ])
     setValidation(null)
   }
@@ -156,6 +197,11 @@ export default function NewRequest() {
     setBuildGroups((prev) =>
       prev.map((g, i) => (i === idx ? { ...g, branch: { ...g.branch, ...patch } } : g)),
     )
+    setValidation(null)
+  }
+
+  function updateBuildGroupOnly(idx, buildOnly) {
+    setBuildGroups((prev) => prev.map((g, i) => (i === idx ? { ...g, buildOnly } : g)))
     setValidation(null)
   }
 
@@ -184,7 +230,7 @@ export default function NewRequest() {
             warn: r.status === 'warn',
             errors: (r.checks || [])
               .filter((c) => c.status === 'fail')
-              .map((c) => `${c.name}: ${c.detail}`),
+              .map((c) => (sec.section === 'phrases' || sec.section === 'db') ? c.detail : `${c.name}: ${c.detail}`),
             warnings: (r.checks || [])
               .filter((c) => c.status === 'warn')
               .map((c) => c.detail || c.name),
@@ -235,14 +281,16 @@ export default function NewRequest() {
           links: mapLinks(sectionLinks[sec.key]),
         })
       })
-    // Build groups (one section entry per card).
+    // Build groups (one section entry per card). Build-only cards skip the
+    // merge entirely, so no branch pair is sent.
     if (enabledSections.build) {
       buildGroups.forEach((g) => {
         out.push({
           section: 'build',
           release_branch: '',
-          branch_from: (g.branch.from || '').trim(),
-          branch_to: (g.branch.to || '').trim(),
+          branch_from: g.buildOnly ? '' : (g.branch.from || '').trim(),
+          branch_to: g.buildOnly ? '' : (g.branch.to || '').trim(),
+          build_only: !!g.buildOnly,
           links: mapLinks(g.links),
         })
       })
@@ -258,6 +306,13 @@ export default function NewRequest() {
     if (enabledSections.build) {
       buildGroups.forEach((g, i) => {
         const prefix = buildGroups.length > 1 ? `Build #${i + 1}` : 'Build'
+        // Build-only cards trigger Jenkins with a blank MergeID — no branch pair.
+        if (g.buildOnly) {
+          if (g.links.filter((l) => l.service_key).length === 0) {
+            errors.push(`${prefix}: select at least one service to build`)
+          }
+          return
+        }
         if (!(g.branch.from || '').trim()) {
           errors.push(`${prefix}: Gitspace branch — From is required`)
         }
@@ -347,6 +402,10 @@ export default function NewRequest() {
   }
 
   const canSubmit = validation && validation.valid && !submitting
+  const mergePreviews = useMemo(
+    () => buildMergePreviewRows(validation?.sections),
+    [validation?.sections],
+  )
 
   return (
     <form onSubmit={handleSubmit}>
@@ -436,6 +495,9 @@ export default function NewRequest() {
               onBranchChange={(patch) => updateBuildGroupBranch(gi, patch)}
               onAddGroup={addBuildGroup}
               linkValidation={linkValidation}
+              showBuildOnlyToggle
+              buildOnly={g.buildOnly}
+              onBuildOnlyChange={(val) => updateBuildGroupOnly(gi, val)}
             />
           ))
         }
@@ -513,6 +575,41 @@ export default function NewRequest() {
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
+
+      {mergePreviews.length > 0 && (
+        <div className="card merge-preview-card">
+          <p className="card-title">GitSpace merge preview</p>
+          <p className="card-sub" style={{ marginBottom: 12 }}>
+            Validate checks branches and conflicts only — merge requests are created when you submit.
+          </p>
+          {mergePreviews.map((row, i) => (
+            <div key={i} className={`merge-preview-item ${row.hasConflicts ? 'has-conflict' : ''}`}>
+              <div className="merge-preview-head">
+                <strong>{row.label}</strong>
+                <span className={`badge ${row.hasConflicts ? 'badge-failed' : row.status === 'pass' ? 'badge-done' : 'badge-pending'}`}>
+                  {row.hasConflicts ? '✕ Conflicts' : row.status === 'pass' ? '✓ Ready' : '⚠ Check'}
+                </span>
+              </div>
+              <p className="merge-preview-branches">{row.source} → {row.target}</p>
+              {row.summary && (
+                <div className="merge-preview-summary">
+                  {row.summary.split('\n').map((line, li) => <p key={li}>{line.replace(/\*\*/g, '')}</p>)}
+                </div>
+              )}
+              {row.hasConflicts && row.conflicts.length > 0 && (
+                <p className="merge-preview-conflicts">
+                  Conflicting files: {row.conflicts.join(', ')}
+                </p>
+              )}
+              {row.url && (
+                <a href={row.url} target="_blank" rel="noreferrer" className="btn merge-preview-link">
+                  View in GitSpace ↗
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {validation && !validation.valid && (
         <div className="alert alert-error">

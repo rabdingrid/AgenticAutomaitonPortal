@@ -6,7 +6,7 @@
 > (Dev Lead → [QA if code freeze] → DevOps) with rejection + comments, and a
 > DevOps-only Code Freeze toggle on the Home page.
 
-See `IMPLEMENTATION_V3.md` for the full v3 detail.
+See [docs/IMPLEMENTATION_V3.md](docs/IMPLEMENTATION_V3.md) for the full v3 detail.
 
 ---
 
@@ -17,26 +17,27 @@ request form (paste Gitspace links), and task/job orchestration tracking.
 
 ```
 deployment-portal/
+├── docs/                      Architecture, implementation notes, orchestrator progress
+│   ├── ARCHITECTURE.md
+│   ├── OrcProgress.md         Living LangGraph orchestrator diagrams
+│   ├── IMPLEMENTATION_V2.md
+│   └── IMPLEMENTATION_V3.md
 ├── backend/
-│   ├── main.py           API endpoints (v2)
-│   ├── db.py             Task/job persistence (sections + links model)
-│   ├── catalog.py        Local JSON config (environments, approvers)
-│   ├── config/           Auto-created on first run
-│   │   ├── environments.json
-│   │   └── approvers.json
+│   ├── main.py                FastAPI entry point
+│   ├── db.py                  Task/job persistence
+│   ├── orchestrator/          LangGraph agent, Jenkins, mock executor
+│   │   ├── graph.py           Agent subgraph (LangGraph Studio export)
+│   │   ├── runner.py          Background orchestrator after approval
+│   │   ├── jenkins_client.py  Trigger / poll / console
+│   │   └── mock_executor.py   Legacy tick-based simulation
+│   ├── validators/            Pre-merge validation pipeline
+│   │   ├── validation.py      GitSpace + YAML + DB + build checks
+│   │   └── liquibase_validator.py
+│   ├── scripts/               CLI helpers (trigger build, validation, catalog)
+│   ├── config/                JSON catalogs (services, Jenkins, agents)
 │   └── requirements.txt
 └── frontend/
-    └── src/
-        ├── App.jsx
-        ├── api.js
-        ├── styles.css
-        ├── components/
-        │   └── LinkSectionEditor.jsx
-        └── pages/
-            ├── Home.jsx          Dashboard (stats + recent activity)
-            ├── NewRequest.jsx    Request form with link paste sections
-            ├── TaskDetail.jsx    Job stepper + link details
-            └── History.jsx       Full task list
+    └── src/                   React portal UI
 ```
 
 ---

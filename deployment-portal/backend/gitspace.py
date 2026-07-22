@@ -35,8 +35,16 @@ import httpx
 
 CONFIG_PATH = Path(__file__).parent / "config" / "gitspace.json"
 GITLAB_REPOS_PATH = Path(__file__).parent / "config" / "gitlab_repos.json"
+RELEASE_FOLDER_MAP_PATH = Path(__file__).parent / "config" / "gitspace_release_folder_map.json"
 
 _repo_map_cache: dict[str, Any] | None = None
+_release_folder_map_cache: dict[str, dict[str, str]] | None = None
+
+PHRASES_FOLDER_BY_KIND: dict[str, str] = {
+    "phrases": "Phrases",
+    "schemaforms": "SchemaForms",
+    "newschemaforms": "NewSchemaForms",
+}
 
 _DEFAULT_CONFIG: dict[str, Any] = {
     "base_url": "https://gitspace.foreverliving.com",
@@ -114,6 +122,42 @@ def load_config() -> dict[str, Any]:
 def _pascal(label: str) -> str:
     parts = re.split(r"[\s_\-]+", label.strip())
     return "".join(p[:1].upper() + p[1:] for p in parts if p)
+
+
+def load_release_folder_map() -> dict[str, dict[str, str]]:
+    """Catalog label → release-repo folder name, by service type."""
+    global _release_folder_map_cache
+    if _release_folder_map_cache is not None:
+        return _release_folder_map_cache
+    merged: dict[str, dict[str, str]] = {"microservice": {}, "portal": {}, "utility": {}}
+    if RELEASE_FOLDER_MAP_PATH.exists():
+        with RELEASE_FOLDER_MAP_PATH.open("r", encoding="utf-8") as f:
+            raw = json.load(f)
+        for bucket in ("microservice", "portal", "utility"):
+            merged[bucket] = {
+                k: v for k, v in (raw.get(bucket) or {}).items() if not str(k).startswith("_")
+            }
+    _release_folder_map_cache = merged
+    return merged
+
+
+def map_release_folder_name(service: dict[str, Any]) -> str:
+    """Resolve GitSpace release-branch folder from catalog label."""
+    label = (service.get("label") or service.get("key") or "").strip()
+    if not label:
+        return "Unknown"
+    stype = service.get("type") or "microservice"
+    bucket = load_release_folder_map().get(stype) or {}
+    if label in bucket:
+        return bucket[label]
+    if service.get("type") == "portal":
+        return label
+    return _pascal(label)
+
+
+def _release_folder_name(service: dict[str, Any]) -> str:
+    """Folder name under Microservices/Portals on the release branch."""
+    return map_release_folder_name(service)
 
 
 def _parse_repo_entry(entry: Any) -> tuple[str | None, int | None]:
@@ -199,23 +243,27 @@ def file_path_for(section: str, service: dict[str, Any], release: str, cfg: dict
     if not tmpl:
         return None
     category = cfg.get("category_by_type", {}).get(service.get("type", ""), "")
-    svc = _pascal(service.get("label") or service.get("key") or "")
+    svc = _release_folder_name(service)
     return tmpl.format(category=category, service=svc, release=release or "")
 
 
 def section_dir_for(section: str, service: dict[str, Any], release: str, cfg: dict[str, Any]) -> str | None:
+    category = cfg.get("category_by_type", {}).get(service.get("type", ""), "")
+    svc = _release_folder_name(service)
+    if section == "phrases":
+        kind = (service.get("phrases_kind") or "phrases").lower()
+        folder = PHRASES_FOLDER_BY_KIND.get(kind, "Phrases")
+        return f"{category}/{svc}/{release}/{folder}"
     tmpl = cfg.get("section_dirs", {}).get(section)
     if not tmpl:
         return None
-    category = cfg.get("category_by_type", {}).get(service.get("type", ""), "")
-    svc = _pascal(service.get("label") or service.get("key") or "")
     return tmpl.format(category=category, service=svc, release=release or "")
 
 
 def service_root_dir(service: dict[str, Any], cfg: dict[str, Any]) -> str:
     """Parent folder for all release cycles of a service, e.g. Microservices/Account."""
     category = cfg.get("category_by_type", {}).get(service.get("type", ""), "")
-    svc = _pascal(service.get("label") or service.get("key") or "")
+    svc = _release_folder_name(service)
     return f"{category}/{svc}"
 
 
@@ -371,10 +419,84 @@ def blob_url(section: str, service: dict[str, Any], release: str, cfg: dict[str,
     return cfg["templates"]["blob"].format(base=cfg["base_url"], project=project, ref=release or "main", path=path)
 
 
+def tree_url(project: str, ref: str, path: str = "", cfg: dict[str, Any] | None = None) -> str | None:
+    """GitSpace folder tree URL for a path under a ref."""
+    if not path:
+        return None
+    cfg = cfg or load_config()
+    base = cfg["templates"]["tree"].format(
+        base=cfg["base_url"], project=project, ref=ref or "main",
+    )
+    if "?ref_type=heads" in base:
+        return base.replace("?ref_type=heads", f"/{path}?ref_type=heads")
+    return f"{base}/{path}"
+
+
 def merge_request_url(service: dict[str, Any], iid: int, cfg: dict[str, Any] | None = None) -> str:
     cfg = cfg or load_config()
     project = service_project_path(service, cfg)
     return cfg["templates"]["merge_request"].format(base=cfg["base_url"], project=project, iid=iid)
+
+
+def merge_request_url_for_project(project: str, iid: int, cfg: dict[str, Any] | None = None) -> str:
+    cfg = cfg or load_config()
+    return cfg["templates"]["merge_request"].format(base=cfg["base_url"], project=project, iid=iid)
+
+
+def summarize_changes(
+    *,
+    source_branch: str,
+    target_branch: str,
+    files_changed: list[str],
+    commits_count: int = 0,
+    has_conflicts: bool = False,
+    preview: bool = True,
+) -> str:
+    """Short human summary (3–4 lines) for approvers."""
+    lines: list[str] = []
+    if has_conflicts:
+        lines.append(
+            f"Merge **{source_branch}** into **{target_branch}** has conflicts that must be resolved in GitSpace before approval."
+        )
+    elif commits_count == 0 and not files_changed:
+        lines.append(f"Branches **{source_branch}** and **{target_branch}** are in sync — no file changes detected.")
+    else:
+        commit_part = f"{commits_count} commit(s)" if commits_count else "changes"
+        file_part = f"{len(files_changed)} file(s)" if files_changed else "files"
+        lines.append(
+            f"Proposed merge **{source_branch} → {target_branch}**: {commit_part} across {file_part}."
+        )
+    if files_changed:
+        preview = ", ".join(files_changed[:4])
+        if len(files_changed) > 4:
+            preview += f", … (+{len(files_changed) - 4} more)"
+        lines.append(f"Changed paths: {preview}.")
+    if not has_conflicts and (commits_count or files_changed):
+        if preview:
+            lines.append("No merge conflicts detected. An MR will be opened when the request is submitted.")
+        else:
+            lines.append("No merge conflicts detected. Merge request is open — Dev Lead approval will merge.")
+    return "\n".join(lines[:4])
+
+
+def _mergeable_from_status(merge_status: str | None, has_conflicts: bool | None) -> bool | None:
+    if has_conflicts:
+        return False
+    if not merge_status:
+        return None
+    ms = merge_status.lower()
+    if ms == "can_be_merged":
+        return True
+    if ms in ("cannot_be_merged", "cannot_be_merged_recheck"):
+        return False
+    return None
+
+
+def compare_url_from_project(project: str, source_ref: str, target_ref: str, cfg: dict[str, Any] | None = None) -> str:
+    cfg = cfg or load_config()
+    return cfg["templates"]["compare"].format(
+        base=cfg["base_url"], project=project, target=target_ref, source=source_ref,
+    )
 
 
 def compare_url(
@@ -410,6 +532,16 @@ class GitSpaceClient(ABC):
 
     @abstractmethod
     def create_merge_request(self, project: str, source: str, target: str, title: str) -> dict[str, Any]: ...
+
+    def preview_merge(self, project: str, source: str, target: str) -> dict[str, Any]:
+        """Check branches and mergeability without creating an MR (validate step)."""
+        return self.create_merge_request(project, source, target, "preview")
+
+    def get_merge_request(self, project: str, iid: int) -> dict[str, Any] | None:
+        return None
+
+    def accept_merge_request(self, project: str, iid: int) -> dict[str, Any]:
+        return {"ok": False, "detail": "Merge not supported"}
 
     def list_tree(self, project: str, ref: str, path: str = "", recursive: bool = True) -> list[dict[str, Any]]:
         """List repo entries under `path`. Default: unsupported (empty) so
@@ -541,6 +673,10 @@ class MockGitSpaceClient(GitSpaceClient):
             ]
         if path.endswith("/Phrases"):
             return [{"name": "Phrases.json", "type": "blob", "path": f"{path}/Phrases.json"}]
+        if path.endswith("/SchemaForms"):
+            return [{"name": "SchemaForm.json", "type": "blob", "path": f"{path}/SchemaForm.json"}]
+        if path.endswith("/NewSchemaForms"):
+            return [{"name": "NewSchemaForm.json", "type": "blob", "path": f"{path}/NewSchemaForm.json"}]
         return []
 
     def get_file(self, project: str, ref: str, path: str, *, artifact_role: str = "new") -> str | None:
@@ -596,17 +732,66 @@ class MockGitSpaceClient(GitSpaceClient):
     def create_merge_request(self, project: str, source: str, target: str, title: str) -> dict[str, Any]:
         cmp = self.compare(project, source, target)
         iid = _seed(project, source, target) % 9000 + 100
+        files = cmp.get("conflicts") or ["src/main/resources/application.yml"] if cmp.get("ahead") else []
         return {
             "iid": iid,
+            "project": project,
             "title": title,
             "source_branch": source,
             "target_branch": target,
             "state": "opened",
+            "merge_status": "can_be_merged" if cmp["mergeable"] else "cannot_be_merged",
             "mergeable": cmp["mergeable"],
             "conflicts": cmp["conflicts"],
             "has_conflicts": not cmp["mergeable"],
             "detail": cmp.get("reason", ""),
+            "web_url": merge_request_url_for_project(project, iid),
+            "files_changed": files if not cmp["mergeable"] else files,
+            "commits_count": cmp.get("ahead", 0),
+            "changes_summary": summarize_changes(
+                source_branch=source,
+                target_branch=target,
+                files_changed=files,
+                commits_count=cmp.get("ahead", 0),
+                has_conflicts=not cmp["mergeable"],
+            ),
+            "created": True,
         }
+
+    def preview_merge(self, project: str, source: str, target: str) -> dict[str, Any]:
+        cmp = self.compare(project, source, target)
+        files = cmp.get("conflicts") or (["src/config/parameters.yml"] if cmp.get("ahead") else [])
+        return {
+            "iid": 0,
+            "project": project,
+            "source_branch": source,
+            "target_branch": target,
+            "state": "preview",
+            "merge_status": "can_be_merged" if cmp["mergeable"] else "cannot_be_merged",
+            "mergeable": cmp["mergeable"],
+            "conflicts": cmp["conflicts"],
+            "has_conflicts": not cmp["mergeable"],
+            "detail": cmp.get("reason", "Preview only — MR will be created on submit."),
+            "web_url": compare_url_from_project(project, source, target),
+            "files_changed": files,
+            "commits_count": cmp.get("ahead", 0),
+            "changes_summary": summarize_changes(
+                source_branch=source,
+                target_branch=target,
+                files_changed=files,
+                commits_count=cmp.get("ahead", 0),
+                has_conflicts=not cmp["mergeable"],
+            ),
+            "created": False,
+        }
+
+    def get_merge_request(self, project: str, iid: int) -> dict[str, Any] | None:
+        if not iid:
+            return None
+        return self.create_merge_request(project, "feature/mock", "integ", "mock")
+
+    def accept_merge_request(self, project: str, iid: int) -> dict[str, Any]:
+        return {"ok": True, "state": "merged", "iid": iid, "detail": f"MR !{iid} merged (mock)."}
 
 
 class GitSpaceApiClient(GitSpaceClient):
@@ -687,53 +872,279 @@ class GitSpaceApiClient(GitSpaceClient):
             page = int(nxt) if nxt.isdigit() else 0
         return entries
 
+    def _post(self, endpoint: str, json_body: dict[str, Any] | None = None) -> httpx.Response | None:
+        try:
+            with self._client() as c:
+                return c.post(f"{self.api}{endpoint}", headers=self._headers, json=json_body or {})
+        except Exception:
+            return None
+
+    def _put(self, endpoint: str, json_body: dict[str, Any] | None = None) -> httpx.Response | None:
+        try:
+            with self._client() as c:
+                return c.put(f"{self.api}{endpoint}", headers=self._headers, json=json_body or {})
+        except Exception:
+            return None
+
+    def _compare_details(self, project: str, source_ref: str, target_ref: str) -> dict[str, Any]:
+        r = self._get(
+            f"/projects/{self._enc(project)}/repository/compare",
+            **{"from": target_ref, "to": source_ref},
+        )
+        if r is None or r.status_code != 200:
+            code = r.status_code if r is not None else "network error"
+            return {"commits_count": 0, "files_changed": [], "detail": f"Compare unavailable (HTTP {code})."}
+        data = r.json()
+        commits = data.get("commits") or []
+        diffs = data.get("diffs") or []
+        files = [d.get("new_path") or d.get("old_path") or "" for d in diffs if d.get("new_path") or d.get("old_path")]
+        return {
+            "commits_count": len(commits),
+            "files_changed": files[:20],
+            "detail": "",
+        }
+
+    def _find_open_mr(self, project: str, source: str, target: str) -> dict[str, Any] | None:
+        r = self._get(
+            f"/projects/{self._enc(project)}/merge_requests",
+            state="opened",
+            source_branch=source,
+            target_branch=target,
+        )
+        if r is None or r.status_code != 200:
+            return None
+        items = r.json() or []
+        return items[0] if items else None
+
+    def _mr_changes(self, project: str, iid: int) -> list[str]:
+        r = self._get(f"/projects/{self._enc(project)}/merge_requests/{iid}/changes")
+        if r is None or r.status_code != 200:
+            return []
+        changes = r.json().get("changes") or []
+        out: list[str] = []
+        for ch in changes[:20]:
+            path = ch.get("new_path") or ch.get("old_path") or ""
+            if path:
+                out.append(path)
+        return out
+
+    def _refresh_mr_status(self, project: str, iid: int, attempts: int = 4) -> dict[str, Any] | None:
+        import time as _time
+
+        data: dict[str, Any] | None = None
+        for _ in range(attempts):
+            r = self._get(f"/projects/{self._enc(project)}/merge_requests/{iid}")
+            if r is None or r.status_code != 200:
+                return None
+            data = r.json()
+            if data.get("merge_status") != "checking":
+                break
+            _time.sleep(0.8)
+        return data
+
+    def _pack_mr(
+        self,
+        project: str,
+        data: dict[str, Any],
+        *,
+        source: str,
+        target: str,
+        files_changed: list[str] | None = None,
+        created: bool = False,
+    ) -> dict[str, Any]:
+        iid = int(data.get("iid") or 0)
+        merge_status = data.get("merge_status") or ""
+        has_conflicts = bool(data.get("has_conflicts", False))
+        mergeable = _mergeable_from_status(merge_status, has_conflicts)
+        files = files_changed if files_changed is not None else self._mr_changes(project, iid)
+        commits_count = int(data.get("changes_count") or 0) if data.get("changes_count") else len(files)
+        web = data.get("web_url") or merge_request_url_for_project(project, iid)
+        return {
+            "iid": iid,
+            "project": project,
+            "title": data.get("title", ""),
+            "source_branch": data.get("source_branch") or source,
+            "target_branch": data.get("target_branch") or target,
+            "state": data.get("state", "opened"),
+            "merge_status": merge_status,
+            "mergeable": mergeable,
+            "has_conflicts": has_conflicts,
+            "conflicts": files if has_conflicts else [],
+            "detail": merge_status or data.get("detailed_merge_status", ""),
+            "web_url": web,
+            "files_changed": files,
+            "commits_count": commits_count,
+            "changes_summary": summarize_changes(
+                source_branch=source,
+                target_branch=target,
+                files_changed=files,
+                commits_count=commits_count,
+                has_conflicts=has_conflicts,
+                preview=not created,
+            ),
+            "created": created,
+        }
+
     def compare(self, project: str, source_ref: str, target_ref: str) -> dict[str, Any]:
         if not source_ref or not target_ref:
             return {"mergeable": None, "ahead": 0, "behind": 0, "conflicts": [],
                     "reason": "Missing source or target branch"}
-        # GitLab API: commits on source not in target → from=target, to=source
-        r = self._get(f"/projects/{self._enc(project)}/repository/compare",
-                      **{"from": target_ref, "to": source_ref})
-        if r is not None and r.status_code == 200:
-            commits = r.json().get("commits") or []
-            return {"mergeable": None, "ahead": len(commits), "behind": 0, "conflicts": [],
-                    "reason": "Read-only compare — mergeability not evaluated (no write scope)."}
-        code = r.status_code if r is not None else "network error"
-        return {"mergeable": None, "ahead": 0, "behind": 0, "conflicts": [],
-                "reason": f"Compare unavailable (HTTP {code})."}
+        det = self._compare_details(project, source_ref, target_ref)
+        return {
+            "mergeable": None,
+            "ahead": det["commits_count"],
+            "behind": 0,
+            "conflicts": [],
+            "files_changed": det["files_changed"],
+            "reason": det.get("detail") or "",
+        }
+
+    def preview_merge(self, project: str, source: str, target: str) -> dict[str, Any]:
+        src_ok = self.branch_exists(project, source) if source else False
+        tgt_ok = self.branch_exists(project, target) if target else False
+        if not src_ok or not tgt_ok:
+            missing = [b for b, ok in ((source, src_ok), (target, tgt_ok)) if b and not ok]
+            return {
+                "iid": 0,
+                "project": project,
+                "source_branch": source,
+                "target_branch": target,
+                "state": "preview",
+                "mergeable": False,
+                "has_conflicts": False,
+                "conflicts": [],
+                "detail": f"Branch not found: {', '.join(missing)}",
+                "web_url": compare_url_from_project(project, source, target),
+                "files_changed": [],
+                "commits_count": 0,
+                "changes_summary": f"Cannot merge — missing branch(es): {', '.join(missing)}.",
+                "created": False,
+                "source_exists": src_ok,
+                "target_exists": tgt_ok,
+            }
+
+        existing = self._find_open_mr(project, source, target)
+        if existing:
+            refreshed = self._refresh_mr_status(project, int(existing["iid"])) or existing
+            packed = self._pack_mr(project, refreshed, source=source, target=target, created=False)
+            packed["changes_summary"] = summarize_changes(
+                source_branch=source,
+                target_branch=target,
+                files_changed=packed.get("files_changed") or [],
+                commits_count=packed.get("commits_count") or 0,
+                has_conflicts=bool(packed.get("has_conflicts")),
+            )
+            if packed.get("has_conflicts"):
+                packed["changes_summary"] += "\nResolve conflicts in GitSpace before submitting."
+            else:
+                packed["changes_summary"] += "\nOpen MR already exists — it will be linked on submit."
+            return packed
+
+        det = self._compare_details(project, source, target)
+        files = det["files_changed"]
+        commits = det["commits_count"]
+        return {
+            "iid": 0,
+            "project": project,
+            "source_branch": source,
+            "target_branch": target,
+            "state": "preview",
+            "merge_status": "unchecked",
+            "mergeable": True if commits == 0 and not files else None,
+            "has_conflicts": False,
+            "conflicts": [],
+            "detail": "Preview — MR will be created when you submit.",
+            "web_url": compare_url_from_project(project, source, target),
+            "files_changed": files,
+            "commits_count": commits,
+            "changes_summary": summarize_changes(
+                source_branch=source,
+                target_branch=target,
+                files_changed=files,
+                commits_count=commits,
+                has_conflicts=False,
+            ),
+            "created": False,
+            "source_exists": True,
+            "target_exists": True,
+        }
+
+    def get_merge_request(self, project: str, iid: int) -> dict[str, Any] | None:
+        if not iid:
+            return None
+        data = self._refresh_mr_status(project, iid)
+        if not data:
+            return None
+        return self._pack_mr(
+            project,
+            data,
+            source=data.get("source_branch", ""),
+            target=data.get("target_branch", ""),
+            created=True,
+        )
 
     def create_merge_request(self, project: str, source: str, target: str, title: str) -> dict[str, Any]:
-        # Read-only mode: never POST. Just confirm both branches exist so the
-        # build section still yields a useful (non-writing) result.
         if not self.allow_write:
-            return {
-                "iid": 0, "title": title, "source_branch": source, "target_branch": target,
-                "state": "not_created", "mergeable": None, "conflicts": [], "has_conflicts": False,
-                "source_exists": self.branch_exists(project, source) if source else False,
-                "target_exists": self.branch_exists(project, target) if target else False,
-                "detail": "MR creation disabled (read-only token); branch existence verified.",
-            }
-        # Write path (enabled later with an `api`-scoped token).
-        try:
-            with self._client() as c:
-                r = c.post(f"{self.api}/projects/{self._enc(project)}/merge_requests",
-                           headers=self._headers,
-                           json={"source_branch": source, "target_branch": target, "title": title})
-        except Exception as e:  # noqa: BLE001
-            return {"iid": 0, "state": "error", "mergeable": None, "conflicts": [],
+            preview = self.preview_merge(project, source, target)
+            preview["detail"] = "MR creation disabled (read-only token); branch existence verified."
+            return preview
+
+        existing = self._find_open_mr(project, source, target)
+        if existing:
+            refreshed = self._refresh_mr_status(project, int(existing["iid"])) or existing
+            return self._pack_mr(project, refreshed, source=source, target=target, created=False)
+
+        r = self._post(
+            f"/projects/{self._enc(project)}/merge_requests",
+            {"source_branch": source, "target_branch": target, "title": title},
+        )
+        if r is None:
+            return {"iid": 0, "state": "error", "project": project, "mergeable": None,
                     "has_conflicts": False, "source_branch": source, "target_branch": target,
-                    "detail": f"MR create error: {e}"}
+                    "detail": "MR create error: network failure"}
         if r.status_code in (200, 201):
-            d = r.json()
-            return {"iid": d.get("iid", 0), "title": d.get("title", title),
-                    "source_branch": source, "target_branch": target,
-                    "state": d.get("state", "opened"),
-                    "mergeable": d.get("merge_status") == "can_be_merged",
-                    "conflicts": [], "has_conflicts": bool(d.get("has_conflicts", False)),
-                    "detail": d.get("merge_status", "")}
-        return {"iid": 0, "state": "error", "mergeable": None, "conflicts": [],
+            data = self._refresh_mr_status(project, int(r.json().get("iid", 0))) or r.json()
+            return self._pack_mr(project, data, source=source, target=target, created=True)
+        if r.status_code == 409:
+            again = self._find_open_mr(project, source, target)
+            if again:
+                refreshed = self._refresh_mr_status(project, int(again["iid"])) or again
+                return self._pack_mr(project, refreshed, source=source, target=target, created=False)
+        try:
+            err = r.json()
+            msg = err.get("message", r.text[:200])
+        except Exception:
+            msg = r.text[:200]
+        return {"iid": 0, "state": "error", "project": project, "mergeable": None,
                 "has_conflicts": False, "source_branch": source, "target_branch": target,
-                "detail": f"MR create failed (HTTP {r.status_code})."}
+                "detail": f"MR create failed (HTTP {r.status_code}): {msg}"}
+
+    def accept_merge_request(self, project: str, iid: int) -> dict[str, Any]:
+        if not self.allow_write:
+            return {"ok": False, "detail": "Merge disabled (read-only token)."}
+        refreshed = self._refresh_mr_status(project, iid)
+        if refreshed and refreshed.get("state") == "merged":
+            return {"ok": True, "state": "merged", "iid": iid, "detail": f"MR !{iid} already merged."}
+        if refreshed and refreshed.get("has_conflicts"):
+            return {"ok": False, "state": "opened", "iid": iid,
+                    "detail": f"MR !{iid} has conflicts — resolve in GitSpace first."}
+        r = self._put(
+            f"/projects/{self._enc(project)}/merge_requests/{iid}/merge",
+            {"merge_commit_message": f"Merged via deployment portal (MR !{iid})"},
+        )
+        if r is None:
+            return {"ok": False, "detail": "Merge failed: network error."}
+        if r.status_code in (200, 201):
+            data = r.json()
+            return {"ok": True, "state": data.get("state", "merged"), "iid": iid,
+                    "detail": f"MR !{iid} merged successfully."}
+        try:
+            err = r.json()
+            msg = err.get("message", r.text[:200])
+        except Exception:
+            msg = r.text[:200]
+        return {"ok": False, "state": refreshed.get("state", "opened") if refreshed else "unknown",
+                "iid": iid, "detail": f"Merge failed (HTTP {r.status_code}): {msg}"}
 
 
 _CLIENT: GitSpaceClient | None = None

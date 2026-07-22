@@ -1,0 +1,14 @@
+{
+  "_doc": "Catalog service label → folder name under Microservices/Portals on the release branch (Titan/flpi-titan-release).",
+  "microservice": {
+    "Sftpsync": "SecureFileSync",
+    "CustomLinkGenerator": "CustomLinkGeneratorService",
+    "ReportTitan": "Reportingtitan",
+    "FLP360": "flp360",
+    "TDMReports": "DatamartReportingService"
+  },
+  "portal": {
+    "FLP360PWA": "flp360pwa",
+    "Ecommerce": "Titan-Ecommerce"
+  }
+}

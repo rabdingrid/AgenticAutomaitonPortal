@@ -28,10 +28,11 @@ import ai_client
 import catalog
 import db
 import graph_mail
-import mock_executor
+from orchestrator import mock_executor
 import mock_gitlab
 import notifications
-import validation
+from orchestrator import runner as orchestrator_runner
+from validators import validation
 from auth import (
     authenticate_user,
     create_access_token,
@@ -78,7 +79,14 @@ def _warm_up_ai() -> None:
         print("[mail] Microsoft Graph NOT configured — run scripts/graph_oauth_login.py or emails log to notifications.log")
 
 SectionKey = Literal["build", "yaml", "db", "phrases"]
-SubType = Literal["microservice", "portal", "utility"]
+SubType = Literal[
+    "microservice",
+    "portal",
+    "utility",
+    "phrases",
+    "schemaforms",
+    "newschemaforms",
+]
 
 
 class LinkInput(BaseModel):
@@ -93,6 +101,9 @@ class SectionInput(BaseModel):
     # Build groups carry their own source → destination branch pair.
     branch_from: str = ""
     branch_to: str = ""
+    # Build-only: trigger the Jenkins build with a blank MergeID (no merge, no
+    # branch pair required). Ignored for non-build sections.
+    build_only: bool = False
     links: list[LinkInput]
 
 
@@ -131,6 +142,7 @@ class ApprovalRequest(BaseModel):
     decision: Literal["approved", "rejected"]
     by: str = "demo-approver"
     comment: str | None = None
+    release_tag: str | None = None
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -190,7 +202,7 @@ def get_approvers(current_user: dict = Depends(get_current_user)) -> list[dict[s
 @app.get("/catalog/services")
 def get_services(
     section: str | None = None,
-    type: Literal["microservice", "portal", "utility"] | None = None,
+    type: SubType | None = None,
     current_user: dict = Depends(get_current_user),
 ) -> list[dict[str, Any]]:
     return catalog.load_services(section=section, type=type)
@@ -247,7 +259,7 @@ def validate_request(
     if not payload.jira_id.strip():
         errors.append("Jira ID is required")
     if not payload.sections:
-        errors.append("At least one section (YAML / DB / Phrases / Build) must be filled")
+        errors.append("At least one section (YAML / DB / Json & SchemaForms / Build) must be filled")
 
     all_valid = True
     section_results: list[dict[str, Any]] = []
@@ -349,6 +361,16 @@ def get_task(task_id: str, current_user: dict = Depends(get_current_user)) -> di
     return _decorate(task)
 
 
+def _maybe_start_orchestrator(task: dict[str, Any]) -> None:
+    """When all approvals are in and ORCHESTRATOR_MODE=langgraph, kick off the
+    background LangGraph agent runner for this task."""
+    if not task:
+        return
+    if task.get("status") == "running" and not task.get("current_stage"):
+        if orchestrator_runner.is_langgraph_mode():
+            orchestrator_runner.run_task_async(task["task_id"])
+
+
 @app.post("/tasks/{task_id}/approve")
 def approve_task(
     task_id: str,
@@ -370,17 +392,23 @@ def approve_task(
 
     try:
         task = db.apply_approval_decision(
-            task_id, payload.role, payload.decision, current_user["display_name"], payload.comment
+            task_id,
+            payload.role,
+            payload.decision,
+            current_user["display_name"],
+            payload.comment,
+            release_tag=payload.release_tag,
         )
     except db.ApprovalError as e:
         msg = str(e)
-        status_code = 422 if "comment is required" in msg else 409
+        status_code = 422 if ("comment is required" in msg or "Release tag" in msg) else 409
         raise HTTPException(status_code=status_code, detail=msg)
 
     if payload.decision == "rejected":
         notifications.notify_rejected(task, payload.role, payload.comment or "")
     else:
         notifications.notify_approved_stage(task, payload.role, task.get("current_stage"))
+        _maybe_start_orchestrator(task)
 
     return _decorate(task)
 
@@ -425,6 +453,7 @@ def mail_approve(token: str) -> HTMLResponse:
         return _mail_result_page("Approval failed", str(e), ok=False)
 
     notifications.notify_approved_stage(task, role, task.get("current_stage"))
+    _maybe_start_orchestrator(task)
     return _mail_result_page(
         "Approved",
         f"Request <strong>{task.get('jira_id', '')}</strong> ({task_id}) was approved. "
@@ -441,6 +470,7 @@ def _sections_from_task(task: dict[str, Any]) -> list[dict[str, Any]]:
             "release_branch": job.get("release_branch", ""),
             "branch_from": job.get("branch_from", ""),
             "branch_to": job.get("branch_to", ""),
+            "build_only": bool(job.get("build_only")) if job.get("section") == "build" else False,
             "links": job.get("links", []),
         })
     return sections
@@ -471,6 +501,7 @@ def validate_preview(
     return validation.run_validation(
         payload.environment, payload.jira_id, sections,
         use_ai=_validation_use_ai() if use_ai is None else use_ai,
+        create_mrs=False,
     )
 
 
@@ -527,6 +558,11 @@ def tick_sub_task(sub_task_id: str, current_user: dict = Depends(get_current_use
     st = db.get_sub_task(sub_task_id)
     if not st:
         raise HTTPException(status_code=404, detail=f"Sub-task {sub_task_id} not found")
+    # In langgraph mode the background orchestrator_runner drives sub-tasks; the
+    # frontend tick becomes a read-only status probe (no mock mutation).
+    if orchestrator_runner.is_langgraph_mode():
+        return {"sub_task": st, "tick": {"completed": st["status"] == "done",
+                                         "failed": st["status"] == "failed"}}
     if st["status"] not in ("running", "queued"):
         return {"sub_task": st, "tick": {"completed": st["status"] == "done", "failed": st["status"] == "failed"}}
 
@@ -540,12 +576,51 @@ def tick_sub_task(sub_task_id: str, current_user: dict = Depends(get_current_use
     elif st["status"] == "queued":
         new_status = "running"
 
-    updated = db.update_sub_task_after_tick(sub_task_id, st["steps"], new_status, tick_result["detail"])
+    updated = db.update_sub_task_after_tick(
+        sub_task_id,
+        st["steps"],
+        new_status,
+        tick_result.get("detail"),
+        jenkins_build_number=tick_result.get("jenkins_build_number"),
+        jenkins_triggered=tick_result.get("jenkins_triggered"),
+        extra_logs=tick_result.get("extra_logs"),
+    )
     if tick_result["completed"] or tick_result["failed"]:
         db.advance_orchestrator_phase(st["task_id"])
         updated = db.get_sub_task(sub_task_id)
 
     return {"sub_task": updated, "tick": tick_result}
+
+
+@app.post("/sub-tasks/{sub_task_id}/retry")
+def retry_sub_task(
+    sub_task_id: str, current_user: dict = Depends(get_current_user)
+) -> dict[str, Any]:
+    """Re-run a failed sub-task's build (DevOps only, LangGraph mode).
+
+    Records a fresh build attempt so the previous build's logs/report remain
+    visible in the UI's build-log dropdown alongside the new run.
+    """
+    st = db.get_sub_task(sub_task_id)
+    if not st:
+        raise HTTPException(status_code=404, detail=f"Sub-task {sub_task_id} not found")
+    if current_user.get("approval_stage") != "devops":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only DevOps can retry a build",
+        )
+    if not orchestrator_runner.is_langgraph_mode():
+        raise HTTPException(
+            status_code=409,
+            detail="Retry is only available in LangGraph orchestrator mode",
+        )
+    if st.get("status") != "failed":
+        raise HTTPException(
+            status_code=409,
+            detail="Only a failed sub-task can be retried",
+        )
+    orchestrator_runner.retry_sub_task_async(st["task_id"], sub_task_id)
+    return {"ok": True, "sub_task": db.get_sub_task(sub_task_id)}
 
 
 @app.get("/jobs/{job_id}")
@@ -594,6 +669,7 @@ def _run_validation_bg(task_id: str, environment: str, jira_id: str, sections_pa
     try:
         report = validation.run_validation(
             environment, jira_id, sections_payload, use_ai=_validation_use_ai(),
+            create_mrs=True,
         )
         db.set_validation_report(task_id, report)
     except Exception as e:  # never let a validation crash strand the task

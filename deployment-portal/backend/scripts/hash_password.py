@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 """Generate a bcrypt hash for a new user password.
 
-Usage:
-    python hash_password.py mySecretPassword
+Usage (from backend/):
+    .venv/bin/python scripts/hash_password.py mySecretPassword
 
 Then paste the printed hash into users.json under hashed_password.
 """
 
 from __future__ import annotations
 
+import os
 import sys
 
-from auth import hash_password
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from auth import hash_password  # noqa: E402
 
 
 def main() -> None:

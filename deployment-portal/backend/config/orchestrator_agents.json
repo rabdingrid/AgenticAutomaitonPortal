@@ -1,0 +1,47 @@
+{
+  "microservice": {
+    "label": "Microservice Build Agent",
+    "jenkins_key": "titan_microservices",
+    "enabled": true,
+    "max_concurrent": 2,
+    "max_retries": 0,
+    "retry_backoff_seconds": 5,
+    "retry_categories": ["heap_oom", "transient_infra"]
+  },
+  "portal": {
+    "label": "Portal Build Agent",
+    "jenkins_key": "titan_portals",
+    "enabled": true,
+    "max_concurrent": 1,
+    "max_retries": 0,
+    "retry_backoff_seconds": 5,
+    "retry_categories": ["heap_oom", "transient_infra"]
+  },
+  "yaml": {
+    "label": "YAML Config Agent",
+    "jenkins_key": "yml_automation_v3",
+    "enabled": true,
+    "max_concurrent": 1,
+    "max_retries": 1,
+    "retry_backoff_seconds": 5,
+    "retry_categories": ["transient_infra"]
+  },
+  "db": {
+    "label": "Database (Liquibase) Agent",
+    "jenkins_key": "db_script_automation_liquibase",
+    "enabled": true,
+    "max_concurrent": 1,
+    "max_retries": 0,
+    "retry_backoff_seconds": 0,
+    "retry_categories": []
+  },
+  "phrases": {
+    "label": "Json & SchemaForms Agent",
+    "jenkins_key": "json_automation_v2",
+    "enabled": true,
+    "max_concurrent": 1,
+    "max_retries": 1,
+    "retry_backoff_seconds": 5,
+    "retry_categories": ["transient_infra"]
+  }
+}

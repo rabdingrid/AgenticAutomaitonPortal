@@ -27,7 +27,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import validation  # noqa: E402
+from validators import validation  # noqa: E402
 
 SAMPLE_REQUEST = {
     "environment": "INTEG",

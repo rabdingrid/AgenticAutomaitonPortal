@@ -109,7 +109,35 @@
     ]
   },
   "phrases": {
-    "portal": [
+    "phrases": [
+      "Account",
+      "Admin",
+      "Corporate",
+      "Customercare",
+      "CustomerCarePortalV2",
+      "Titan-Ecommerce",
+      "Join",
+      "Reports",
+      "Shop",
+      "SSO",
+      "flp360pwa",
+      "CMS"
+    ],
+    "schemaforms": [
+      "Account",
+      "Admin",
+      "Corporate",
+      "Customercare",
+      "CustomerCarePortalV2",
+      "Titan-Ecommerce",
+      "Join",
+      "Reports",
+      "Shop",
+      "SSO",
+      "flp360pwa",
+      "CMS"
+    ],
+    "newschemaforms": [
       "Account",
       "Admin",
       "Corporate",
